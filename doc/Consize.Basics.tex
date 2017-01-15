@@ -1,0 +1,546 @@
+\chapter{Erste Schritte mit Consize: Die Basics}
+\label{Sec:Basics}
+
+\section{Programme sind Texte}
+
+Wenn Sie mit einer \href{http://de.wikipedia.org/wiki/Programmiersprache}{Programmiersprache} etwas anfangen möchten, dann müssen Sie ein \href{http://de.wikipedia.org/wiki/Computerprogramm}{Programm} schreiben, das von den Ausdrucksmitteln der Programmiersprache Gebrauch macht. Ein Programm ist nichts weiter als Text, sprich eine Folge von Einzelzeichen.
+
+Praktisch alle Programmiersprachen verarbeiten Programme in Form von \href{http://de.wikipedia.org/wiki/Textdatei}{Textdateien}. Das heißt, Sie schreiben den Programmtext (auch \href{http://de.wikipedia.org/wiki/Quelltext}{Quelltext}, Quellcode oder kurz nur Code bezeichnet) mit Hilfe eines sogenannten Texteditors und speichern den Programmtext als Datei ab. Ein \href{http://de.wikipedia.org/wiki/Texteditor}{Text\-edi\-tor} ist eine Anwendung, die Ihnen das Schreiben und Bearbeiten von Textdateien ermöglicht. Bekannte und weit verbreitete Editoren sind zum Beispiel \href{http://www.jedit.org}{jEdit} und \href{http://www.notepad-plus-plus.org/}{Notepad++}. Wenn Sie Programme in z.B.\ \href{http://de.wikipedia.org/wiki/Java\_(Programmiersprache)}{Java} oder \href{http://de.wikipedia.org/wiki/C-Sharp}{C\#} schreiben, dann wird Ihnen ein einfacher Editor meist nicht mehr genügen. Sie greifen dann auf eine sogenannte "`\href{http://de.wikipedia.org/wiki/Integrierte\_Entwicklungsumgebung}{Integrierte Entwicklungsumgebung}"' (\emph{Integrated Development Environment}, IDE) wie \href{http://de.wikipedia.org/wiki/Eclipse\_(IDE)}{Eclipse} oder \href{http://de.wikipedia.org/wiki/Visual\_Studio}{Visual Studio} zurück. Eine IDE ist im Grunde eine Art erweiterter Editor, der zusätzliche, die Programmierarbeit unterstützende Anwendungen integriert. Für Consize reicht jedoch ein einfacher Texteditor zum Schreiben von Programmtexten vollkommen aus.
+
+Consize verarbeitet nicht nur Programme in Form von Textdateien, Sie können mit Consize auch direkt über die \href{http://de.wikipedia.org/wiki/Kommandozeile}{Konsole} interagieren. Als Konsole bezeichnet man eine Ein- und Ausgabeeinheit, die eine Schnittstelle zu einer Anwendung herstellt. Unter den verschiedensten \href{http://de.wikipedia.org/wiki/Betriebssystem}{Betriebssystemen} wird Ihnen eine Konsole meist in Form eines \href{http://de.wikipedia.org/wiki/Fenster\_(Computer)}{Fensters} bereit gestellt. In der Regel ist die Interaktion über eine Konsole rein textuell, sprich über einen Fensterausschnitt auf dem Bildschirm und die Tastatur. Die \href{http://de.wikipedia.org/wiki/Computermaus}{Maus} oder andere Eingabegeräte spielen dabei praktisch keine Rolle. Mittlerweile gibt es viele sehr populäre Programmiersprachen, mit denen Sie direkt über die Konsole interagieren können. Dazu gehören \href{http://de.wikipedia.org/wiki/Python\_(Programmiersprache)}{Python}, \href{http://de.wikipedia.org/wiki/Ruby\_(Programmiersprache)}{Ruby} und auch \href{http://de.wikipedia.org/wiki/JavaScript}{JavaScript}. Diese Sprachen werden gerne als \href{http://de.wikipedia.org/wiki/Skriptsprache}{Skriptsprachen} bezeichnet, was historische Gründe hat.
+
+Ganz gleich, ob Sie Consize eine Textdatei als Programm lesen und verarbeiten lassen oder über die Konsole mit Consize interagieren: es geht immer um Text. Und so ist es wichtig zu wissen, welche Texte der reinen Form nach -- der Fachbegriff lautet Syntax -- für Consize gültige Programmtexte darstellen. Jede Programmiersprache hat ihre eigene \href{http://de.wikipedia.org/wiki/Syntax#Die\_Syntax\_formaler\_Sprachen\_.28formale\_Syntax.29}{Syntax}. Typischerweise sind die Syntax-Regeln (die Regeln, welche Zeichenfolgen gültige Programmtexte sind) in Form einer \href{http://de.wikipedia.org/wiki/Formale\_Grammatik}{formalen Grammatik} angegeben.
+
+\section{Wie Consize denkt: Die Ur-Grammatik von Consize}
+\label{Sec:UrGrammatik}
+
+% Die erlaubten Textzeichen bilden das Alphabet einer Sprache -- man nennt die Zeichen eines Alphabets auch Terminalsymbole. Welche Abfolgen von Textzeichen (Terminalsymbolen) nun erlaubt sind, um gültige Programmausdrücke zu bilden, das legt die Syntax einer Programmiersprache fest.
+
+Die Grammatik legt anhand einer Reihe von \href{http://de.wikipedia.org/wiki/Produktionsregel}{Produktionsregeln} genauestens fest, welche Zeichen wie aufeinander folgen dürfen. Da allein die Berücksichtigung der Produktionsregeln genügt, um zu entscheiden, ob ein Text (sprich, eine Zeichenfolge) ein gültiges Programm ist oder nicht, spricht man auch von einer "`\href{http://de.wikipedia.org/wiki/Kontextfreie\_Grammatik}{kontextfreien Grammatik}"'. Ob das Programm denn auch ein funktionsfähiges Programm ist, das ist eine Frage der \href{http://de.wikipedia.org/wiki/Semantik#Semantik\_in\_formalen\_Sprachen}{Semantik}, der Bedeutung von Programmausdrücken. Ein syntaktisch korrektes Programm muss kein semantisch gültiges Programm sein.
+
+% Es ist unmöglich, eine gültige Datumsangabe einzig über einen endlichen
+% Satz an kontextfreien Produktionsregeln anzugeben.
+
+Grammatikregeln werden üblicherweise in der \href{http://de.wikipedia.org/wiki/Erweiterte\_Backus-Naur-Form}{Erweiterten Backus-Naur-Form} (EBNF) oder einer verwandten Schreibweise notiert. Die Notation ist einfach zu verstehen. 
+
+Die erlaubten, tatsächlich in einem Programmtext verwendbaren Zeichen heißen \href{http://de.wikipedia.org/wiki/Terminalsymbol}{Terminalsymbole} und werden durch einfache oder doppelte Anführungszeichen ausgewiesen. So meint \lit{\%}
+das Prozentzeichen, so wie es über die Tastatur eingegeben werden kann. Einige \href{http://de.wikipedia.org/wiki/Steuerzeichen}{Steuerzeichen}, wie z.B.\ das über die \href{http://de.wikipedia.org/wiki/Tabulatortaste}{Tabulator-Taste} erzeugte Steuerzeichen, werden oft besonders notiert; das Tabulator-Steuerzeichen etwa als `\verb|\t|'.
+
+\href{http://de.wikipedia.org/wiki/Nichtterminalsymbol}{Nichtterminalsymbole} werden aus einem Mix von Terminal- und Nichtterminalsymbolen definiert. In einer Produktionsregel steht links vom Gleichheitszeichen das zu definierende Nichtterminalsymbol (es wird gerne zur deutlichen Unterscheidung von Terminalsymbolen in spitze Klammern gesetzt), rechts davon eine oder mehrere Alternativen (ein senkrechter Strich "`$|$"' trennt die Alternativen) von Terminalen und\slash oder Nichtterminalen. Runde Klammern dienen zur Gruppierung. Eckige Klammern weisen ein Terminal- oder Nichtterminalsymbol als optional aus (es darf vorkommen, muss es aber nicht), geschweifte Klammern lassen beliebige Wiederholungen zu (auch keinmal). Jede Regel endet mit einem Semikolon. Den Anfang eines Kommentars leitet ein "`(*"' ein, sein Ende ein "`*)"'.
+
+Das Ganze ist am Beispiel leicht nachzuvollziehen. Die Grammatik von Consize ist extrem einfach.
+
+\begin{grammar}
+<whitespace> = `\ ' | `\\t' | `\\n' | `\\r' ;
+
+<separator> = <whitespace> \{ <whitespace> \} ;
+
+<symbol> = `a' | ... | `Z' | `0' | ... | `9'  ; (* more generally, any character except <whitespace> characters *)
+
+<word> = <symbol> \{ <symbol> \} ;
+
+<program> =  [ <word> ] \{ <separator> <word> \} [ <separator> ] ;
+\end{grammar}
+
+Das Nichtterminal \synt{whitespace} (\href{http://de.wikipedia.org/wiki/Leerraum}{Leerraum}) ist definiert, entweder ein Leerzeichen (der Deutlichkeit halber als Unterstrich dargestellt) oder ein Tabulator-Steuerzeichen oder ein Zeilenvorschub `\verb|\n|' oder ein Wagenrücklauf `\verb|\r|' zu sein. Der Strich trennt die Alternativen voneinander.
+
+Das Nichtterminal \synt{separator} repräsentiert ein \href{http://de.wikipedia.org/wiki/Trennzeichen}{Trennzeichen} und ist definiert als ein Leerraum \synt{whitespace} gefolgt von beliebig vielen weiteren \synt{whitespace}s. Mit anderen Worten: Ein \synt{separator} besteht aus mindestens einem \synt{whitespace}.
+
+Als \synt{symbol} gilt jedes beliebige Terminalsymbol von \lit{a} bis \lit{Z} und von \lit{0} bis \lit{9}. Die Punkte "`\dots"' sind hier nur als verkürzende Schreibweise gedacht, statt alle Terminalsymbole ausdrücklich hinschreiben zu müssen. Der Kommentar weist darauf hin, dass die Produktionsregel für \synt{symbol} sogar noch weiter zu fassen ist: Als \synt{symbol} kommt jedes Terminalsymbol in Frage, das nicht als \synt{whitespace} gilt.
+
+Ein Wort \synt{word} in Consize besteht aus mindestens einem \synt{symbol}. Und ein Programm \synt{program} beginnt optional mit einem \synt{word}, es schließt optional mit \synt{separator} und erlaubt dazwischen beliebig viele Wiederholungen aus \synt{separator} und \synt{word}.
+
+Wenn Sie sich die Regel für ein Programm \synt{program} durch den Kopf gehen lassen, so werden Sie eine interessante Beobachtung machen: Es ist unmöglich, ein syntaktisch ungültiges Programm für Consize zu verfassen. Welchen Programmtext auch immer Sie Consize vorsetzen: Ein Programm wird schlicht an den Grenzen von Leerräumen in Wörter zerlegt. Im Extremfall besteht ein Consize-Programm aus nicht einmal einem einzigen Zeichen.
+
+Da Consize einzig an den Wörtern eines Programms interessiert ist, fällt die Analyse und Zerlegung eines Programmtextes in Wörter sehr leicht aus. Es gibt kaum eine andere Programmiersprache, die eine derart primitive Syntax hat. Man könnte die Syntax auch als extrem robust bezeichnen, gemäß der zweiten Hälfte des von \href{http://de.wikipedia.org/wiki/Jonathan\_Postel}{{\sc Jonathan Postel}} formulierten \href{http://de.wikipedia.org/wiki/Robustheitsgrundsatz}{Robustheitsgrundsatzes}: "`\href{http://tools.ietf.org/html/rfc761#page-13}{be liberal in what you accept from others}"'.
+% http://de.wikipedia.org/wiki/Robustheitsgrundsatz
+Ganz so "`liberal"' wird Consize jedoch nicht bleiben, weil zu viel Freiheit keine Strukturen bietet.
+
+\section{Das Parsen eines Programms}
+
+Wenn Consize eine Textdatei lädt und den dort enthaltenen Text als Programm ausführen soll, dann geht das nicht sofort. Ein paar Vorarbeiten sind notwendig. Der Text muss daraufhin untersucht werden, ob er der Grammatik entspricht. Und erst wenn das der Fall ist, dann kann der Programmtext weiter analysiert und verarbeitet werden, bis er schlussendlich als Programm ausgeführt wird. Die Aufgaben von der Grammatikanalyse bis hin zur Vorbereitung der Programmausführung werden als "`Parsen"' (\emph{parsing}) bezeichnet. Der dafür verantwortliche Programmteil heißt "`\href{http://de.wikipedia.org/wiki/Parser}{Parser}"'.
+
+Nun ist die Grammatik von Consize so einfach, dass sich das Parsen auf zwei Schritte beschränkt. Im ersten Schritt entfernt Consize aus dem Programmtext Kommentare. Ein \href{http://de.wikipedia.org/wiki/Kommentar\_(Programmierung)}{Kommentar} ist ein für die Pro\-gramm\-aus\-füh\-rung vollkommen irrelevanter Textteil, den ein Programmierer bzw.\ eine Programmiererin nutzen kann, um Anmerkungen für sich und andere Leser(innen) des Programmtexts zu hinterlassen.
+
+Im zweiten Schritt zerlegt Consize den Programmtext in logische Einheiten, sogenannte "`\href{http://de.wikipedia.org/wiki/Token\_(Compilerbau)}{Token}"'. Diesen Vorgang übernimmt ein Programm, das "`\href{http://de.wikipedia.org/wiki/Tokenizer}{Tokenizer}"' heißt; der Tokenizer ist eine ganz einfache Form eines Parsers. Im Fall von Consize zerlegt der Tokenizer den Programmtext einfach an den Leerstellen (\synt{separator}) in eine Folge von Wörtern (\synt{word}). Die Token sind Wörter. 
+
+Machen Sie folgende einfache Übung: Legen Sie eine Textdatei mit nachstehendem Inhalt an und speichern Sie den Text in einer Datei namens \verb|test.txt| und zwar in dem Verzeichnis, in dem sich auch Consize befindet. Wenn Sie wollen, fügen Sie beginnende Leerzeichen hinzu oder verändern Sie den Text beliebig.
+%Vergessen Sie auf keinen Fall die Textzeilen jeweils mit der \href{http://de.wikipedia.org/wiki/Entertaste}{Eingabetaste} abzuschließen, sonst endet die Programmzeile nicht mit einem \href{http://de.wikipedia.org/wiki/Zeilenumbruch}{Zeilenumbruch}.
+
+\begin{verbatim}
+I'm a syntactically valid line of code! % though meaningless
+Bye bye
+\end{verbatim}
+
+Starten Sie Consize und geben Sie folgendes ein:
+
+\begin{verbatim}
+> clear \ test.txt slurp
+I'm a syntactically valid line of code! % though meaningless
+Bye bye
+\end{verbatim}
+
+Consize liest ("`schlürft"', \emph{slurp}) den Inhalt der Datei \verb|test.txt| ein. Das Ergebnis sieht exakt so aus, wie das, was Sie mit dem Editor in die Datei geschrieben haben.
+
+Nun entfernen wir mit \verb|uncomment| die Kommentare. In Consize beginnt ein Kommentar mit dem Prozentzeichen "`\verb|%|"'
+und endet am Ende der Zeile.
+
+\begin{verbatim}
+> uncomment
+I'm a syntactically valid line of code!
+
+Bye bye
+\end{verbatim}
+
+Lassen Sie sich von der eingefügten "`Extrazeile"' nicht irritieren; je nach verwendetem Betriebssystem ist die Extrazeile möglicherweise bei Ihnen auch nicht zu sehen.\footnote{Ich verwende Consize zusammen mit Microsoft Windows.} Entscheidend ist, dass der Kommentar verschwunden ist.
+
+Die Zerlegung des entkommentierten Programms geschieht mit \verb|tokenize|.
+
+\begin{verbatim}
+> tokenize
+[ I'm a syntactically valid line of code! Bye bye ]
+\end{verbatim}
+
+Was Sie hier sehen, ist das Ergebnis der Zerlegung des entkommentierten Programms in eine Folge von neun Wörtern. Sie bekommen das Ergebnis in Form einer Datenstruktur präsentiert, die sich Stapel nennt; das zeigen die eckigen Klammern an.
+
+Sie können das erste Wort \verb|I'm| mit \verb|unpush| vom Stapel holen und dahinter ablegen.
+
+\begin{verbatim}
+> unpush
+[ a syntactically valid line of code! Bye bye ] I'm
+\end{verbatim}
+
+Mit \verb|type| können Sie den Datentypen von \verb|I'm| ermitteln; \verb|type| entfernt das Wort \verb|I'm| und gibt das Ergebnis mit der Angabe \verb|wrd| bekannt. Es handelt sich also tatsächlich um ein Wort!
+
+\begin{verbatim}
+> type
+[ a syntactically valid line of code! Bye bye ] wrd
+\end{verbatim}
+
+Doch ich greife vor. Wir werden uns in Kürze mit den Datentypen be\-schäf\-ti\-gen, die Consize anbietet.
+
+Hätte der Programmtext nicht den Grammatikregeln entsprochen, so hätte Consize den Text als syntaktisch ungültig zurückgewiesen. Wie Sie aber wissen, ist die Grammatik von Consize derart primitiv und grundlegend, dass es keine syntaktisch ungültigen Programmtexte geben kann. Consize wird den Inhalt jeder Datei erfolgreich mit \verb|tokenize| verarbeiten. Bei so gut wie allen anderen Programmiersprachen ist das nicht so. Die Grammatiken sind komplizierter und verlangen nach Strukturen, die eingehalten werden wollen. Fordert eine Grammatik beispielsweise, dass einer öffnenden Klammer `\verb|(|' im Programmtext auch immer eine schließende Klammer `\verb|)|' folgt, dann ist ein Kurzprogramm wie z.B. "`\verb|( 1 2 3|"' ungültig: die schließende Klammer fehlt.
+
+In der Tat ist die Grammatik von Consize so einfach, dass sie schon wieder problematisch ist: Ohne strukturbildende Ausdrucksmittel wie z.B.\ Klammern, sind Consize-Programme kaum für Menschen lesbar. Und auch das Schreiben von Consize-Programmen ist ohne jegliche Strukturmittel wenig spaßig.
+
+Doch es gibt einen netten Ausweg aus dieser Situation: Wohl aber können wir Klammern, wie z.B.\ \verb|[| und \verb|]| oder \verb|{| und \verb|}| als Wörter in Consize verwenden. Wenn Sie sonst eine geklammerte Zahlenfolge als "`\verb|[1 2 3]|"' schreiben würden, müssen Sie jetzt nur Leerräume nutzen und die Klammern in "`\verb|[ 1 2 3 ]|"' werden zu eigenständigen Wörtern.
+
+Damit können wir uns eines Tricks bedienen: Wir triggern mit diesen Wörtern, wie z.B.\ bei einer öffnenden eckigen Klammer \verb|[|, ein Consize-Programm, das die passende schließende eckige Klammer sucht, die dazwischen liegenden Wörter als Daten interpretiert und in eine geeignete Datenstruktur packt. Damit simulieren wir eine Grammatikregel für eckige Klammern.
+
+% Sie werden in Kürze feststellen, dass die Programmierung in Consize bedingt spaßig ist. Allerdings, und das ist eine Besonderheit in Consize, werden wir strukturgebende Wörter in Consize selber definieren. Schrittweise schränken wir die ursprünglich äußerst freizügige Grundgrammatik von Consize ein. 
+
+% Daraus lässt sich eine interessante Erkenntnis ableiten: Computersprachen können mit einfachsten Grammatiken zurechtkommen, wir Menschen nicht. Menschen benötigen Strukturmittel zur Organisation von Programmtext einerseits, und zur Ausdrucksstärke andererseits.
+
+Das mag wie ein "`Hack"' wirken, mit dem sich fehlende grammatische Strukturen simulieren lassen. Im gewissen Sinne stimmt das sogar. Aber Sie lernen auf diese Weise den Umgang mit sogenannten Continuations. Mit Hilfe einer Continuation können Sie die Zukunft eines Programms verändern -- ein Feature, das nur wenige Sprachen unterstützen. 
+
+\section{Was Consize versteht: Die erweiterte Grammatik}
+
+Obwohl die Ur-Grammatik von Consize so überaus primitiv ist, können wir mit dem eben erwähnten Trick nachträglich Grammatikregeln simulieren. Dieser Trick ist im sogenannten "`Präludium"' (Vorspiel) zu Consize programmiert. Wir verwenden fortan den englischen Begriff "`Prelude"'.
+
+In der Prelude ist eine Vielzahl an kleinen Consize-Programmen abgelegt, die das Arbeiten mit Consize praktischer und angenehmer machen -- Consize-Programme, die Consize erweitern. Darunter eben auch die "`Erweiterungen"' der Grammatik. Kap.~\ref{Sec:Prelude} befasst sich ausführlich mit der Prelude.
+
+Sie dürfen sich die erweiterte Grammatik ungefähr wie folgt vorstellen; die Grammatik ist nicht vollständig und vereinfacht, aber sie enthält wichtige Regeln von Consize.
+
+\begin{grammar}
+<sequence> = (`['|`(') \{ <separator> <item> \} <separator> (`]'|`)') ;
+
+<mapping> = `{' \{ <separator> <item> <separator> <item> \} <separator> `}' ;
+
+<item> = <word> | <sequence> | <mapping> ;
+
+<program> = [ <item> ] \{ <separator> <item> \} [ <separator> ] ;
+\end{grammar}
+
+In der von Consize simulierten Grammatik gibt es Folgen (\synt{sequence}) von Elementen (\synt{item}), einmal mit eckigen, einmal mit Runden Klammern, und Mappings mit geschweiften Klammern. Mappings unterscheiden sich von Folgen dadurch, dass sie paarweise Items gruppieren.
+% Sie werden in Kürze erfahren, dass das erste Item in einem Paar "`Schlüsselwert"' und das andere "`Zielwert"' heißt, und dass die Paare Assoziationen sind.
+Überall sorgen Leerräume (\synt{separator}) dafür, dass weder die Klammern noch die Elemente sich "`berühren"' können. Die Logik der Ur-Grammatik bleibt damit erhalten: Alles kann letztlich als eine Folge von Wörtern interpretiert werden.
+
+Die Grammatik hat eine Besonderheit: in ihr gibt es gegenseitige Ab\-hän\-gig\-kei\-ten -- man spricht von wechselseitiger \href{http://de.wikipedia.org/wiki/Rekursion}{Rekursion}. So bezieht sich die Regel zu \synt{sequence} auf \synt{item}, \synt{item} wiederum kann eine \synt{sequence} sein. Auf diese Weise beschreibt die Grammatik Verschachtelungen. Die Zeichenfolge
+
+\begin{verbatim}
+[ 1 2 [ { 3 4 x y } z ] ]
+\end{verbatim}
+
+ist eine gültige \synt{sequence}, die ihrerseits aus zwei Wörtern und einer weiteren Folge mit eckigen Klammern besteht, die wiederum ein Mapping und ein Wort beinhaltet.
+
+Ein Programm in Consize besteht zwar nach wie vor -- wie in der Ur-Grammatik -- aus einer Folge von Wörtern, doch die Grammatik-Er\-wei\-ter\-ungen fordern den balancierten Gebrauch der Wörter ein, die Klammern darstellen. Öffnende und schließende Klammern müssen Verschachtelungen beschreiben. Bei geschweiften Klammern ist sogar stets eine gerade Anzahl an eingebetteten Elementen gefordert.
+
+%\begin{grammar}
+%<stackeffect> = <open-sequence> ;
+%
+%<definition> = `:' <separator> <word> <separator> <stackeffect> { <separator> <item> } <separator> `;' ;
+%\end{grammar}
+
+Sie wissen noch nicht, was mit den eckigen und den geschweiften Klammern gemeint ist, aber Namensgebungen wie \synt{sequence} und \synt{mapping} sind nicht zufällig, sondern absichtlich so gewählt. Wenn Sie Programmiererfahrung haben, werden Sie eher eine Idee haben, was Sequenzen und Mappings sein könnten, als wenn Consize Ihre erste Programmiersprache ist. Ein Programmierprofi wird immer einen Blick in die Grammatikregeln einer ihm neuen Programmiersprache werfen, um sich zu orientieren.
+
+Das nächste Unterkapitel wird Sie in die Datenstrukturen von Consize einführen. Die Datentypen werden genauso dargestellt, wie Sie sie in Consize eintippen können -- sofern die Prelude geladen ist. Die Notationen orientieren sich an den Grammatiken für Sequenzen und Mappings!
+
+% Darum gilt: Wer sich über die Strukturmittel und Kernkonzepte einer Programmiersprache einen Überblick verschaffen möchte, der studiere die Grammatik der Sprache. Die Namen der Nichtterminalsymbole lassen meist sehr deutlich erahnen, worum es geht -- obwohl die Syntax einer Sprache streng genommen keine Auskunft darüber gibt. Man kann z.B. erraten wozu \synt{wordsequence} dient, sicher sein kann man sich dessen nicht, solange man nicht die Semantik (die Bedeutung) solcher Sprachkonstrukte in Erfahrung gebracht hat.
+
+% Darum gilt: Wer sich über die Struktur und Kernkonzepte einer Sprache einen Überblick verschaffen möchte, der werfe einen Blick in die Grammatik der Sprache.
+
+% Wie gesagt: Wir werden die Grammatik von Consize mit Hilfe von Consize selbst verändern. Doch vorerst müssen wir mit der primitiven Grammatik von Consize vorlieb nehmen. Dazu werden wir uns die Bedeutung der bereits in Consize eingebauten Wörtern anschauen.
+
+%Sie müssen sich, wenn Sie in den Vorgaben der Grammatik denken, frei machen von gewohnten und vertrauten Lesarten. Consize folgt der Grammatik. Und wenn Sie sich Consize mitteilen wollen, müssen Sie der Grammatik folgen.
+
+%Die Zeichenfolge |(1, 2, 3)| besteht aus Sicht von Consize aus drei Wörtern, nämlich dem Wort |(1,|, dem Wort |2,| und dem Wort |3)|. Die Leerzeichen trennen Wörter voneinander, und diese Regel gilt konsequent. Sie werden später lernen, dass man in Consize eine Folge von Zahlen als |( 1 2 3 )| schreibt. Jetzt erkennt Consize die öffnende und schließende Klammer sowie die Zahlen als eigene Wörter.
+
+\section{Datenstrukturen}
+\label{Sec:Datenstrukturen}
+
+Obwohl Consize laut "`Ur-Grammatik"' nur Wörter und keine Klammern kennt (Klammern rüstet die Prelude nach), kann man dennoch Strukturen aufbauen. Eben nicht auf direkte Weise, sondern mit Wörtern, die Datenstrukturen erzeugen.
+% Achtung: wir sind funktional!
+
+Beginnen wir mit der wichtigsten Datenstruktur in Consize, dem Stapel (\emph{stack}). Der Name dieser Datenstruktur ist der Vorstellung entlehnt, die wir mit einem Stapel z.B.\ von Büchern, Zeitschriften oder Tellern verbinden. Auf einem Stapel kann man etwas ablegen oder wieder entfernen und zwar immer nur "`von oben"'.
+
+Diese Anschauung wird auf wenige elementare Operationen reduziert: Mit \verb|emptystack| wird ein leerer Stapel erzeugt, mit \verb|push| ein Element auf dem Stapel abgelegt, mit \verb|pop| der Stapel um das oberste Element reduziert, \verb|top| gibt das oberste Element zurück.
+
+\begin{verbatim}
+| item4 | <- top of stack
+| item3 | \
+| item2 |  > rest of stack (pop)
+| item1 | /
++-------+
+\end{verbatim}
+% Ein Bild dazu: Stapel mit Pfeilen, was was bewirkt
+
+Schauen wir uns die Befehle einzeln an in der Interaktion mit Consize.
+
+% Was ist eine Datenstruktur?
+
+\verb|emptystack| erzeugt einen leeren Stapel. Consize stellt einen Stapel mit Hilfe eckiger Klammern dar. Ist der Stapel leer, so trennt einzig ein Leerzeichen die öffnende von der schließenden Klammer.
+
+\begin{verbatim}
+> emptystack
+[ ]
+\end{verbatim}
+
+Man muss wissen, dass das "`obere"' Ende des Stapels links ist. Wenn wir ein Element auf den Stapel \verb|push|en, wird es von links her auf dem Stapel abgelegt.
+
+\begin{verbatim}
+> 3 push
+[ 3 ]
+> 4 push
+[ 4 3 ]
+> hello push
+[ hello 4 3 ]
+\end{verbatim}
+
+\verb|pop| entfernt das oberste, sprich das Element ganz links vom Stapel. Das kann man so lange tun, bis kein Element mehr auf dem Stapel ist. \verb|top| holt das oberste ("`linkeste"') Element vom Stapel, was den Stapel vernichtet.
+
+\begin{verbatim}
+> pop
+[ 4 3 ]
+> top
+4
+\end{verbatim}
+
+Vielleicht haben Sie sich schon diese Frage gestellt: Wie bekommt man eigentlich ein Wort wie \verb|push| selbst als Element auf einen Stapel abgelegt?
+
+\begin{verbatim}
+> emptystack \ push push
+4 [ push ]
+\end{verbatim}
+
+Das Wort \verb|\| hat eine besondere Aufgabe: Es hebt die Funktion auf, die das nachfolgende Wort möglicherweise hat. So kann mittels \verb|\| das Wort \verb|push| als reines Datum ausgewiesen und mit einem anschließenden \verb|push| auf einem leeren Stapel abgelegt werden.
+
+Da Sie hier bereits mit der über die Prelude erweiterten Version von Consize arbeiten, gibt es auch die Möglichkeit, Stapel direkt in der Notation mit den eckigen Klammern einzugeben.
+%Wir werden später besprechen, wie man das Ur-Consize aufrüsten kann.
+
+\begin{verbatim}
+> [ hello 4 3 ]
+4 [ push ] [ hello 4 3 ]
+\end{verbatim}
+
+Zwei Stapel lassen sich mit \verb|concat| "`konkatenieren"' (verbinden, zusammenfügen).
+
+\begin{verbatim}
+> concat
+4 [ push hello 4 3 ]
+\end{verbatim}
+
+Consize ist eine konkatenative Programmiersprache. Hinter der Konkatenation, dem Zusammenfügen zweier Stapel verbirgt sich ein wichtiges Grundprinzip der Arbeitsweise von Consize.
+% Wir werden darauf in Kap.~\ref{Sec:AtomareWoerter} näher eingehen.
+
+Mit \verb|reverse| lassen sich die Inhalte des Stapels umkehren: Das letzte Element im Stapel wandert nach oben, das vorletzte an die zweitoberste Stelle usw. Das ändert nichts daran, dass der Stapel immer noch von links befüllt wird. Es dreht sich also nicht der Stapel um, sondern sein Inhalt wird "`umgekehrt"'.
+
+\begin{verbatim}
+> reverse
+4 [ 3 4 hello push ]
+\end{verbatim}
+
+Sie haben eine Menge gelernt: Sie erzeugen mit \verb|emptystack| einen leeren Stapel, können dem Stapel mit \verb|push| Elemente hinzufügen und mit \verb|pop| wieder entfernen; \verb|top| liefert das oberste Element eines Stapels. Mit \verb|concat| werden zwei Stapel miteinander verbunden (konkateniert), mit \verb|reverse| sein Inhalt "`umgekehrt"'.
+
+\section{Datenstapel und Programmstapel}
+\label{Sec:DataCallStack}
+
+Consize hat eine denkbar einfache Virtuelle Maschine (VM). Sie besteht aus zwei Stapeln und einem Wörterbuch (\emph{dictionary}). Eine sehr einfache Abarbeitungsvorschrift regelt das Zusammenspiel der Stapel und den Gebrauch des Wörterbuchs.
+
+Die beiden Stapel heißen Datenstapel (\emph{data stack}) und Aufruf- oder Programmstapel (\emph{call stack}). Dabei gibt es eine Konvention: Aus praktischen Gründen werden die beiden Stapel "`liegend"' dargestellt, wobei der Datastack sein oberes Ende rechts und der Callstack sein oberes Ende links hat. Wenn der Datastack und der Callstack gemeinsam dargestellt werden, stoßen die Kopfenden aneinander; links ist dann der Datastack, rechts der Callstack.
+
+\begin{verbatim}
++-----------  -----------+
+| Datastack    Callstack |
++-----------  -----------+
+\end{verbatim}
+
+Wenn wir ein Programm aus Wörtern schreiben, dann stellt die Folge von Wörtern die Situation auf dem Callstack dar. Das Programm
+
+\begin{verbatim}
+emptystack 2 push 3 push
+\end{verbatim}
+
+stellt sich bei leerem Datastack wie folgt dar:
+
+\begin{verbatim}
++--  -------------------------+
+|    emptystack 2 push 3 push |
++--  -------------------------+
+\end{verbatim}
+
+Der Einfachheit halber notieren wir den Data- und den Callstack ohne die umgrenzenden Linien und nutzen einen Trennstrich "`\verb!|!"', um den Übergang vom Datastack zum Callstack anzuzeigen:
+
+\begin{verbatim}
+| emptystack 2 push 3 push
+\end{verbatim}
+
+Das Programm wird schrittweise abgearbeitet. Ein Wort nach dem anderen wird vom Callstack genommen und interpretiert, solange bis der Callstack leer ist. Dem entspricht in der Darstellung eine Abarbeitung der Wörter auf dem Callstack von links nach rechts.
+
+Jedes Wort, das vom linken Ende des Callstacks "`genommen"' wird, hat eine Auswirkung auf die VM von Consize. Die Bedeutung eines Wortes wird im Wörterbuch nachgeschlagen. \verb|emptystack| zum Beispiel ist mit einer Funktion assoziiert, die einen leeren Stapel oben auf dem Datastack ablegt. Nach \verb|emptystack| stellt sich die Situation auf dem Data-\slash Callstack wie folgt dar:
+
+\begin{verbatim}
+[ ] | 2 push 3 push  
+\end{verbatim}
+
+Das Wort \verb|2| (nicht Zahl, sondern Wort!) ist ein "`neutrales"' Wort. Es wandert direkt vom Callstack rüber auf den Datastack.
+
+\begin{verbatim}
+[ ] 2 | push 3 push
+\end{verbatim}
+
+Das Wort \verb|push| erwartet oben auf dem Datastack irgendein Element und darunter einen Stapel. \verb|push| legt das Element oben auf dem Stapel ab. Denken Sie daran, dass ein mit eckigen Klammern notierter Stapel sein "`offenes"', "`oberes"' Ende \emph{immer} auf der linken Seite hat. 
+
+\begin{verbatim}
+[ 2 ] | 3 push
+\end{verbatim}
+
+Das Wort \verb|3| wandert wie \verb|2| direkt auf den Datastack.
+
+\begin{verbatim}
+[ 2 ] 3 | push
+\end{verbatim}
+
+Nun legt das letzte \verb|push| das Wort \verb|3| auf dem Stapel \verb|[ 2 ]| als oberstes Element ab.
+
+\begin{verbatim}
+[ 3 2 ] |
+\end{verbatim}
+
+Der Callstack ist nun vollständig abgearbeitet und der Datastack beinhaltet das Ergebnis der Abarbeitung des Programms auf dem Callstack. Voil\`a! Sie haben einen ersten Programmdurchlauf im Einzelschrittmodus durch Consize mitgemacht. Schwieriger wird es kaum mehr.
+
+Ist Ihnen etwas aufgefallen? Wenn Sie interaktiv mit Consize über die Konsole arbeiten, geht all das, was Sie an Wörtern eingeben auf den Callstack. Als Ergebnis der Abarbeitung zeigt Ihnen Consize den Datastack an.
+
+Und noch etwas ist Ihnen sicher aufgefallen. Es macht für Consize oftmals keinen Unterschied, ob Sie in der Konsole Wörter einzeln eingeben und direkt mit einem {\sc Enter} die Abarbeitung anstoßen oder ob Sie mehrere Wörter durch Leerzeichen getrennt in einer Zeile an Consize übergeben. Das Ergebnis ändert sich deshalb nicht. Es gibt Ausnahmen von dieser Regel wie z.B.\ das Wort \verb|\|, dem immer ein Wort unmittelbar nachfolgen muss. Von solchen Ausnahmen abgesehen ist es ein Leichtes, ein Programm Wort um Wort einzugeben und die Abarbeitung so schrittweise zu verfolgen. So lässt sich selbst das komplizierteste Programm nachvollziehen.
+
+\section{Atomare und nicht-atomare Wörter}
+\label{Sec:AtomareWoerter}
+
+Wenn Consize ein Wort vom offenen Ende des Callstacks nimmt, schlägt Consize die Bedeutung des Wortes in einem Wör\-ter\-buch (\emph{dictionary}) nach. Findet sich das Wort nicht im Wörterbuch, so landet das Wort unversehens auf dem Datastack -- die Details erfahren Sie am Ende dieses Kapitelabschnitts.
+
+Findet Consize das Wort im Wörterbuch, so gibt es zwei Möglichkeiten: Entweder ist das Wort ein atomares Wort (\emph{atomic word}). Dann ist im Wörterbuch für das Wort eine Funktion hinterlegt, die -- angewendet auf den Datastack -- die Bedeutung des Wortes umsetzt. Oder das Wort ist ein nicht-atomares Wort (\emph{non-atomic word}). Das Wörterbuch hat zu dem Wort einen Stapel als Eintrag, dessen Inhalt die Bedeutung des Wortes definiert. Wir nennen diesen Stapel auch "`Quotierung"' (\emph{quotation}). Generell bezeichnen wir ein in einem Stapel "`verpacktes"' Programm als Quotierung.
+
+Schauen wir uns das am Beispiel an. Das Wort \verb|rot| verändert die Position der obersten drei Werte auf dem Datastack. Das dritte Element von oben "`rotiert"' an die führende Stelle ganz oben auf dem Stapel, was die vormalig obersten zwei Elemente absteigen lässt.
+
+\begin{verbatim}
+> clear x y z
+x y z
+> rot
+y z x
+\end{verbatim}
+
+Das einleitende \verb|clear| räumt den Datastack auf und lässt einen leeren Datastack zurück. Wir werden sehr oft bei den Beispielen \verb|clear| verwenden, um eine definierte Situation auf dem Datastack zu haben.
+
+\label{rotsource}Mittels \verb|\ rot source| können Sie das Wort \verb|rot| im Wörterbuch nachschlagen. Das Ergebnis landet nicht auf dem Datastack, sondern wird über die Konsole ausgegeben, bevor der Inhalt des Datastacks angezeigt wird. Der Datastack bleibt unverändert.
+
+\begin{verbatim}
+> \ rot source
+<fct>
+y z x
+\end{verbatim}
+
+Die Ausgabe \verb|<fct>| besagt, dass zu \verb|rot| eine Funktion im Wörterbuch eingetragen ist; \verb|rot| ist also ein atomares Wort, man sagt auch primitives Wort.
+
+Erinnern Sie sich noch, warum Sie bei \verb|source| dem Wort \verb|rot| ein \verb|\| voranstellen müssen? Das Quotierungswort \verb|\| "`zieht"' das nachfolgende Wort direkt auf den Datastack und verhindert damit ein Nachschlagen im Wörterbuch samt Ausführung des Wortes.
+
+Ein Beispiel für ein nicht-atomares Wort ist \verb|-rot|. Es setzt sich aus zwei \verb|rot|-Wörtern zusammen.
+
+\begin{verbatim}
+> \ -rot source
+[ rot rot ]
+y z x
+\end{verbatim}
+
+Wann immer im Wörterbuch eine Quotierung die Bedeutung eines Wortes angibt, wird die Quotierung mit dem Callstack konkateniert (aneinander gefügt) und als neuer Callstack betrachtet. Dem Augenschein nach sieht es so aus, als ob \verb|-rot| auf dem Callstack durch \verb|rot| \verb|rot| ersetzt wird; der Fachausdruck lautet "`substituiert"'. 
+
+Die Auswirkungen von \verb|-rot| kann man sich durch ein zweifaches \verb|rot| veranschaulichen. Die Eingabe von \verb|-rot|
+
+\begin{verbatim}
+> -rot
+x y z
+\end{verbatim}
+
+wird von Consize durch \verb|rot rot| ersetzt. Nur atomare Wörter kann Consize direkt ausführen. Die Quotierungen zu nicht-atomaren Wörtern werden mit dem Callstack konkateniert. Diese, im Wörterbuch eingetragenen Quotierungen zu einem Wort, stellen "`benamte Abstraktionen"' dar. Das Wort \verb|-rot| abstrahiert die Wortfolge \verb|[ rot rot ]|. Anders gesagt, \verb|-rot| ist der Name für die Abstraktion \verb|[ rot rot ]|.
+
+Wenn Sie ein Wort nachschlagen, das nicht im Wörterbuch verzeichnet ist, meldet Ihnen Consize das: Es kann nichts (\verb|nil|) im Wörterbuch gefunden werden.
+
+\begin{verbatim}
+> \ x source
+nil
+x y z
+\end{verbatim}
+
+Wörter, die nicht im Wörterbuch stehen, legt Consize standardmäßig auf dem Datenstack ab. Das ist jedoch nur die halbe Wahrheit. Außerdem -- und das haben wir bislang unterschlagen -- legt Consize das Wort \verb|read-word| auf dem Callstack ab. Was nun mit dem Wort auf dem Datastack passiert hängt davon ab, welche Abstraktion für \verb|read-word| im Wörterbuch hinterlegt ist.
+
+\begin{verbatim}
+> \ read-word source
+[ ]
+x y z
+\end{verbatim}
+
+Mit \verb|read-word| ist ein leerer Stapel assoziiert, der in Konkatenation mit dem Callstack den Callstack unverändert lässt. Die Definition von \verb|read-word| belässt folglich unbekannte Wörter auf dem Datastack. Sie können das Wort \verb|read-word| anpassen, um besondere Wörter gesondert behandeln zu können.
+
+\section{Mappings}
+
+Das Wörterbuch der Consize-VM ist nur ein Sonderfall einer Datenstruktur, die wir allgemeiner als Mapping (Abbildung) bezeichnen.
+%Zwar nutzt die VM von Consize das Wörterbuch als ein ausgewiesenes Nachschlagewerk für Wörter, doch das Konzept des Nachschlagewerks (\emph{Mapping}) steht dem Programmierer bzw. der Programmiererin in Consize als Datenstruktur zur Verfügung.
+Ein Mapping assoziiert einen Schlüsselwert (\emph{key value}) mit einem Zielwert (\emph{target value}).
+Jeder Schlüsselwert kann nur genau einmal vorkommen, somit ist die Abbildung auf einen Zielwert immer eindeutig.
+Wir nennen ein Mapping dann Wörterbuch, wenn alle seine Schlüsselwerte Wörter sind.
+
+Ein Mapping wird in Consize mit geschweiften Klammern dargestellt. Innerhalb der Klammern stehen in freier Abfolge Paare von Schlüssel- und Zielwerten; das Leerzeichen dient in gewohnter Manier als Trennzeichen.
+
+Es gibt in Consize kein direktes Wort, um ein leeres Mapping anzulegen. Man muss zunächst einen leeren Stapel auf dem Datastack erzeugen, den ein nachfolgendes \verb|mapping| in ein Mapping verwandelt.
+
+\begin{verbatim}
+> emptystack mapping
+{ }
+\end{verbatim}
+
+Um einen Schlüsselwert mit einem Zielwert zu assoziieren, muss zunächst der Zielwert, dann der Schlüsselwert und zu guter Letzt das Mapping auf dem Datastack liegen, das die Assoziation aufnehmen soll. Dabei kommt uns \verb|rot| zu Hilfe.
+
+\begin{verbatim}
+> 1 mon rot
+1 mon { }
+> assoc
+{ mon 1 }
+\end{verbatim}
+
+Und so lassen sich weitere Paare von Schlüssel- und Zielwerten hinzufügen.
+
+\begin{verbatim}
+> 3 wed rot assoc
+{ wed 3 mon 1 }
+\end{verbatim} 
+
+Auch ein nicht-leerer Stapel kann, sofern er eine gerade Anzahl an Werten hat, mit \verb|mapping| in ein Mapping überführt werden.
+
+\begin{verbatim}
+> emptystack 2 push tue push
+{ wed 3 mon 1 } [ tue 2 ]
+\end{verbatim}
+
+Um eine vollständige Aufführung der Wochentage einer Arbeitswoche zu haben, fügen wir noch die fehlenden Tage hinzu, bevor wir aus dem Stapel ein Mapping machen.
+
+\begin{verbatim}
+> 5 push fri push 4 push thu push
+{ wed 3 mon 1 } [ thu 4 fri 5 tue 2 ]
+> mapping
+{ wed 3 mon 1 } { thu 4 fri 5 tue 2 }
+\end{verbatim}
+
+Die beiden Mappings lassen sich mit \verb|merge| zu einem zusammenführen. Die Reihenfolge der Auflistung der Schlüssel\slash Ziel-Paare ist ohne Bedeutung und kann abweichen von dem, was Sie hier gezeigt bekommen.
+
+\begin{verbatim}
+> merge
+{ tue 2 fri 5 thu 4 wed 3 mon 1 }
+\end{verbatim}
+
+Man kann nun das Mapping befragen, welcher Wert beispielsweise mit dem Wort \verb|wed| assoziiert ist. Dazu dient das Wort \verb|get|, das erst einen Schlüsselwert, dann ein Mapping und zuoberst auf dem Stapel einen Wert erwartet, der das Ergebnis ist, falls der Schlüsselwert nicht im Mapping vorhanden ist. \verb|rot| wird uns wieder helfen, die gewünschte Ordnung auf dem Datastack herzustellen.
+
+\begin{verbatim}
+> key-not-found wed -rot
+wed { tue 2 fri 5 thu 4 wed 3 mon 1 } key-not-found
+> get
+3
+\end{verbatim}
+
+Das über die Prelude erweiterte Consize erlaubt die Eingabe von Mappings auch direkt über geschweifte Klammern.
+
+\begin{verbatim}
+> { 1 a 2 b 3 c }
+3 { 1 a 2 b 3 c }
+\end{verbatim}
+
+Mit \verb|dissoc| lässt sich eine Schlüssel-\slash Zielwert-Bindung entfernen. Dazu muss das Mapping zuoberst auf dem Datastack liegen, der betreffende Schlüssel darunter. Hier nutzen wir gleich das verbliebene Wort \verb|3| auf dem Stapel.
+
+\begin{verbatim}
+> dissoc
+{ 1 a 2 b }
+\end{verbatim}
+
+Das Wort \verb|keys| liefert alle Schlüsselwerte eines Mappings in einem Stapel zurück -- ohne irgendeine Garantie, in welcher Reihenfolge die Schlüssel im Stapel aufgeführt sind.
+
+\begin{verbatim}
+{ 1 a 2 b }
+> keys
+[ 1 2 ]
+\end{verbatim}
+
+Mappings sind eine sehr leistungsfähige und bedeutsame Datenstruktur. In manchen Programmiersprachen tragen sie einen anderen Namen und heißen dort etwa \emph{Map} oder assoziative Arrays. In JavaScript sind Mappings die Grundlage für Objekte, ähnlich in Python.
+% Wir werden später noch darauf zurückkommen, was Objekt-Orientierung ist und Consize um ein leichtgewichtiges Objektmodell erweitern.
+
+Wenn Sie sich das Wörterbuch der VM von Consize anschauen wollen -- es ist nichts anderes als ein Mapping --, dann legt Ihnen \verb|get-dict| das Wörterbuch auf dem Datastack ab. Seien Sie nicht erschreckt über den unübersichtlichen Datenwust. Sie werden im Laufe der Zeit sehr genau verstehen, was sich so alles aus welchem Grund in dem Wörterbuch der VM befindet.
+
+Übrigens sind als Schlüssel- wie auch als Zielwerte beliebige Werte für Mappings erlaubt. So darf sogar ein Stapel oder ein Mapping als Schlüs\-sel\-wert verwendet werden.
+% Als Schlüsselwert wie auch als Zielwert darf jedes beliebige Datenwort gewählt werden, solange sich zwei Schlüsselwerte nicht gleichen.
+
+\section{Was sind Datenstrukturen?}
+% Struktur geben; Laufzeit bei Zugriff; Platz im Rechner
+
+Sie haben nun die drei Arten von Daten kennengelernt, die Consize unterstützt: Wörter und in dem Zusammenhang Funktionen, Stapel und Mappings -- man spricht auch von \href{http://de.wikipedia.org/wiki/Datentyp}{Datentypen}. Dazu kommt noch ein Datentyp namens \emph{Nil} (für "`Nichts"'). Mehr Datentypen kennt Consize von Haus aus nicht.
+
+Wörter und Funktionen sind Vertreter der einfachen oder auch primitiven Datentypen (\emph{primitive datatypes}). Sie repräsentieren ein Datum, sie stehen sozusagen für sich selbst. Stapel und Mappings dagegen sind zwei Vertreter der zusammengesetzten Datentypen (\emph{compound datatypes} oder auch \emph{composite datatypes}); mit ihnen wird Daten eine Struktur gegeben, weshalb man auch von \href{http://de.wikipedia.org/wiki/Datenstruktur}{Datenstrukturen} spricht.
+
+Die Struktur der Daten deutet sich in den verwendeten Notationen an. Die eckigen Klammern für Stapel markieren den Anfang und das Ende der Stapel-Datenstruktur; ebenso markieren die geschweiften Klammern Anfang und Ende eines Mappings. Wie Consize die Daten jedoch intern im Speicher organisiert, das ist Ihnen verborgen, darauf haben Sie keinen Zugriff. Sie wissen lediglich, das Ihnen für den Umgang mit Stapel und Mappings ein paar Worte zur Verfügung stehen.
+
+Diese Abschottung von den Interna der eingebauten Datenstrukturen ist in vielen Programmiersprachen so gewollt. Sie sind Teil der Sprache und man möchte verhindern, dass Sie damit irgendwelchen Schindluder treiben.
+
+Was Sie jedoch wissen sollten, ist, wie "`teuer"' Ihnen der Gebrauch der Datenstrukturen kommt. Es gibt immer einen Preis zu zahlen und zwar in der Währung "`Zeit"' und in der Währung "`Speicherverbrauch"'. Da Ihnen in vielen Programmiersprachen mehr Datenstrukturen als Stapel und Mappings zur Verfügung stehen, haben Sie nicht selten die Qual der Wahl: Welche Datenstruktur wollen Sie wofür nehmen? Das ist immer eine Frage nach: Wie schnell bedient mich die Datenstruktur für meinen Einsatzzweck, und wieviel Speicher frisst sie mir weg?
+
+Mit den einzelnen Namen wie Stapel, Liste, Array, Queue -- um nur einige zu nennen -- sind verschiedene Kosten für Zeit und Speicher verbunden. Dabei lassen sich all diese Datenstrukturen prinzipiell über exakt die gleichen Operationen (Wörter) ansprechen.
+
+Zum Beispiel können Daten von einem Stapel immer nur "`von oben"' abgegriffen werden. Egal wie groß der Stapel ist, das oberste Element ist immer "`sofort"' erhältlich, d.h.\ mit einem \verb|top| erreichbar. Das "`unterste"' Element in einem Stapel kann nur sukzessive über eine Reihe von \verb|pop|s und einem abschließenden \verb|top| erreicht werden. Es werden genau so viele Wörter benötigt, um an das unterste Element zu kommen, wie es Elemente auf dem Stapel gibt. Für den Zugriff auf das $n$-te Element auf dem Stapel (von oben gezählt) benötigt man genau $n$ Wörter, um an dieses Element heranzukommen.
+
+Bei einer Liste ist der Zugriff auf das erste und das letzte Element gleichermaßen schnell, ebenso auf das zweite und vorletzte usw. Eine Liste ist eine Art Stapel, der von beiden Seiten gleichermaßen gut zugreifbar ist, was in manchen Fällen von Vorteil ist.
+
+Bei einem Array (manchmal auch Vektor genannt) kann man über einen Index auf die Elemente zugreifen. Das erste, zweite, dritte Element, allgemein das $n$-te Element, ist immer in der gleichen Zeit abrufbar.
+
+Dies soll Ihnen nur einen Eindruck geben, wie sehr unterschiedliche Datenstrukturen unterschiedliche Zugriffszeiten auf die durch sie organisierten Daten mit sich bringen. Und dies, ohne dass Sie etwas über die Interna der Datenhaltung zu wissen brauchen.
+
+Jede Datenstruktur hat ihre Vor- und Nachteile. Consize ist eine stapelbasierte Programmiersprache. Es ist das Auszeichnungsmerkmal von Consize, dass es zur Daten- und Programmhaltung nicht mehr und genau nur zwei Stapel benötigt -- und ein Mapping als Wörterbuch. Für die stapelbasierten Operationen sind Stapel, es mag kaum verwundern, eben optimal.
+
+Ein Mapping kann man auch über einen Stapel simulieren, aber dann werden die Zugriffszeiten auf die über die Schlüssel assoziierten Zielwerte sehr ungünstig. Consize würde Ihnen zu langsam werden, sie hätten keinen Spaß daran. Darum habe ich mich entschieden, Mappings in ihrer Reinform in Consize mit aufzunehmen. Der Zugriff auf assoziierte Werte ist sehr schnell und günstig. Aber nicht nur deshalb. Mit Mappings hat man eine sehr hilfreiche Datenstruktur, mit der sich so manch nettes Feature in Consize umsetzen lässt.
+
+Ein Rat an dieser Stelle: Lernen Sie in jeder neuen Programmiersprache die verfügbaren Datentypen kennen und finden Sie heraus, welche Vorzüge und welche Nachteile jede Datenstruktur mit sich bringt. Informatiker geben diese "`Kosten"' in Sachen Laufzeit (\href{http://de.wikipedia.org/wiki/Zeitkomplexit\%C3\%A4t}{Zeitkomplexität}) und Speicherbedarf (\href{http://de.wikipedia.org/wiki/Platzkomplexit\%C3\%A4t}{Platzkomplexität})
+mit Hilfe der \href{http://en.wikipedia.org/wiki/Big\_O\_notation}{"`Big-O"'-Notation} an.
+%Es ist an dieser Stelle zu früh, darauf näher einzugehen.
+Zu den Standard-Datenstrukturen gehören Stapeln, Listen, Arrays (Vektoren), Mappings (Dictionaries, Assoziative Arrays), Queues, Bäume und Graphen -- darüber sollten Sie Bescheid wissen. 
+
+% Warum sind Stacks eigentlich nicht so notiert, so dass man weiß, wo ihr offenes, "`oberes"' Ende ist.
+
+Eine wichtige Anmerkung noch: Der Stapel ist der einzige Datentyp in Consize für eine geordnete Ansammlung (\emph{collection}) von Elementen. Und oftmals wird er auch genau dafür gebraucht: Für eine Folge (\emph{sequence}) von Elementen. Da ist es eher unerheblich, ob dafür ein Stapel verwendet wird oder nicht -- Consize ist da alternativlos. Stünden weitere Datenstrukturen zur Verfügung, dann wären beispielsweise Listen oder Arrays oft eine geeignetere Wahl für Sequenzen.
+
+Darum wundern Sie sich bitte nicht: Wenn ich von Folgen oder Sequenzen rede, dann ist mir die Tatsache nicht entscheidend, dass die Folge bzw.\ Sequenz in Consize durch einen Stapel abgebildet wird. Dann abstrahiere ich von der konkreten, zugrunde liegenden Datenstruktur. Und ein anderer Name wird immer wieder fallen: der der Quotierung. Eine Quotierung ist eine Sequenz, deren Elemente ein Programm darstellen.
+
+Ein Mapping realisiert ebenfalls eine Datensammlung (\emph{collection}), aber eine ungeordnete. Die Ordnung der Schlüssel/Ziel-Paare ist ohne Bedeutung, darauf kommt es bei Mappings nicht an.
+%Später werden wir Objekte mit Mappings realisieren. Da wird es dann auch unwichtig, ob Mappings die Grundlage für Objekte sind oder nicht. Aber sie werden feststellen, was für eine gute Basis Mappings sind, aus der sich das Konzept eines Objekts beinahe mühelos entwickeln lässt.

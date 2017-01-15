@@ -1,0 +1,118 @@
+\pdfoutput=1  % on=1, off=0
+\pdfcompresslevel9
+\pdfinfo{
+	/Title		(Consize -- Konkatenative Programmierung mit Consize)
+	/Subject    ()
+	/Keywords   ()
+	/Author (Dominikus Herzberg, @denkspuren)
+}
+\documentclass[a4paper]{refrep}
+% \usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[ngerman]{babel}
+% \usepackage{LawTeXdefs}
+%  http://www.cawcr.gov.au/bmrc/climdyn/staff/lih/pubs/tips/ttchars.pdf
+% \usepackage{newcent} % newcent, (bookman), (garamond)
+
+
+\usepackage{syntax} % for EBNF diagrams
+% \shortverb{\|} % use |...| instead of \verb|...|
+\setlength{\grammarparsep}{5pt}
+
+%%\usepackage[german]{minitoc}
+%%\setcounter{minitocdepth}{4}
+%\usepackage{listings}
+%\lstset{language={Lisp},
+%        basicstyle={\ttfamily},
+%        frame={lines}}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage[colorlinks,linkcolor=black,urlcolor=blue]{hyperref}
+% http://de.wikibooks.org/wiki/LaTeX-W%C3%B6rterbuch:_hyperref
+\usepackage{theorem}
+{ %% Definition einer Umgebung für Aufgaben (Exercises)
+\theoremstyle{plain}
+\theorembodyfont{\rmfamily}
+\newtheorem{exercise}{$\triangleright$~Aufgabe}[chapter]
+}
+
+\def\ldenote{[\hspace{-1.5pt}[}
+\def\rdenote{]\hspace{-1.5pt}]}
+
+\usepackage{floatflt}
+\usepackage{graphicx} % support the \includegraphics command and options
+
+
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\lhead{}
+\chead{}
+\rhead{\slshape \leftmark}
+\lfoot{\footnotesize\copyright\ by Dominikus Herzberg, \today}
+\cfoot{}
+\rfoot{\thepage}
+
+\includeonly{%
+Consize.AIntro,
+Consize.Basics,
+%Consize.FunctionalProgramming,
+Consize.Core,
+Consize.EqualityIdentity,
+Consize.Prelude,
+Consize.Mathe
+}
+% \includeonly{Consize.Prelude}
+% \includeonly{Consize.Math}
+% \includeonly{Consize.ZMaterial}
+
+\begin{document}
+
+% \title{\bf Programmieren mit Consize}
+\title{\bf Konkatenative Programmierung mit Consize}
+\author{Dominikus Herzberg\thanks{%
+Copyright \copyright\ 2017, Dominikus Herzberg\medskip\newline Dieses Werk bzw.\ dieser Inhalt steht unter der Creative-Commons-Lizenz CC~BY-NC-SA 3.0: \href{http://creativecommons.org/licenses/by-nc-sa/3.0/deed.de}{Namensnennung -- keine kommerzielle Nutzung -- Weitergabe unter gleichen Bedingungen}.}%
+\\Hochschule Heilbronn}
+\maketitle
+
+Viele Leser und Leserinnen haben mir geholfen, kleinere und größere Mängel im Text zu beseitigen. Mein Dank geht an:
+% \footnote{Die Zahl hinter den Namen gibt die Anzahl gefundener "`Fehler"' an.}
+Davide Bove, % (2),
+Nicolas Braun, % (3),
+Marco Brinkmeier, % (1),
+Hasan Cakir, % (1),
+Benjamin Chi, % (2),
+Carsten Fasold, % (2),
+Lars D. Feicho, % (1),
+Dominik Föhl, % (1),
+Benjamin Hahn, % (1),
+Sahin Kablan, % (3),
+Ghislain Lowa, % (4),
+Kevin Müßig, % (1),
+Christos Nakos, % (3), 
+Felix Radzanowski. % (2).
+
+\newpage
+
+%%\dominitoc
+\tableofcontents
+
+\include{Consize.AIntro}
+
+\include{Consize.Basics}
+
+\include{Consize.Core}
+
+\include{Consize.EqualityIdentity}
+
+\include{Consize.FunctionalProgramming}
+
+\include{Consize.Prelude}
+
+\appendix
+
+\include{Consize.Mathe}
+
+%\bibliographystyle{alpha}
+%\bibliography{consizebib}
+
+\end{document}

@@ -1,0 +1,1650 @@
+\chapter{Die Prelude}
+\label{Sec:Prelude}
+
+Consize ist eine sehr primitive Sprache, die allein mit rund 50 atomaren Wörter auskommt. Damit kann man zwar programmieren -- aber das Programmieren mit Consize einzig mit den Wörtern der VM ist zu umständlich und macht wenig Spaß. Viel schlimmer noch: Consize ist anfänglich nicht einmal in der Lage, mit Ihnen zu interagieren. Wenn Sie Consize starten, möchte Consize eine Datei namens \verb|prelude.txt| verarbeiten, die sogenannte Prelude. Fehlt die Datei oder steht dort Unsinn drin, macht Consize entweder gar nichts -- oder eben eine Menge Unsinn. So oder so, wir können mit Consize im Urzustand kaum sinnvoll arbeiten.
+
+Der Clou an Consize ist: Die Sprache lässt sich erweitern. Machen wir uns die Sprache komfortabel. Wir werden etliche neue Wörter einführen, die hilfreiche Abstraktionen bieten, wir werden die Syntax erweitern und Consize interaktiv machen. Die dazu nötigen Programme stehen in der Prelude.
+% Dieser Vorgang nennt sich "`\href{http://de.wikipedia.org/wiki/Bootstrapping_(Informatik)}{Bootstrapping}"'.
+
+In diesem Kapitel sind alle Programmzeilen der Prelude durch ein vorangestelltes "`\verb|>> |"' (inkl.\ Leerzeichen) ausgezeichnet. Diese Markierung soll Ihnen helfen, in dem gesamten Text dieses Kapitels mit all seinen Erläuterungen und Beispielen die entscheidenden Programmzeilen zu identifizieren. Übrigens helfen die Markierungen auch Consize, um den Quelltext aus der Dokumentation zu filtern.
+% Consize sucht sich die markierten Zeilen ebenfalls zusammen -- mehr dazu später in Kap.~\ref{Sec:Dateien}.
+%Abseits zum Zwecke der Markierung können Sie die Auszeichnung "`\verb|>> |"' gedanklich ignorieren.
+
+Auch wenn der Einstieg in die Prelude gleich ein unvermittelter Einstieg in die Programmierung mit Consize ist: Sie werden sehen, Consize ist nicht wirklich schwer zu verstehen. In Consize zerlegt man Programme systematisch in kleine Miniprogramme, die zu schreiben vergleichbar ist mit der Herausforderung von Rätselaufgaben. Und Sie haben einen immensen Vorteil bei der Arbeit mit Consize: Ihnen stehen die Consize-Erweiterungen direkt zur Verfügung. Sie arbeiten mit einer geladenen Prelude, um die Prelude zu verstehen. Das ist einfacher und umkomplizierter als sich das anhört. Sie können ein paar Hilfsmittel, wie z.B.\ den Debugger nutzen, um sich die Arbeitsweise von Consize zu veranschaulichen.
+
+\section{Vorbereitungen: Was sein muss und was nützlich ist}
+
+\subsection{Consize-Lizenz}
+
+Die Prelude beginnt mit einer \href{http://de.wikipedia.org/wiki/Pr%C3%A4ambel}{Präambel}.
+Die Prelude ist \href{http://de.wikipedia.org/wiki/Open_source}{Open-Source-Software} (OSS). Consize soll als Bildungsgut allen Interessierten frei zur Verfügung stehen.
+
+\begin{verbatim}
+>> %%% A Prelude for Consize in Consize
+>> %%% Copyright (c) 2013, Dominikus Herzberg, Heilbronn University
+>> %%% New BSD License: http://opensource.org/licenses/BSD-3-Clause
+\end{verbatim}
+%>> %%%
+%>> %%% Consize is very much inspired by Factor, see http://factorcode.org.
+%>> %%% Links to Factor's documentation help you compare the languages.
+%>> 
+
+\subsection{Booting zur Verarbeitung der Prelude}
+\label{Sec:LoadBootimage}
+
+In Consize schreibt man Programme, indem man Wörter zum globalen Wörterbuch hinzufügt und das Wort mit einer Quotierung -- einem Mini-Programm, wenn man so möchte -- assoziiert. Das ist ein sehr einfacher, aber auch sehr leistungsfähiger Abstraktionsmechanismus. So abstrahiert das Wort \verb|-rot| die Quotierung \verb|[ rot rot ]|. Man spricht auch von einer benamten Abstraktion: \verb|-rot| ist der "`Name"' für die Abstraktion \verb|[ rot rot ]|.
+% Sie erinnern sich an Kap.~\ref{Sec:AtomareWoerter}, S.~\pageref{rotsource}:
+
+\begin{verbatim}
+> \ -rot get-dict nil get
+[ rot rot ]
+
+\end{verbatim}
+
+Mit dieser Abstraktionstechnik werden große und umfangreiche Programme überhaupt erst realisierbar. Wir Menschen müssen mehr oder minder große Programmeinheiten unter für uns sinngebenden Namen fassen können. Ansonsten stoßen unsere intellektuellen Fähigkeiten beim Programmieren rasch an ihre Grenzen.
+
+Fortan wollen wir die Definition neuer Einträge im Wörterbuch wie folgt notieren: Ein Doppelpunkt \verb|:| leitet die Definition ein. Nach dem Doppelpunkt folgt das Wort, dann optional der Stapeleffekt und anschließend die das Wort definierende Wortfolge. Ein Semikolon schließt die Definition ab. 
+% Die definierende Wortfolge ist die mit dem Wort assoziierte Quotierung, allerdings ohne die eckigen Klammern.
+
+In Anlehnung an die in Kap.~\ref{Sec:UrGrammatik} formulierte Grammatik hält die folgende Regel den Aufbau einer Wort-Definition fest.
+
+\begin{grammar}
+<definition> = ':' <separator> <word> [ <separator> <stackeffect> ] <separator> <program> <separator> ';'  
+\end{grammar}
+
+Die Angabe von Stapeleffekten kennen Sie bereits aus Kap.~\ref{Sec:ConsizeVM}. Alle Wörter der Consize-VM sind dort mit ihren Stapeleffekten angegeben worden. Details zur Umsetzung von \synt{definition} finden sich in Kap.~\ref{Sec:DefWords}, S.~\pageref{Sec:DefWords}.
+
+Die Syntax zur Definition neuer Wörter kann nicht direkt verwendet werden, da die Consize-VM sie nicht kennt. Es bedarf eines kleinen Consize-Programms, das diese komfortable Art der Definition neuer Wörter zur Verfügung stellt. Dieses Consize-Programm ist als sogenanntes "`Bootimage"' in der Datei \verb|bootimage.txt| abgelegt und muss zuvor geladen werden. Der Ladevorgang fährt die Consize-VM in einen programmiertauglichen Zustand hoch, was man als "`\href{http://de.wikipedia.org/wiki/Booten}{Booten}"' bezeichnen kann.
+
+%>> % A TINY BOOTIMAGE
+%>> 
+\begin{verbatim}
+>> \ bootimage.txt run
+\end{verbatim}
+%>> 
+
+In Kap.~\ref{Sec:Bootstrapping} ist beschrieben, was in dem Bootimage steht und wie es erzeugt wird.
+
+\subsection{Definition von \texttt{read-word} und \texttt{read-mapping}}
+
+Der durch \verb|stepcc| beschriebene Ausführungsmechanismus der Consize-VM ist in engen Grenzen konfigurierbar. Das Verhalten der beiden Wörter \verb|read-word| und \verb|read-mapping| kann vom Anwender bzw. von der Anwenderin frei definiert werden.
+
+Die Prelude assoziiert beide Wörter mit "`leeren"' Programmen. Das bedeutet: Unbekannte Wörter werden genauso wie Mappings auf dem Datastack belassen.
+
+%>> % DEFINITION OF META-WORDS
+%>> 
+\begin{verbatim}
+>> : read-word    ( wrd -- wrd ) ;
+>> : read-mapping ( map -- map ) ;
+\end{verbatim}
+%>> 
+
+Durch Anpassung dieser Wörter sind beispielsweise Kodierungskonventionen für Wörter und Mappings einführbar, die eine Sonderbehandlung erfahren oder eine Vorverarbeitung erfordern sollen. Zu beachten ist, dass eine alternative Definition dieser Meta-Wörter das Risiko birgt, existierenden Code in größerem Umfang zu brechen. Man muss sehr sorgsam mit diesen Wörtern umgehen.
+
+\subsection{Mehr davon: Stack Shuffler}
+
+In praktisch allen höheren Programmiersprachen können Variablen in Form von Zuweisungen (bei imperativen Sprachen) oder Substitutionen (bei deklarativen\slash funktionalen Sprachen) verwendet werden. Variablen erfüllen dabei hauptsächlich zwei Aufgaben: sie helfen Werte zwischenzuspeichern und sie neu zu arrangieren für den Aufruf von Funktionen, Prozeduren oder Methoden. Darüber hinaus bieten Variablennamen semantische Brücken für den Programmierer bzw.\ die Programmiererin an, sich den Inhalt oder den Zweck eines Wertes zu merken.
+
+Da es in Consize keine Variablen gibt, muss das Zwischenspeichern von Werten über die Erzeugung von Duplikaten auf dem Datastack möglich sein (deshalb gibt es \verb|dup| in der Consize-VM) und das Rearrangieren von Werten über Stack-Shuffling gelöst werden. Es ist daher sehr hilfreich, weitere Wörter als Abstraktionen zu den Stack-Shufflern der Consize-VM zur Verfügung zu haben.
+
+Da Variablennamen als semantische Brücken beim Programmieren fehlen, gibt es nur eine Möglichkeit, um Consize-Programme übersichtlich zu halten: Man muss die Definition von neuen Wörtern kurz halten und gegebenenfalls weitere Wörter einführen, um über geeignete Abstraktionen die Programme lesbar zu halten. Das ist auch der Grund, warum sich Wortdefinitionen oft nur über ein, zwei oder drei Zeilen erstrecken und praktisch nie über ein Dutzend Codezeilen hinausgehen. Und es unterstreicht auch die Bedeutung der Angabe von Stapeleffekten. Stapeleffekte beschreiben oft hinreichend genau, was ein Wort tut, so dass man sich das \emph{Wie} der Manipulation der Werte auf dem Eingangsstapel nicht merken muss. Stapeleffekte erfüllen die Funktion einer Schnittstellenbeschreibung (\emph{interface description}).
+
+%>> % STACK SHUFFLING
+%>> 
+\begin{verbatim}
+>> : 2drop ( x y -- ) drop drop ;
+>> : 3drop ( x y z -- ) drop drop drop ;
+>> : 2dup ( x y -- x y x y ) over over ;
+>> : 3dup ( x y z -- x y z x y z ) pick pick pick ;
+>> : dupd ( x y -- x x y ) swap dup rot ;    % dup deep
+>> : swapd ( x y z -- y x z ) swap rot rot ; % swap deep
+>> : -rot ( x y z -- z x y ) rot rot ;
+>> : rot4 ( x y z u -- y z u x ) [ rot ] dip swap ;
+>> : -rot4 ( x y z u -- u x y z ) swap [ -rot ] dip ;
+>> : pick ( x y z -- x y z x ) rot dup [ -rot ] dip ;
+>> : over ( x y -- x y x ) swap dup -rot ;
+>> : 2over ( x y z -- x y z x y ) pick pick ;
+>> : nip ( x y -- y ) swap drop ;
+>> : 2nip ( x y z -- z ) nip nip ;
+\end{verbatim}
+%>> 
+
+Es deutet sich bei den Definitionen einiger Stack-Shuffler wie z.B.\ \verb|rot4| und \verb|-rot4| an, dass es eine Alternative zum Stack-Shuffling gibt, die die Abwesenheit von Variablen elegant kompensiert: Kombinatoren, siehe Kap.~\ref{Sec:Kombinatoren}.
+
+Zum Beispiel kann \verb|rot4| auch wie folgt definiert werden; das Stack-Shuffling ist im Kopf kaum mehr nachvollziehbar -- die Kommentare mögen bei den gedanklichen Schritten helfen.
+
+\begin{verbatim}
+: rot4 ( x y z u -- y z u x )
+  [ ] swap push swap push % x y [ z u ]
+  rot swap                % y x [ z u ]
+  dup top swap pop top    % y x z u
+  rot ;                   % y z u x
+\end{verbatim}
+
+Da die Stack-Shuffler der Consize-VM nicht über die ersten drei Elemente auf dem Datastack hinaus reichen, muss hier zu dem Trick gegriffen werden, Elemente vom Datastack in einen Stapel zu "`packen"', um auf das vierte Element von oben, hier \verb|x|, zugreifen zu können.
+
+Mit Hilfe des \verb|dip|-Kombinators wird der Code radikal kürzer und gleichzeitig auch leicht nachvollziehbar. Es werden zunächst die unteren drei Werte, \verb|x| \verb|y| \verb|z|, auf dem Datastack per \verb|rot| rotiert, dann die obersten zwei Werte mit \verb|swap| getauscht.
+
+Interessant ist auch, dass bei dem Einsatz von Kombinatoren die Reversibilität des Verhaltens von \verb|-rot4| zu \verb|rot4| klar zutage tritt: \verb|-rot4| tauscht erst die beiden obersten Elemente und rotiert dann die untersten drei. Die alternative Definition von \verb|-rot4| mittels
+
+\begin{verbatim}
+: -rot4 ( x y z u -- u x y z ) rot4 rot4 rot4 ;
+\end{verbatim}
+
+macht nicht nur deutlich schwerer nachvollziehbar, was die mehrfache Anwendung eines \verb|rot4| bewirkt, sondern sie hat auch die dreifachen Laufzeitkosten eines \verb|rot4|.
+
+Mehr zu \verb|dip| und den anderen Kombinatoren steht in Kap.~\ref{Sec:Kombinatoren}.
+
+\subsection{Freunde und Helferlein}
+\label{Sec:Friends}
+
+Bei der Arbeit mit Consize werden Sie feststellen, dass Sie einige Wortkombinationen sehr häufig benötigen. Es macht Sinn, eigene Wörter dafür einzuführen, um den Consize-Code lesbarer zu machen.
+
+Die folgenden Wörter sind hilfreiche Begleiter bei der Arbeit mit Stapeln. 
+
+%>> % FRIENDS & HELPERS
+%>> 
+\begin{verbatim}
+>> : swapu ( itm stk -- stk' ) cons ; % deprecated
+>> : cons ( itm stk -- [ itm & stk ] ) swap push ;
+>> : uncons ( [ itm & stk ] -- itm stk ) dup top swap pop ;
+>> : unpush ( [ itm & stk ] -- stk itm ) dup pop swap top ;
+>> : empty? ( stk -- t/f ) ( ) equal? ;
+>> : size ( seq -- n ) dup empty? [ drop 0 ] [ pop size 1 + ] if ;
+>> : time ( quot -- ... msecs )
+>>   current-time-millis swap dip current-time-millis swap - ;
+\end{verbatim}
+%>> 
+
+Die Anzahl der Elemente in einer Sequenz liefert \verb|size| zurück.
+
+\begin{verbatim}
+> clear [ ] size [ x y z ] size
+0 3
+\end{verbatim}
+
+Der Wert \verb|nil| zum Datentyp "`nil"' ist in Consize nur indirekt über ein \verb|top| eines leeren Stapels definiert. Um den Wert ohne Umwege zugreifbar zu haben, gibt es das Wort \verb|nil|.
+
+Das Wort \verb|lookup| schlägt den mit einem Wort assoziierten Wert im Wörterbuch nach, \verb|delete| entfernt das Wort auf seinen Zielwert aus dem Wörterbuch. Das Wort \verb|values| gibt -- im Gegensatz zu \verb|keys| -- alle mit den Schlüsseln assoziierten Zielwerte als Sequenz zurück.
+ 
+\begin{verbatim}
+>> : nil ( -- nil ) ( ) top ;
+>> : lookup ( word -- item ) get-dict nil get ;
+>> : delete ( itm -- ) get-dict dissoc set-dict ;
+>> : values ( dict -- seq ) dup keys swap [ nil get ] cons map ;
+\end{verbatim}
+%>> 
+
+\subsection{Kombinatoren: \texttt{call}, \texttt{fcall}}
+
+Ein "`Kombinator"' ist ein Wort, das einen Stapel zur Ausführung bringt, d.h.\ das den Stapel als Programm interpretiert. Einen solchen Stapel nennen wir "`Quotierung"'. Der Stapel dient nur als Mittel zum Zweck, um die Ausführung des darin enthaltenen Programms zurückzustellen. Der Kombinator aktiviert die Quotierung.
+
+% Ein Wort aus dem Wörterbuch heißt "`Kombinator"', wenn es eine oder mehr Quotierungen auf dem Datastack erwartet und die Quotierung(en) zur Abarbeitung bringt. Ganz offensichtlich ist \verb|call| ein Kombinator, das Wort \verb|conca| hingegen nicht.
+
+% \subsection{Quotierungen aufrufen}
+
+Wenn Consize ein Programm abarbeitet, ist es zu einem guten Teil mit der Auflösung benamter Abstraktionen beschäftigt: Das oberste Wort auf dem Callstack wird durch den Inhalt der mit ihm assoziierten Quotierung ersetzt. Technisch ausgedrückt: Das Wort wird vom Callstack entfernt und die assoziierte Quotierung mit dem Callstack konkateniert.
+
+Für den Aufruf anonymer Abstraktionen, d.h. Quotierungen, die nicht im Wörterbuch mit einem Wort verknüpft sind, gilt im Grunde der gleiche Ablauf -- realisiert durch den Kombinator \verb|call|. Das Wort erwartet eine Quotierung auf dem Eingangsstapel, die es mit dem Callstack konkateniert. Implementiert werden kann dieses Verhalten mit Zugriff auf die aktuelle Continuation. Der Stapeleffekt soll die Umsetzung per \verb|call/cc| abbilden.
+
+%>> % CALL A QUOTATION (ANONYMOUS ABSTRACTION)
+%>> % http://docs.factorcode.org/content/article-combinators.html
+%>> % http://docs.factorcode.org/content/article-call.html
+%>> 
+\begin{verbatim}
+>> : call ( [ quot & ds ] cs -- ds quot cs concat )
+>>   [ swap unpush rot concat continue ] call/cc ;
+\end{verbatim}
+%>>
+
+Das mit \verb|call/cc| initiierte Programm tauscht Data- und Callstack der aktuellen Continuation (\verb|swap|), holt das oberste Element (die Quotierung) vom Datastack (\verb|unpush|), bringt den Callstack wieder nach oben (\verb|rot|) und konkateniert Quotierung und Callstack miteinander (\verb|concat|). Anschließend übernimmt die so veränderte Continuation wieder die Aus\-füh\-rung (\verb|continue|).\footnote{\texttt{call} ist bereits in der Consize-VM definiert, siehe Kap.~\ref{sec:core.start}. Da \texttt{call} nicht zwingend Teil der VM sein muss, wird die Definition in der Prelude wiederholt.} 
+
+Im Beispiel wird das per Quotierung zurückgestellte Programm, die Addition, erst durch den Aufruf von \verb|call| ausgeführt.
+
+\begin{verbatim}
+> clear 4 2 3 [ + ]
+4 2 3 [ + ]
+> call
+4 5
+\end{verbatim}
+
+Die Technik, mit \verb|call/cc| und \verb|continue| ein Programm zu unterbrechen, es zu modifizieren und dann fortzusetzen, nennt man "`\href{http://de.wikipedia.org/wiki/Metaprogrammierung}{Metaprogrammierung}"'. Das mit \verb|call/cc| mitgegebene Programm modifiziert das aktuell in der Ausführung begriffene Programm. Diese zur Laufzeit des Programms stattfindende Änderung nennt man  deshalb auch "`Laufzeit-Metaprogrammierung"'.
+
+Mit Hilfe des \verb|call|-Kombinators können direkt oder indirekt alle anderen Kombinatoren abgeleitet werden. Einzig \verb|fcall| (für "`\emph{call via a function}") ist eine Ausnahme, aber nur deshalb, weil es eine andere Implementierungsstrategie über Funktionen verfolgt. Es erzeugt im Gegensatz zu \verb|call| über \verb|func| einen eigenen Ausführungs\-kon\-text, bekommt einen leeren Stapel als Eingangsstapel, wendet die Funktion darauf an (\verb|apply|) und liefert das Ausführungsergebnis als Stapel zurück und zwar mit dem "`umgekehrten"' Ergebnisstapel (\verb|reverse|).
+
+\begin{verbatim}
+>> : fcall ( quot -- seq ) get-dict func ( ) swap apply reverse ;  
+\end{verbatim}
+%>> 
+
+\begin{verbatim}
+> clear [ 4 2 3 + ] fcall
+[ 4 5 ]
+\end{verbatim}
+
+Das Wort \verb|fcall| nimmt den Callstack der Implementierungssprache von Consize in Anspruch, \verb|call| nutzt den Callstack der aktuellen Continuation.
+
+Die Namen der Kombinatoren in den folgenden Kapiteln orientieren sich in vielen Fällen an der konkatenativen Sprache Factor. Bisweilen sind auch die Definition der Kombinatoren von Factor übernommen.
+
+\section{Entscheidungskombinatoren}
+
+Ein grundlegendes Feature einer turingvollständigen Programmiersprache ist es, Entscheidungen treffen zu können: wähle -- abhängig von einem Entscheidungswert -- entweder dieses oder jenes. Im einfachstenfall ist der Entscheidungswert zweiwertig, binär. Zu Ehren des Logikers \href{http://de.wikipedia.org/wiki/George\_Boole}{{\sc George Boole}} heißen diese beiden Werte "`boolesche Werte"' und werden mit "`wahr"' (\emph{true}) und "`falsch"' (\emph{false}) bezeichnet. In Consize repräsentieren die Werte \verb|t| und \verb|f| diese beiden Optionen; in einem Programm schreibt es sich lesbarer mit \verb|true| und \verb|false|.
+
+\subsection{Boolesche Werte und die binäre Wahl mit \texttt{choose}}
+
+Die Consize-VM bietet von sich aus kein Wort an, das Entscheidungen realisiert; in vielen Programmiersprachen dient dazu das \emph{if}. Trotzdem -- und das ist das Spannende daran -- ist ein Wort für Entscheidungen nachrüstbar. Der \href{http://en.wikipedia.org/wiki/Lambda_calculus}{Lambda-Kalkül} macht es übrigens genauso.
+
+Das Wort \verb|choose ( t/f this that -- this/that )| bildet die Grundlage für die binäre Auswahl. \verb|choose| erwartet auf dem Datastack einen booleschen Wert und zwei Wahlwerte, die wir im Stapeleffekt mit \verb|this| und \verb|that| bezeichnen. Abhängig vom booleschen Wert lässt \verb|choose| entweder \verb|this| oder \verb|that| auf dem Datastack zurück.
+
+Die Bedeutung von \verb|t| und \verb|f| erschließt sich nur im Kontext des Wortes \verb|choose| -- und so bilden die mit den booleschen Werten assoziierten Programme exakt das beschriebene Verhalten nach: \verb|t| entfernt \verb|that| vom Datastack, um \verb|this| zu erhalten, \verb|f| macht es genau anders herum. Ohne den Kontext von \verb|choose| sind die booleschen Werte \verb|t| und \verb|f| bedeutungslos. 
+
+%>> % BOOLEAN VALUES, BOOLEAN CHOICE
+%>> % http://docs.factorcode.org/content/article-booleans.html
+%>> 
+\begin{verbatim}
+: t ( this that -- this ) drop ;
+: f ( this that -- that ) swap drop ;
+\end{verbatim}
+
+Die Wörter \verb|true| und \verb|false| dienen lediglich dem Lese- und Schreibkomfort beim Programmieren; es ist rasch vergessen, das Escape-Wort einem \verb|t| bzw. \verb|f| voranzustellen, denn schließlich sollen die Programme für \verb|t| und \verb|f| nicht sofort ausgeführt werden.
+
+\begin{verbatim}
+>> : true  ( -- t ) \ t ;
+>> : false ( -- f ) \ f ;
+\end{verbatim}
+%>> 
+
+Das Wort \verb|choose| muss per \verb|rot| den booleschen Wert lediglich oben auf den Datastack bringen, die Bedeutung (sprich: Semantik) von \verb|t| bzw. \verb|f| mit \verb|lookup| nachschlagen, und die ermittelte Quotierung mit \verb|call| aufrufen. Das Wort \verb|choose| macht nicht viel mehr als das mit \verb|t| bzw. \verb|f| assoziierte Verhalten zu aktivieren.
+
+\begin{verbatim}
+: choose ( t/f this that -- this/that ) rot lookup call ;
+\end{verbatim}
+
+Mit dieser Definition könnte man es bewenden lassen, doch es gibt einen guten Grund, die Auslegung boolescher Werte ein wenig zu erweitern.
+
+Falls sich bei \verb|choose| weder ein \verb|t| noch ein \verb|f| an dritter Stelle, sondern ein beliebiger anderer Wert auf dem Datastack befindet, dann hat der Programmierer bzw.\ die Programmiererin den im Stapeleffekt dokumentierten "`Vertrag"' zum Gebrauch des Wortes \verb|choose| gebrochen. Die Folgen aus einem fälschlichen Gebrauch des Wortes hat der Programmierer bzw.\ die Programmiererin zu verantworten. Es spielt keine Rolle, ob der Fehlgebrauch unabsichtlich erfolgt oder nicht. Dieses Prinzip ist so wichtig, dass es nicht nur "`im richtigen Leben"' sondern auch in der Softwaretechnik zur Anwendung kommt: Wer einen Vertrag verletzt, darf die andere Partei (in dem Fall Consize) nicht für den entstehenden Schaden verantwortlich machen. Man muss beim Programmieren durchaus Vorsicht walten lassen.
+
+Man könnte eine Vertragsverletzung durch eine Fehlermeldung abfangen, um auf das Problem aufmerksam zu machen und gegebenenfalls darauf zu reagieren. Allerdings verändert ein solches Vorgehen das Wort \verb|choose| von einer binären zu einer ternären Wahl: wähle \verb|this| im Fall von \verb|t|, \verb|that| im Fall von \verb|f| und mache etwas gänzlich anderes, wenn ein anderes Datum an dritter Position im Datastack steht. Das passt nicht zu unseren anfänglichen Intentionen, mit \verb|choose| lediglich eine binäre Auswahl treffen zu wollen.
+
+Programmiersprachen mit \href{http://de.wikipedia.org/wiki/Dynamische\_Typisierung}{dynamischer Typisierung} -- Consize gehört dazu -- unterstützen zwar ein strikt binäres Verhalten, vermeiden aber Fehlermeldungen in der Regel durch eine simple Regelung: Jeder Wert, der sich von \verb|f| unterscheidet, wird so interpretiert als sei er ein logisches \emph{true}. Wenn der dritte Wert auf dem Datastack nicht \verb|f| ist, dann wählt \verb|choose| \verb|this|, ansonsten \verb|that| aus. Die Definition von \verb|choose| verändert sich entsprechend geringfügig. Der Stern \verb|*| im Stapeleffekt steht für einen beliebigen Wert außer \verb|f|.
+
+\begin{verbatim}
+: choose ( f/* this that -- that/this )
+  swap rot false equal? lookup call ;
+\end{verbatim} 
+
+Sprachen mit \href{http://de.wikipedia.org/wiki/Statische\_Typisierung}{statischer Typisierung} schließen den Fehlerfall eines nicht booleschen Wertes durch eine Typüberprüfung vor Programmausführung aus. Wäre Consize eine statisch typisierte Sprache, könnte die Verwendung eines booleschen Wertes sicher gestellt werden, und es würde die eingangs angegebene Definition von \verb|choose| ausreichen.
+
+Wenn die booleschen Werte nur im Kontext von \verb|choose| sinnvoll interpretiert werden können, stellt sich die Frage, ob die Bedeutung von \verb|t| und \verb|f| überhaupt außerhalb von \verb|choose| bekannt sein muss. Anders gefragt: Kommen wir ohne Einträge für \verb|t| und \verb|f| im Wörterbuch aus? In der Tat lässt sich ein "`lokales"' Wörterbuch im Rumpf der Definition von \verb|choose| verwenden. Und den Vergleich per \verb|equal?| bekommen wir bei einer Wörterbuchabfrage per \verb|get| gleichermaßen "`geschenkt"'.
+
+\begin{verbatim}
+>> SYMBOL: t
+>> SYMBOL: f
+>> 
+>> : choose ( f/* this that -- that/this )
+>>   rot { \ f [ swap drop ] } [ drop ] get call ;
+\end{verbatim}
+%>> 
+
+Das Verhalten von \verb|choose| demonstriert folgende Beispieleingabe an der Konsole.
+
+\begin{verbatim}
+> clear false this that
+f this that
+> choose
+that
+> clear [ 1 2 3 ] this that choose
+this
+\end{verbatim}
+
+Die logischen Operationen der \href{http://de.wikipedia.org/wiki/Boolesche\_Algebra}{Booleschen Algebra} \verb|and| (Konjunktion), \verb|or| (Disjunktion), \verb|xor| (ausschließende Disjunktion) und \verb|not| (Negation) sind dieser erweiterten Interpretation logischer Werte ("`alles was nicht \verb|f| ist, ist logisch \verb|t|"') angepasst.
+
+\begin{verbatim}
+>> : and ( f/* f/* -- t/f ) over choose ; % Factor
+>> : or  ( f/* f/* -- t/f ) dupd choose ; % Factor
+>> : xor ( f/* f/* -- t/f ) [ f swap choose ] when* ; % Factor
+>> : not ( f/* -- t/f ) false true choose ;
+\end{verbatim}
+%>> 
+
+Ein kurzes Beispiel zeigt den Gebrauch von \verb|and|.
+
+\begin{verbatim}
+> clear true true and
+t
+> false true and
+t f
+\end{verbatim}
+  
+\subsection{Binäre Entscheidungen: \texttt{if}, \texttt{when}, \texttt{unless} \& Co.}
+
+Das Wort \verb|choose| realisiert zwar eine binäre Wahl, doch werden damit noch keine unterschiedlichen Verhaltenskonsequenzen umgesetzt. Das ist erst dann der Fall, wenn \verb|this| und \verb|that| Quotierungen sind, die nach einem \verb|choose| per \verb|call| aufgerufen werden. Dafür gibt es das Wort \verb|if|; die Quotierungen werden im Stapeleffekt mit \verb|then| und \verb|else| bezeichnet. Dass die Auswirkungen auf den Datastack von den beiden Quotierungen abhängen und nicht vorhersehbar sind, deuten die Punkte auf der rechten Seite des Stapeleffekts an.
+
+%>> % CONDITIONAL COMBINATORS
+%>> % http://docs.factorcode.org/content/article-conditionals.html
+%>> 
+\begin{verbatim}
+>> : if ( f/* then else -- ... ) choose call ;
+>> : if-not ( f/* then else -- ... ) swap if ;
+>> : when ( f/* then -- ... ) [ ] if ;
+>> : unless ( f/* else -- ... ) [ ] if-not ;
+\end{verbatim}
+%>> 
+
+Die Wörter \verb|if-not|, \verb|when| und \verb|unless| sind hilfreiche Abstraktionen, die alle Variationen des \verb|if|-Themas abdecken: \verb|if-not| vertauscht die Rolle der beiden Quotierungen \verb|then| und \verb|else| (dem gedanklich eine Negation des booleschen Wertes entspricht), \verb|when| führt die Quotierung nur aus, wenn der vorangehende Wert als logisch \emph{true} gilt, \verb|unless|, wenn er \emph{false} ist.
+
+\begin{verbatim}
+> clear 5 dup 3 < [ 1 + ] [ 1 - ] if
+4
+> clear 5 dup 3 < [ 1 + ] [ 1 - ] if-not
+6
+> clear 5 true [ 1 + ] when
+6
+> clear 5 false [ 1 - ] unless
+4
+\end{verbatim}
+
+Jeder Wert außer \verb|f| gilt im Kontext eines \verb|if|, \verb|if-not|, \verb|when| oder \verb|unless| als logisch \emph{true}, selbst wenn der Bedingungswert nicht gleich \verb|t| ist. Da macht es bisweilen Sinn, den logisch wahren Bedingungswert auf dem Stapel durch ein implizites \verb|dup| zu erhalten, um mit ihm weiter rechnen zu können. Genau dafür gibt es die "`Stern-Varianten"' \verb|if*|, \verb|when*| und \verb|unless*|. Ist der Bedingungswert \verb|f|, so unterbleibt die Duplizierung und \verb|if*|, \verb|when*| bzw. \verb|unless*| arbeiten wie ihre "`sternlosen"' Vorbilder \verb|if|, \verb|when| und \verb|unless|.
+
+\begin{verbatim}
+>> : if* ( f/* then else -- ... )
+>>   pick [ drop call ] [ 2nip call ] if ; % Factor
+>> : when* ( f/* then -- ... ) over [ call ] [ 2drop ] if ; % Factor
+>> : unless* ( f/* else -- ... ) over [ drop ] [ nip call ] if ; % Factor
+\end{verbatim}
+%>> 
+
+\begin{verbatim}
+> clear 6 [ 1 + ] [ 0 ] if*
+7
+> clear false [ 1 + ] [ 0 ] if*
+0
+> 6 [ 1 + ] when*
+7
+> clear 5 6 [ 1 - ] unless*
+5 6
+> clear 5 false [ 1 - ] unless*
+4
+\end{verbatim}
+
+\subsection{$n$-äre Entscheidungen: \texttt{case} und \texttt{cond}}
+
+Die mit dem Wort \verb|case| umgesetzte $n$-äre Entscheidung verallgemeinert das Konzept der binären \verb|if|-Entscheidung. Eine Handlungsalternative hängt bei \verb|case| nicht ab von zwei Alternativen (\verb|f| oder nicht \verb|f|), sondern von einem Wert aus einer Menge von Werten. Die Grundfunktionalität von \verb|case| ist bereits durch Mappings gegeben; nach einem \verb|get| muss im Grunde nur noch ein \verb|call| folgen. Mit dem Auswahlwert \verb|:else| besteht die Option, eine Reaktion zu initiieren, wenn kein sonstiger Auswahlwert in \verb|case| zutrifft.
+
+Das Wort \verb|SYMBOL:| setzt mit dem nachfolgenden Wort, hier \verb|:else|, eine Definition auf, die das Wort mit sich selbst als Datenwert definiert (hier \verb|: :else \ :else ;|).
+
+\begin{verbatim}
+>> SYMBOL: :else 
+>> : case ( val { val' quot ... } -- ... )
+>>   :else over [ ] get get call ;
+\end{verbatim}
+%>> 
+
+Es ist zu beachten, dass die Zielwerte in einem "`\verb|case|-Mapping"' stets Quotierungen sind.
+
+\begin{verbatim}
+> clear 3 \ red
+3 red
+> { \ red [ 1 + ] \ blue [ 1 - ] :else [ ] } case
+4
+> blue { \ red [ 1 + ] \ blue [ 1 - ] :else [ ] } case
+3
+> black { \ red [ 1 + ] \ blue [ 1 - ] :else [ ] } case
+3
+\end{verbatim}
+
+Die Verschachtlung von \verb|if|-Wörtern in den \verb|else|-Quotierungen eines \verb|if|-Worts erzeugt rasch unleserlichen Code. Als Alternative bietet sich das syntaktisch übersichtlichere \verb|cond| an, das die \verb|test|- und \verb|then|-Quo\-tie\-run\-gen verschachtlungsfrei zu notieren erlaubt. Einer \verb|test|-Quotierung folgt eine \verb|then|-Quotierung; im \verb|else|-Fall folgt die nächste \verb|test|-Quotierung usw.; die Terminologie orientiert sich an der Beschreibung des Stapeleffekts für \verb|if|. Eine optionale \verb|else|-Quotierung dient für den Fall, wenn alle \verb|test|-Quotierungen fehlschlagen.
+
+\begin{verbatim}
+>> : cond ( [ test1 then1 test2 then3 ... else ] -- ... )
+>>   dup empty?                 % anything left to test?
+>>     [ drop ]                 % no: quit
+>>     [ uncons dup empty?      % only one quotation left?
+>>       [ drop call ]          % yes: call 'else'
+>>       [ uncons               % otherwise:
+>>         [ ] \ cond push cons % prepare 'cond' recursion
+>>         [ call ] 2dip if ]   % call 'testN' and apply 'if'
+>>     if ]
+>>   if ;
+\end{verbatim}
+%>> 
+
+Per Konvention wird die Folge von Quotierungen vor einem \verb|cond| in runden Klammern notiert, nicht zuletzt, um eine visuell leichtere Abgrenzung zu haben. Beachten Sie, dass in den \verb|test|-Quotierungen in aller Regel ein \verb|dup| nötig ist, nicht zuletzt, um den Test-Wert für nachfolgende Bedingungen zu erhalten.
+
+\begin{verbatim}
+> clear
+
+> 7 ( [ dup 0 > ] [ 1 + ] [ dup 0 < ] [ 1 - ] [ ] ) cond
+8
+> -7 ( [ dup 0 > ] [ 1 + ] [ dup 0 < ] [ 1 - ] [ ] ) cond
+8 -8
+> 0 ( [ dup 0 > ] [ 1 + ] [ dup 0 < ] [ 1 - ] [ ] ) cond
+8 -8 0
+\end{verbatim}
+
+Ein \verb|case| lässt sich immer über ein \verb|cond| nachbilden, allerdings hat ein \verb|case| durch das Mapping ein besseres Laufzeitverhalten, während die Laufzeit von \verb|cond| mit jeder Verschachtlung linear anwächst. Umgekehrt kann nicht jedes \verb|cond| in ein äquivalentes \verb|case| umgewandelt werden.
+
+\section{Aufruf-Kombinatoren}
+\label{Sec:Kombinatoren}
+
+Dieses Kapitel beschäftigt sich mit Kombinatoren, die Varianten von \verb|call| sind und unter dem Oberbegriff der "`Aufruf-Kombinatoren"' (\verb|call|-Kombinatoren) laufen. Die Abtauch-Kombinatoren (\verb|dip|-Kombinatoren) lassen die oberen Stapelwerte vor dem \verb|call| der Quotierung abtauchen, die Erhaltungskombinatoren (\verb|keep|-Kombinatoren) restaurieren die oberen Werte nach dem \verb|call| wieder. Wieder andere Kombinatoren rufen zwei oder mehr Quotierungen nach verschiedenen Mustern auf (Cleave-, Spread- und Apply-Kombinatoren).
+
+Generell reduzieren diese Kombinatoren die Notwendigkeit des Stack-Shufflings und bringen deshalb lesbarere Programme mit sich. 
+
+\subsection{"`Abtauch"'-Kombinatoren: \texttt{dip}}\label{Sec:dip}
+
+Die \verb|dip|-Kombinatoren rufen wie ein \verb|call| eine Quotierung auf dem Datastack auf. Im Gegensatz zu einem reinen \verb|call| gehen die unmittelbar "`vor"' der Quotierung stehenden Daten für die Dauer des Aufrufs gleichermaßen auf Tauchstation; das englische Wort \emph{dip} ist hier im Sinne von "`abtauchen"' zu verstehen. Nach dem Aufruf erscheinen die "`abgetauchten"' Daten wieder auf dem Datastack. Das Wort \verb|dip| verbirgt ein Element vor der aufzurufenden Quotierung, das Wort \verb|2dip| verbirgt zwei Elemente, \verb|3dip| drei und \verb|4dip| vier.
+
+%>> % DATAFLOW COMBINATORS
+%>> % http://docs.factorcode.org/content/article-dataflow-combinators.html
+%>> 
+%>> % CALL A QUOTATION AND HIDE ITEMS UNDERNEATH
+%>> % http://docs.factorcode.org/content/article-dip-keep-combinators.html
+%>> 
+\begin{verbatim}
+>> : dip ( x quot -- x ) [ ] rot push \ \ push concat call ;
+>> : 2dip ( x y quot -- x y ) swap [ dip ] dip ;
+>> : 3dip ( x y z quot -- x y z ) swap [ 2dip ] dip ;
+>> : 4dip ( w x y z quot -- w x y z ) swap [ 3dip ] dip ;
+\end{verbatim}
+%>> 
+
+\begin{verbatim}
+> clear [ ] 4 5 [ push ] dip
+[ 4 ] 5
+> clear [ ] 4 5 [ drop ] 2dip
+4 5
+\end{verbatim}
+
+Die Definition $n$-facher \verb|dip|-Kombinatoren folgt einem einfachen Schema: Das einleitende \verb|swap| und das beendende \verb|dip| bleiben immer gleich; lediglich die Quotierung greift auf die vorhergehende \verb|dip|-Definition zurück. In der Rückverfolgung des Bildungsgesetzes kann man auch fragen: Wie müsste demnach die Definition von \verb|dip| lauten? In der Quotierung wäre ein \verb|0dip| zu verwenden. Ein \verb|dip|, das \verb|0| Werte auf dem Datastack "`abtauchen"' lässt, ist identisch mit \verb|call|.
+
+\begin{verbatim}
+: dip ( x quot -- x ) swap [ call ] dip ;
+\end{verbatim}
+
+Diese Definition nimmt auf sich selbst Bezug und liefert auch in ihrer Auflösung von \verb|dip| im Definitionsrumpf durch die Definition von \verb|dip| keine weitere Erkenntnisse. Einen Hinweis, wie \verb|dip| implementiert werden kann, liefert sie dennoch: Es ist der Versuch, das im Stapeleffekt mit \verb|x| bezeichnete Element nicht mehr vor der Quotierung, sondern es per \verb|swap| hinter die Quotierung zu bekommen, so dass der \verb|call| der Quotierung \verb|quot| das Element \verb|x| nicht mehr erfasst.
+
+Man kann dieses Verhalten zum Beispiel durch die Manipulation der aktuellen Continuation nach einem \verb|swap| erreichen; der Stapeleffekt deutet an, was hier gemacht wird.
+
+\begin{verbatim}
+: dip ( itm quot -- quot | call \ itm )
+  swap [ swap unpush rot cons \ \ push \ call push continue ]
+  call/cc
+\end{verbatim}
+
+Grundsätzlich sollte man den Einsatz von Continuations vermeiden wann immer möglich; das hat formale Gründe, auf die in Kap.~\ref{Sec:DefSymbols} näher eingegangen wird.
+Alternativ kann man den vor der Quotierung stehenden Wert ans Ende der Quotierung anhängen und mit einem Escape-Wort sicherstellen, dass der Wert nicht als zu interpretierendes Wort behandelt wird. Genau das tut die in der Prelude verwendete Definition, siehe oben. Alternative Definitionen sind:
+
+\begin{verbatim}
+: dip ( x quot -- x ) swap [ ] cons \ \ push concat call ;
+\end{verbatim}
+
+\begin{verbatim}
+: dip ( x quot -- x ) reverse \ \ push cons reverse call ;
+\end{verbatim}
+
+Die alternativen Definitionen sind ebenso lesbar und einleuchtend wie die in der Prelude verwendete. Eine Messung der Laufzeiten könnte als Kriterium herangezogen werden, um die schnellste Lösung zu wählen. Da \verb|dip| durchaus laufzeitkritisch ist -- es spielt bei den nachfolgenden Kombinatoren eine entscheidende Rolle --, hat z.B.\ die konkatenative Sprache Factor \verb|dip| im Kern seiner VM aufgenommen. Angenommen, \verb|dip| sei als primitives Wort gegeben, dann sind \verb|call| und \verb|rot| definierbar als:
+
+\begin{verbatim}
+: call ( quot -- ... ) dup dip drop ;
+: rot ( x y z -- y z x ) [ swap ] dip swap ;
+\end{verbatim}
+
+Es hängt sehr davon ab, welche Wörter als primitiv angesehen und in einer VM implementiert werden, und welche Wörter dann in Folge "`abgeleitete"' Wörter sind.
+
+\subsection{Erhaltungskombinatoren: \texttt{keep}}
+
+Die \verb|keep|-Kombinatoren rufen die Quotierung auf dem Datastack wie ein \verb|call| auf, sie bewahren (\emph{keep}) jedoch nach dem Aufruf eine Reihe von Daten, die sich "`vor"' der Quotierung und vor dem Aufruf auf dem Datastack befanden. Das Wort \verb|keep| erhält ein Datum, \verb|2keep| zwei Datenwerte und \verb|3keep| drei Datenwerte.
+
+%>> % CALL A QUOTATION AND RESTORE ITEMS ON DATASTACK
+%>> % http://docs.factorcode.org/content/article-dip-keep-combinators.html
+%>> 
+\begin{verbatim}
+>> : keep  ( x quot -- x ) [ dup ] dip dip ;
+>> : 2keep ( x y quot -- x y ) [ 2dup ] dip 2dip ;
+>> : 3keep ( x y z quot -- x y z ) [ 3dup ] dip 3dip ;
+\end{verbatim}
+%>> 
+
+Die Ausdrucksmittel für die Beschreibung der Stapeleffekte reichen nicht aus, um die Unterschiede zu den \verb|dip|-Kombinatoren hervorzuheben. Die tatsächlichen Auswirkungen auf den Datastack hängen von dem Aufruf der Quotierung ab.
+
+\begin{verbatim}
+> clear 2 3 [ + ] 2keep
+5 2 3
+\end{verbatim}
+
+Beachten Sie, dass die \verb|keep|-Kombinatoren wie die \verb|dip|-Kombinatoren einem regulären Aufbau folgen -- diesmal ohne jegliche Brüche.
+
+Interessant sind in Consize die wechselseitigen Bezüge, die Wörter zueinander haben. Das offenbart innere Strukturen, die andere Programmiersprachen weniger deutlich erkennen lassen. Zum Beispiel könnten \verb|dup|, \verb|2dup| und \verb|3dup| auch über Erhaltungskombinatoren definiert sein. 
+
+\begin{verbatim}
+: dup ( x -- x x ) [ ] keep ;
+: 2dup ( x y -- x y x y ) [ ] 2keep ;
+: 3dup ( x y z -- x y z x y z ) [ ] 3keep ;
+\end{verbatim}
+
+Andererseits ist \verb|keep| mit \verb|dup| definiert worden, \verb|2keep| mit \verb|2dup| etc. Es ist alles eine Frage, aus welchen Wörtern die Consize-VM besteht. Daraus sind die nicht atomaren Wörter abzuleiten.
+
+Eine alternative Implementierung für die Erhaltungskombinatoren ist:
+
+\begin{verbatim}
+: keep  ( x quot -- x ) over [ call ] dip ; % see Factor
+: 2keep ( x y quot -- x y ) 2over [ call ] 2dip ;
+: 3keep ( x y z quot -- x y z ) 3over [ call ] 3dip ;
+\end{verbatim}
+
+Beachten Sie, dass \verb|3over| in der Prelude nicht definiert ist.
+
+\subsection{Cleave-Kombinatoren: \texttt{bi}, \texttt{tri}, \texttt{cleave}}
+
+Das Wort \emph{cleave} heißt hier soviel wie "`bewahren"', "`festhalten"', "`teilen"'.
+
+Die \verb|bi|- und \verb|tri|-Kombinatoren wenden zwei bzw.\ drei Quotierungen nacheinander auf den Datastack an und restaurieren ein, zwei oder drei Werte auf dem Datastack vor dem Aufruf der nächsten Quotierung. Im Stapeleffekt sind die Quotierungen mit \verb|p|, \verb|q| und \verb|r| bezeichnet, die restaurierten Werte mit \verb|x|, \verb|y| und \verb|z|.
+
+%>> % CALL 2, 3 QUOTATIONS IN SEQUENCE, RESTORE ITEM(S) FOR NEXT CALL
+%>> % http://docs.factorcode.org/content/article-cleave-combinators.html
+%>> % "The cleave combinators apply multiple quotations to a single
+%>> % value or set of values." [Factor]
+%>> 
+\begin{verbatim}
+>> : bi ( x p q -- ) [ keep ] dip call ;
+>> : 2bi ( x y p q -- ) [ 2keep ] dip call ;
+>> : 3bi ( x y z p q -- ) [ 3keep ] dip call ;
+\end{verbatim}
+%>> 
+
+\begin{verbatim}
+>> : tri ( x p q r -- ) [ [ keep ] dip keep ] dip call ;
+>> : 2tri ( x y p q r -- ) [ [ 2keep ] dip 2keep ] dip call ;
+>> : 3tri ( x y z p q r -- ) [ [ 3keep ] dip 3keep ] dip call ;
+\end{verbatim}
+%>> 
+
+Ein paar wenige Beispiele mögen die Arbeitsweise von \verb|bi|- bzw. \verb|tri|-Kombinatoren veranschaulichen.
+
+\begin{verbatim}
+> clear 2 [ 1 + ] [ dup * ] bi
+3 4
+> [ + ] [ * ] 2bi
+7 12
+> clear 2 [ 1 + ] [ dup * ] [ 1 - ] tri
+3 4 1
+\end{verbatim}
+
+Der \verb|cleave|-Kombinator verallgemeinert die \verb|bi|- bzw. \verb|tri|-Kombinatoren. Der \verb|cleave|-Kombinator nimmt beliebige viele Quotierungen als Sequenz entgegen und wendet die Quotierungen nacheinander auf einen (\verb|cleave|), auf zwei (\verb|2cleave|) bzw.\ drei (\verb|3cleave|) Werte auf dem Datastack an; vor jedem Aufruf werden die Werte restauriert. Das Wort \verb|each| ist in Kap.~\ref{Sec:SequenceCombinators} definiert.
+
+\begin{verbatim}
+>> : cleave ( x [ p q ... ] -- ) [ keep ] each drop ;
+>> : 2cleave ( x y [ p q ... ] -- ) [ 2keep ] each 2drop ;
+>> : 3cleave ( x y z [ p q ... ] -- ) [ 3keep ] each 3drop ;
+\end{verbatim}
+%>> 
+
+Das folgende Beispiel ist identisch mit dem vorstehenden \verb|tri|-Beispiel.
+
+\begin{verbatim}
+> clear 2 ( [ 1 + ] [ dup * ] [ 1 - ] ) cleave
+3 4 1
+\end{verbatim}
+
+\subsection{Spread-Kombinatoren: \texttt{bi*}, \texttt{tri*}, \texttt{spread}}
+
+Der \verb|bi*|-Kombinator erwartet zwei Quotierungen (\verb|p| und \verb|q|), der \verb|tri*|-Kombinator drei Quotierungen (\verb|p|, \verb|q| und \verb|r|). Die Quotierungen verarbeiten im Fall von \verb|bi*| und \verb|tri*| jeweils nur einen Wert, bei \verb|2bi*| und \verb|2tri*| jeweils zwei Werte. Die Quotierungen werden auf die Verarbeitung der Stapelwerte verteilt -- \emph{spread} bedeutet soviel wie "`verteilen"', "`spreizen"'.
+
+Im Fall von \verb|bi*| arbeitet \verb|p| auf \verb|x| und \verb|q| auf \verb|y|. Und im Fall von \verb|2bi*| verarbeitet \verb|p| die Werte \verb|w| und \verb|x| und \verb|q| die Werte \verb|y| und \verb|z|.
+
+%>> % CALL 1ST QUOTATION ON 1ST ITEM, 2ND QUOTATION ON 2ND ITEM
+%>> % http://docs.factorcode.org/content/article-spread-combinators.html
+%>> % "The spread combinators apply multiple quotations to multiple
+%>> % values. The asterisk (*) suffixed to these words' names
+%>> % signifies that they are spread combinators." [Factor]
+%>> 
+%>> % : bi* ( #X #Y [ @P ] [ @Q ] ==> #X [ @P ] | call \ #Y [ @Q ] call )
+%>> % : bi* ( #X #Y [ @P ] [ @Q ] ==> #X | @P \ #Y @Q )
+\begin{verbatim}
+>> : bi* ( x y p q -- ) [ dip ] dip call ;
+>> : 2bi* ( w x y z p q -- ) [ 2dip ] dip call ;
+\end{verbatim}
+%>> 
+
+\begin{verbatim}
+> clear 2 3 [ 1 + ] [ dup * ] bi*
+3 9
+> clear 1 2 3 4 [ + ] [ * ] 2bi*
+3 12
+\end{verbatim}
+
+Die Kombinatoren \verb|tri*| und \verb|2tri*| arbeiten entsprechend.
+
+%>> % : tri* ( x y z p q r -- ) [ [ 2dip ] dip dip ] dip call ; % Factor
+\begin{verbatim}
+>> : tri* ( x y z p q r -- ) [ 2dip ] 2dip bi* ;
+>> : 2tri* ( u v w x y z p q r -- ) [ 4dip ] 2dip 2bi* ;
+\end{verbatim}
+%>> 
+
+\begin{verbatim}
+> clear 4 3 2 [ 1 + ] [ dup * ] [ 1 - ] tri*
+5 9 1
+> clear 6 5 4 3 2 1 [ + ] [ * ] [ - ] 2tri*
+11 12 1
+\end{verbatim}
+
+Die Verallgemeinerung der Spread-Kombinatoren \verb|bi*|- und \verb|tri*| bietet das Wort \verb|spread|; es erwartet $n$ Elemente und entsprechend $n$ Quotierungen in einem Stapel. Die $n$-te Quotierung wird auf das $n$-te Element angewendet.
+
+Die Umsetzung des Wortes \verb|spread| geschieht via \verb|SPREAD|, das den notwendigen Code verschachtelter \verb|dip|-Aufrufe für das gewünschte "`Spreading"' erzeugt. Das Wort \verb|reduce| ist ein Sequenzkombinator, siehe Kap.~\ref{Sec:SequenceCombinators}.
+
+\begin{verbatim}
+>> : SPREAD ( [ quot1 ... quotn ] -- ... ) % def inspired by Factor
+>>   ( ) [ swap dup empty?
+>>           [ drop ]
+>>           [ [ dip ] rot concat cons ]
+>>         if ]
+>>   reduce ;
+\end{verbatim}
+%>> 
+
+Greifen wir das obige Beispiel für \verb|tri*| auf. \verb|SPREAD| erzeugt den benötigten Code, d.h.\ \verb|SPREAD| ist ein Code-Generator. Ein anschließendes \verb|call| bringt den generierten Code zur Ausführung. Das Ergebnis ist mit dem \verb|tri*|-Beispiel identisch.
+
+\begin{verbatim}
+> clear 4 3 2 ( [ 1 + ] [ dup * ] [ 1 - ] ) SPREAD
+4 3 2 [ [ [ 1 + ] dip dup * ] dip 1 - ]
+> call
+5 9 1
+\end{verbatim}
+
+Damit erklärt sich auch die Umsetzung von \verb|spread|:
+
+\begin{verbatim}
+>> : spread ( itm1 ... itmn [ quot1 ... quotn ] -- ... ) SPREAD call ;
+\end{verbatim}
+%>> 
+
+\subsection{Apply-Kombinatoren: \texttt{bi@}, \texttt{tri@}, \texttt{both?}, \texttt{either?}}
+\label{Sec:applyCombinators}
+
+Die Apply-Kombinatoren sind "`Anwendungskombinatoren"' (\emph{apply} heißt "`anwenden"'), die wie Spread-Kombinatoren arbeiten, im Gegensatz dazu jedoch nur eine Quotierung erwartet, die entsprechend \verb|dup|liziert wird. Die Definitionen sind selbsterklärend. 
+
+%>> % CALL ONE QUOTATION ON MULTIPLE ITEMS
+%>> % http://docs.factorcode.org/content/article-apply-combinators.html
+%>> % "The apply combinators apply a single quotation to multiple values.
+%>> %  The at sign (@) suffixed to these words' names signifies that they
+%>> %  are apply combinators." [Factor]
+%>> 
+\begin{verbatim}
+>> : bi@ ( x y quot -- ) dup bi* ;
+>> : 2bi@ ( w x y z quot -- ) dup 2bi* ;
+>> : tri@ ( x y z quot -- ) dup dup tri* ;
+>> : 2tri@ ( u v w x y z quot -- ) dup dup 2tri* ;
+\end{verbatim}
+%>> 
+
+\begin{verbatim}
+> clear 3 4 [ dup * ] bi@
+9 16
+> clear 6 5 4 3 2 1 [ * ] 2tri@
+30 12 2
+\end{verbatim}
+
+Zwei Beispiele für die Anwendung des \verb|bi@|-Kombinators sind \verb|both?| und \verb|either?|.
+
+\begin{verbatim}
+>> : both? ( x y pred -- t/f ) bi@ and ;
+>> : either? ( x y pred -- t/f ) bi@ or ;
+\end{verbatim}
+%>> 
+
+\begin{verbatim}
+> clear 2 -3 [ 0 > ] both?
+f
+> 2 -3 [ 0 > ] either?
+f t
+\end{verbatim}
+
+\section{Sequenzkombinatoren}
+\label{Sec:SequenceCombinators}
+
+Sequenzkombinatoren wenden eine Quotierung auf jedes Element einer Sequenz an. Damit stehen Abstraktionen zur Verfügung, die dasselbe erreichen, wofür in anderen Programmiersprachen Schleifenkonstrukte wie "`\verb|for|"' und sogenannte Iteratoren zur Verfügung stehen. In einer funktionalen Sprache wie Consize geht man die Elemente einer Sequenz nicht per Index, sondern einfach der Reihe nach durch.
+
+\subsection{Elemente bearbeiten: \texttt{each}, \texttt{map} und \texttt{reduce}}
+
+Der \verb|each|-Kombinator ist der elementarste der Sequenzkombinatoren, er legt die Ergebnisse der Anwendung der Quotierung auf die einzelnen Elemente schlicht auf dem Datastack ab. Der rekursive Aufruf ist in \emph{tail position}, d.h.\ er ist das letzte Worte am Ende (\emph{tail}) der Quotierung, die für die Rekursion verantwortlich ist. Man spricht auch von \emph{tail recursion}, im Deutschen als "`Endrekursion"' bezeichnet. Sie zeichnet sich dadurch aus, dass die Rekursion nicht zum Anwachsen des Callstacks führt -- das Merkmal von Schleifenkonstrukten in imperativen Programmiersprachen.
+
+%>> % SEQUENCE COMBINATORS
+%>> % http://docs.factorcode.org/content/article-sequences-combinators.html
+%>> 
+\begin{verbatim}
+>> : each ( seq quot -- ... )
+>>   swap dup empty?
+>>     [ 2drop ]
+>>     [ unpush -rot over [ call ] 2dip each ]
+>>   if ;
+\end{verbatim}
+%>> 
+
+\begin{verbatim}
+> clear ( 1 2 3 4 ) [ dup * ] each
+1 4 9 16
+\end{verbatim}
+
+Ein einfaches Beispiel für die Verwendung von \verb|each| ist das Entpacken eines Stapel, hier definiert in Form des Wortes \verb|unstack|.
+
+\begin{verbatim}
+>> : unstack ( stk -- ... ) ( ) each ;
+\end{verbatim}
+%>> 
+
+\begin{verbatim}
+> clear [ x [ y ] z ] unstack
+x [ y ] z
+\end{verbatim}
+
+Die Varianten \verb|2each| und \verb|3each| erwarten zwei bzw. drei Stapel, greifen dort jeweils das oberste Element ab und rufen damit die Quotierung auf.
+
+\begin{verbatim}
+>> : 2each ( stk1 stk2 quot -- ... )
+>>   \ unstack push [ zip ] dip each ;
+>> : 3each ( stk1 stk2 stk3 quot -- ... )
+>>   \ unstack push [ 3zip ] dip each ;
+\end{verbatim}
+%>> 
+
+Jeweils ein Beispiel illustriere den Gebrauch der Wörter.
+
+\begin{verbatim}
+> clear ( 1 2 3 ) ( 4 5 6 ) [ + ] 2each
+5 7 9
+> clear ( 1 2 ) ( 3 4 ) ( 5 6 ) [ + * ] 3each
+8 20
+\end{verbatim}
+
+Das Wort \verb|map| fasst im Gegensatz zu \verb|each| die Ergebnisse in einer Sequenz zusammen.
+
+\begin{verbatim}
+>> : map ( seq quot -- seq' )
+>>   [ push ] concat ( ) -rot each reverse ;
+\end{verbatim}
+
+Die Definition von \verb|map| erweitert das durch die Quotierung dargestellte Programm um ein \verb|push|, das die einzelnen Ergebnis auf einen per \verb|( )| und \verb|-rot| bereit gestellten Stapel ablegt. Am Schluss stellt \verb|reverse| die korrekte Reihenfolge her.
+
+\begin{verbatim}
+> clear ( 1 2 3 4 ) [ dup * ] map
+[ 1 4 9 16 ]
+\end{verbatim}
+
+Das Wort \verb|reduce| aggregiert die Werte einer Sequenz zu einem Einzelwert bezüglicher einer Operation, die durch eine Quotierung repräsentiert wird. Die Annahme ist zum einen, dass die Quotierung eine zweiwertige Operation ist, d.h. dass sie zwei Werte auf dem Datastack erwartet. Zum anderen ist \verb|identity| das neutrale Element dieser Operation.
+
+\begin{verbatim}
+>> : reduce ( seq identity quot -- res ) swapd each ;
+\end{verbatim}
+%>> 
+
+Ein paar Beispiele: Das neutrale Element der Addition ist \verb|0|, das der Multiplikation \verb|1| und das der Konkatenation \verb|( )|.
+
+\begin{verbatim}
+> clear ( 1 4 9 16 ) 0 [ + ] reduce
+30
+> clear ( ) 0 [ + ] reduce
+0
+> clear ( 2 3 4 ) 1 [ * ] reduce
+24
+> clear ( [ 1 ] [ 2 ] [ 3 4 ] ) ( ) [ concat ] reduce
+[ 1 2 3 4 ]
+\end{verbatim}
+
+Die Beispiele motivieren drei nützlichen Abstraktionen: \verb|sum| zur Summenbildung, \verb|prod| zur Produktbildung und \verb|cat| zur Verschmelzung mehrerer Sequenzen.
+
+\begin{verbatim}
+>> : sum ( [ x ... z ] -- sum ) 0 [ + ] reduce ;
+>> : prod ( [ x ... z ] -- prod ) 1 [ * ] reduce ;
+>> : cat ( [ seq1 ... seq2 ] -- seq ) ( ) [ concat ] reduce ;
+\end{verbatim}
+%>> 
+
+Eine alternative, endrekursive (\emph{tail recursive}) Definition für \verb|size| (siehe Kap.~\ref{Sec:Friends}) ist:
+
+\begin{verbatim}
+: size ( seq -- n ) 0 [ drop 1 + ] reduce ;
+\end{verbatim}
+
+Die Wörter \verb|map| und \verb|reduce| sind ein besonderes Paar, da sie ein gewichtiges Prinzip verkörpern, das als Idee z.B.\ die Konzeption der Sprache \href{http://de.wikipedia.org/wiki/MapReduce}{MapReduce} geprägt hat: Mit \verb|map| kann eine Operation in Form einer Quotierung im Grunde parallel auf den einzelnen Daten einer Sequenz arbeiten, mit \verb|reduce| werden die Einzelergebnisse zusammengetragen und ausgewertet. Nach diesem Prinzip verarbeitet Google mit MapReduce die riesigen Datenmengen, die bei der Erfassung von Webseiten und anderen Datenquellen anfallen. Die Berechnung verteilt Google auf Rechencluster von mehreren tausend Rechnern.
+
+Auch wenn sich Programme sehr kompakt mit \verb|map| und \verb|reduce| darstellen lassen, nicht immer sind diese Wörter die ideale Wahl. Die Definitionen von \verb|any?| und \verb|all?| haben einen entscheidenden Nachteil: Sie laufen Gefahr zuviel des Guten zu tun. Bei \verb|any?| ist der Abbruch sinnvoll, sobald die Anwendung des Prädikats auf ein Element erfolgreich ist -- Folgewerte müssen per \verb|map| nicht mehr untersucht werden. Ebenso kann \verb|all?| abbrechen, sobald ein Prädikatstest fehl schlägt.
+
+\begin{verbatim}
+>> : any? ( seq pred -- t/f ) map f [ or ] reduce ;
+>> : all? ( seq pred -- t/f ) map t [ and ] reduce ;
+\end{verbatim}
+%>> 
+
+\begin{verbatim}
+> clear ( 1 3 -4 5 0 7 2 ) [ 0 <= ] any?
+t
+> clear ( 1 3 -4 5 0 7 2 ) [ 0 >= ] all?
+f
+\end{verbatim}
+
+Natürlich kann man \verb|any?| und \verb|all?| entsprechend anders rekursiv programmieren. Doch die konzeptuelle Kürze mit \verb|map| und \verb|reduce| besticht! Es gibt funktionale Sprachen, wie z.B. \href{http://de.wikipedia.org/wiki/Haskell_(Programmiersprache)}{Haskell}, die auf eine andere Strategie zur \href{http://de.wikipedia.org/wiki/Auswertung_(Informatik)}{Auswertung} von Programmausdrücken zurückgreifen. Mit einer verzögerten Auswertung (\href{http://en.wikipedia.org/wiki/Lazy_evaluation}{\emph{lazy evaluation}}) werden überflüssige Rechenschritte vermieden, die konzeptuelle Kürze aber beibehalten.\footnote{Trivial sind solche Überlegungen nicht, wie der Beitrag "`\href{http://heise.de/-1871934}{Reducers in Clojure 1.5}"' von Stefan Kamphausen auf heise-Developer aufzeigt.}
+
+Zur Arbeit mit zwei oder drei Sequenzen stehen die folgenden Varianten von \verb|map| und \verb|reduce| bereit:
+
+\begin{verbatim}
+>> : 2map ( seq1 seq2 quot -- seq ) [ zip ] dip \ unstack push map ;
+>> : 3map ( seq1 seq2 seq3 quot -- seq ) [ 3zip ] dip \ unstack push map ;
+>> : 2reduce ( seq1 seq2 identity quot -- res )
+>>   [ zip ] 2dip \ unstack push reduce ;
+>> : 3reduce ( seq1 seq2 seq3 identity quot -- res )
+>>   [ 3zip ] 2dip \ unstack push reduce ;
+\end{verbatim}
+%>> 
+
+\subsection{Sequenzverschnitte: \texttt{zip}}
+
+Oft ist der Wunsch, die Elemente von zwei oder mehr Stapeln zusammen bearbeiten möchte. Eine Lösung dazu bietet \verb|zip|, das im Reißverschlußverfahren die jeweils obersten Elemente zweier Stapel zusammenfasst und aus den Paaren einen neuen Stapel erstellt. 
+
+\begin{verbatim}
+>> : zip ( stk1 stk2 -- stk )
+>>   2dup [ empty? ] bi@ or
+>>     [ 2drop ( ) ]
+>>     [ unpush ( ) cons  rot
+>>       unpush rot cons -rot swap zip cons ]
+>>    if ;
+\end{verbatim}
+%>> 
+
+Am einfachsten ist \verb|zip| am Beispiel zu verstehen.
+
+\begin{verbatim}
+> clear ( 1 2 3 ) ( 4 5 6 ) zip
+[ [ 1 4 ] [ 2 5 ] [ 3 6 ] ]
+\end{verbatim}
+
+Sind die beiden Stapel nicht gleich in der Anzahl ihrer Elemente, endet der Reißverschluß mit dem letzten Element des kürzeren Stapels.
+
+\begin{verbatim}
+> clear ( 1 2 3 4 ) ( 5 6 ) zip
+[ [ 1 5 ] [ 2 6 ] ]
+\end{verbatim}
+
+Die Wörter \verb|3zip| und \verb|4zip| bringen die Elemente von drei bzw. vier Stapeln zusammen.
+
+\begin{verbatim}
+>> : 3zip ( stk1 stk2 stk3 -- stk ) zip zip [ unstack cons ] map ;
+>> : 4zip ( stk1 stk2 stk3 stk4 -- stk ) 3zip zip [ unstack cons ] map ;
+\end{verbatim}
+%>> 
+
+\begin{verbatim}
+> clear ( 1 2 ) ( 3 4 ) ( 5 6 ) 3zip
+[ [ 1 3 5 ] [ 2 4 6 ] ]
+> clear ( 1 2 ) ( 3 4 ) ( 5 6 ) ( 7 8 ) 4zip
+[ [ 1 3 5 7 ] [ 2 4 6 8 ] ]
+\end{verbatim}
+
+\subsection{Aussortieren: \texttt{filter}, \texttt{remove}}
+
+Das Wort \verb|filter| nutzt die Quotierung als Prädikat, um nur die Elemente aus der Sequenz herauszufiltern, die den Prädikatstest bestehen. Eine Quotierung heißt Prädikat, wenn sie als Ergebnis ihrer Ausführung entweder ein \emph{true} oder \emph{false} in Form von \verb|t| bzw.\ \verb|f| auf dem Datastack ablegt.
+
+\begin{verbatim}
+>> : filter ( seq pred -- seq' ) % pred is a quotation
+>>   ( ) -rot [ keep and [ push ] when* ] cons each reverse ;
+\end{verbatim}
+%>> 
+
+\begin{verbatim}
+> clear ( 1 3 -4 5 0 7 2 ) [ 0 > ] filter
+[ 1 3 5 7 2 ]
+\end{verbatim}
+
+Das Wort \verb|remove| macht das Gegenteil von \verb|filter|: Es fasst die von \verb|filter| verworfenen Elemente zusammen. Die Definition macht genau das, indem es das Prädikatsergebnis mit \verb|not| negiert.
+
+\begin{verbatim}
+>> : remove ( seq quot -- seq' ) [ not ] concat filter ;
+\end{verbatim}
+%>> 
+
+\begin{verbatim}
+> clear ( 1 3 -4 5 0 7 2 ) [ 0 > ] remove
+[ -4 0 ]
+\end{verbatim}
+
+\section{Wiederholungskombinatoren}
+%>> % LOOPING COMBINATORS
+%>> %
+%>> % http://docs.factorcode.org/content/article-looping-combinators.html
+%>> 
+
+In einer funktionalen Sprache gibt es einzig die Rekursion als Mittel, um die Idee der Wiederholungen eines Vorgangs auszudrücken. Sequenz- wie auch Wiederholungskombinatoren abstrahieren gängige Muster der Wiederholung für verschiedene Zwecke und machen den Programmcode leichter lesbar.
+
+\subsection{Abbruch via Prädikat: \texttt{loop}, \texttt{do}, \texttt{while}, \texttt{until}}
+
+Die Wörter \verb|while| und \verb|until| abstrahieren ein gängiges Rekursionsschema: Wiederhole den Aufruf der Quotierung solange, wie das Prädikat ein \emph{true} (\verb|while|) bzw. ein \emph{false} (\verb|until|) zurück liefert. Beide Abstraktionen lassen sich auf das Wort \verb|loop| zurückführen.
+
+\begin{verbatim}
+>> : loop ( pred -- ... ) [ call ] keep [ loop ] curry when ;  
+>> : do ( pred quot -- pred quot ) dup 2dip ;
+>> : while ( pred quot -- ... ) swap do concat [ loop ] curry when ;
+>> : until ( pred quot -- ... ) [ [ not ] concat ] dip while ;
+\end{verbatim}
+%>> 
+
+Die Beispiele zeigen den Gebrauch der Wiederholungskombinatoren am Beispiel der Berechnung der Fakultät von \verb|4|.
+
+\begin{verbatim}
+> clear 1 4 [ [ * ] keep 1 - dup 0 > ] loop drop
+24
+> clear 4 1 [ over 0 > ] [ over * [ 1 - ] dip ] while nip
+24
+> clear 4 1 [ over 0 == ] [ over * [ 1 - ] dip ] until nip
+24
+\end{verbatim}
+
+Mit \verb|do while| kann der Aufruf der Quotierung einmal vor der Abarbeitung durch \verb|while| erzwungen werden.
+
+%>> : [a,b] ( a b -- seq )
+%>>   ( ) -rot [ 2dup <= ] [ rot over push -rot 1 - ] while 2drop ; 
+%>> : [a,b) ( a b -- seq ) 1 - [a,b] ; 
+%>> 
+
+\subsection{Abbruch als Fixpunkt: \texttt{X}, \texttt{Y}}
+
+In der Regel wird die Rekursion dadurch hergestellt, dass ein Wort sich selbst im Definitionrumpf erwähnt und aufruft. Das ist die benamte Rekursion. Aber wie ist es um die anonyme, unbenamte Rekursion bestellt? Wie kann man ohne den Selbstaufruf eines Wortes Rekursion erzeugen?
+
+Den Schlüssel zur Antwort liefert der \verb|X|-Kombinator. Eine Quotierung dupliziert sich vor ihrem Aufruf, womit eine Programmkopie für einen Wiederholungsaufruf auf dem Stapel bereit liegt.
+
+\begin{verbatim}
+>> : X ( quot -- ... ) dup call ;
+\end{verbatim}
+%>> 
+
+Der \href{http://de.wikipedia.org/wiki/Lambda-Kalk\%C3\%BCl}{Lambda-Kalkül},
+die Basis vieler funktionaler Programmiersprachen, setzt die anonyme Rekursion mit dem Fixpunkt-Kombinator um, auch Y-Kombinator bezeichnet. Der Fixpunkt-Kombinator wiederholt die Anwendung einer Funktion auf einen Funktionswert solange, bis Eingangs- und Ausgangswert identisch sind -- der \href{http://de.wikipedia.org/wiki/Fixpunkt_(Mathematik)}{Fixpunkt} ist erreicht.
+
+In Consize drückt sich der Y-Kombinator wie folgt aus; der X-Kombinator sorgt dafür, dass die Rekursion anonym bleibt.
+
+\begin{verbatim}
+>> : Y ( val quot -- res )
+>>   [ [ [ call ] 2keep -rot dupd equal? ] dip
+>>     swap [ drop nip ] [ swapd X ] if ] X ;
+\end{verbatim}
+%>> 
+
+Die Fakultät von \verb|4| lässt sich mit dem Y-Kombinator ohne jegliche namentliche Wort-Rekursion berechnen.
+
+\begin{verbatim}
+> clear
+
+> 4 1 [ swap dup 0 equal? [ drop 1 ] when [ * ] keep 1 - swap ] Y nip
+24
+\end{verbatim}
+
+% 1 6 [ dup 0 equal? [ drop 1 ] when [ * ] keep 1 - ] Y drop
+% 6 1 [ swap dup 0 equal? [ drop 1 ] when [ * ] keep 1 - swap ] Y nip
+
+% \begin{verbatim}
+% >> : fix ( val quot -- res ) [ keep dupd equal? not ] cons loop ;
+% >> : fix ( val quot -- res ) % named recursion
+% >>   2dup call rot over equal? [ nip ] [ swap fix ] if ;
+% \end{verbatim}
+
+Man könnte also durchaus Programme in Consize schreiben, selbst wenn das Wörterbuch fixiert wäre und -- da es dann kein \verb|set-dict| gäbe -- und es unmöglich wäre, neue Wörter im Wörterbuch mit ihren Quotierungen zu hinterlegen. Man müsste alle nicht primitiven Wörter selber händisch auflösen. Das ist mehr als unpraktisch, zeigt aber eines: Ein Rechenformalismus braucht keine benamten Abstraktionen, auch sind benamte Abstraktionen keine Notwendigkeit, um Programmieren zu können. Wenn jemand benamte Abstraktionen braucht, so sind es wir Menschen. Für uns ist eine Programmiersprache ohne benamte Abstraktionen schlicht unbrauchbar, unsere intellektuellen Fähigkeiten sind zu begrenzt. Was andererseits betont, wie wichtig die Wahl eines guten Namens für eine Abstraktion ist. Da geht es um nichts anderes als die Kommunikation von Mensch zu Mensch.
+
+\section{Kompositionskombinatoren: \texttt{curry}}
+%>> % COMPOSITIONAL COMBINATORS
+%>> %
+%>> % http://docs.factorcode.org/content/article-compositional-combinators.html
+
+Zwei Kombinatoren zur Komposition von Programmen bzw. Funktionen sind bereits Bestandteil der Consize-VM. Mit \verb|concat| lassen sich zwei Quotierungen zu einer zusammenfassen. Die Komposition zweier Funktionen erfolgt mit \verb|compose|.
+
+% [ call ] dip call == concat call
+
+Eine weitere Wortgruppe, die die Prelude zur Komposition von Programmen bereitstellt, sind \verb|curry|, \verb|2curry| und \verb|3curry|. Das sogenannte "`\href{http://de.wikipedia.org/wiki/Currying}{Currying}"' ist ein Begriff aus der Welt der funktionalen Programmierung, der Name ist zu Ehren des Mathematikers \href{http://de.wikipedia.org/wiki/Haskell_Brooks_Curry}{Haskell Brooks Curry} gewählt worden. In einer konkatenativen Sprache ist das Currying trivial: die gwünschte Anzahl an Argumenten wird in die Quotierung "`gezogen"'; das verkürzt die noch benötigten Argumente auf dem Stapel, wenn die Quotierung aufgerufen wird.
+
+\begin{verbatim}
+>> : curry ( itm quot -- quot ) cons \ \ push ;
+>> : 2curry ( itm1 itm1 quot -- quot ) curry curry ;
+>> : 3curry ( itm1 itm2 itm3 quot -- quot ) curry curry curry ;
+\end{verbatim}
+%>> 
+
+\begin{verbatim}
+> 1 [ + ] curry
+[ \ 1 + ]
+\end{verbatim}
+
+\section{Erweiterung der Consize-Grammatik}
+\label{Sec:Grammatik+}
+
+Consize hat eine äußerst einfache Grammatik, die jeden Programmtext erfolgreich in eine Folge von Wörtern zerlegen lässt. Leerräume im Programmtext grenzen Wörter voneinander ab, siehe auch Kap.~\ref{Sec:Parsing}. Jedes Consize-Programm beginnt als eine Folge von Wörtern.
+
+Die Großzügigkeit der Grammatik hat eine Schattenseite: Es fehlt die Möglichkeit, den Code syntaktisch zu strukturieren und Literale für Stapel und Mappings zu verwenden.
+
+Als Literale bezeichnet man syntaktische Vereinbarungen, die eine Notation zur direkten Angabe eines Datentypen vorsehen. Zum Beispiel kodiert die Schreibweise \verb|[ x y ]| einen Stapel, was einem die wenig leserliche Form der Stapelkonstruktion erspart:
+
+\begin{verbatim}
+emptystack \ y push \ x push
+\end{verbatim}
+
+Kap.~\ref{Sec:Literale} führt Literale für zusammengesetzte Datentypen, sprich für Stapel und Mappings ein.
+
+Ein Beispiel für eine syntaktische Struktur ist die Definition neuer Wörter. Nach dem einleitenden Doppelpunkt folgt das Wort, der optionale Stapeleffekt und die definierenden Wörter bis zum Semikolon. Damit befasst sich Kap.~\ref{Sec:DefWords}.
+
+In Kap.~\ref{Sec:DefSymbols} wird eine weitere, kleine syntatische Struktur zur Definition von Wörtern eingeführt, die als Symbole fungieren.
+
+\subsection{Literale: \texttt{[ ... ]}, \texttt{( ... )}, \texttt{\{ ... \}}}
+\label{Sec:Literale}
+
+Eine Literal-Notation für zusammengesetzte Datentypen ist leicht in Consize integriert, wenn die Klammern eigenständige Wörter sind und nicht mit dem Wort verschmelzen. Die verschmelzende Schreibweise \verb|[x y]| hat das Problem, die zwei Wörter \verb|[x| und \verb|y]| jeweils darauf hin untersuchen zu müssen, ob sie mit einem öffnenden Klammerzeichen beginnen oder einem schließenden Klammerzeichen enden. Dieser Analyse muss prinzipiell jedes Wort unterzogen werden. Ein unnötiger Aufwand, da es auch einfacher geht.
+
+Die nicht-verschmelzende Notation \verb|[ x y ]| lässt die Klammern eigen\-stän\-di\-ge Wörter sein. Jetzt dient das Wort \verb|[| als Auslöser, um die Suche nach dem schließenden Klammerwort zu starten und aus den Elementen zwischen den Klammer-Wörtern den Stapel zu konstruieren. Sobald eine öffnende Klammern die Suche triggert, wird das Klammer-Wort auf dem Datastack abgelegt und die schließende Klammer in der Continuation gesucht. 
+
+%>> % ENHANCE "GRAMMAR" (BRACKET PARSER)
+%>> 
+\begin{verbatim}
+>> : [ ( -- quot ) \ [ [ scan4] continue ] call/cc ;
+>> : ( ( -- seq  ) \ ( [ scan4] continue ] call/cc ;
+>> : { ( -- map  ) \ { [ scan4] continue ] call/cc ;
+\end{verbatim}
+%>> 
+
+Das Wort \verb|scan4]| sucht nach \verb|]|, \verb|}| bzw.\ \verb|)| in der aktuellen Continuation und liefert im Fall von eckigen und runden Klammern einen Stapel und bei geschweiften Klammern ein Mapping zurück. Worin unterscheiden sich die Notationen im Detail?
+
+Die eckigen Klammern repräsentieren eine Quotierung und übernehmen alle Wörter zwischen den Klammern so, wie sie sind. Runde Klammern erlauben die Ausführung von Wörtern zwischen der öffnenden und der schließenden runden Klammer.
+
+\begin{verbatim}
+> clear [ 1 dup 1 + dup 1 + ]
+[ 1 dup 1 + dup 1 + ]
+> clear ( 1 dup 1 + dup 1 + )
+[ 1 2 3 ]
+\end{verbatim}
+
+Die geschweiften Klammern erzeugen ein Mapping, die -- wie runde Klammern -- die Wörter zwischen den Klammern ausführen und dann erst das Mapping bilden.
+
+\begin{verbatim}
+> clear { 1 dup 1 + 3 4 }
+{ 1 2 3 4 }
+\end{verbatim}
+
+Natürlich werden Verschachtlungen von Klammern vom Wort \verb|scan4]| berücksichtigt. Ebenso beachtet \verb|scan4]| die Wirkung des Wortes \verb|\| als Escape-Wort. Erreicht \verb|scan4]| das Ende des Callstacks, ohne dass die Klammern aufgelöst werden konnten, fehlt irgendwo zu einer öffnenden Klammer ihr schließendes Pendant, was eine Fehlermeldung nach sich zieht.
+
+\begin{verbatim}
+>> : scan4] ( ds cs -- ds' cs' )
+>>   unpush dup
+>>   { \ ]   [ drop ( ) rot scan4[ ]
+>>     \ }   over
+>>     \ )   over
+>>     \ [   [ rot cons swap scan4] scan4] ] 
+>>     \ {   over
+>>     \ (   over
+>>     \ \   [ drop unpush rot cons \ \ push swap scan4] ]
+>>     :else [ rot cons swap scan4] ]
+>>     nil   [ \ syntax-error [ unbalanced brackets ] _|_ ]
+>>   } case ;
+\end{verbatim}
+%>> 
+
+Das Wort \verb|over| realisiert innerhalb der geschweiften Klammern zum \verb|case|-Wort einen kleinen \href{http://de.wikipedia.org/wiki/Hack}{Hack}. Code-Dopplungen werden per \verb|over| einfach in die nächste Zeile übertragen.
+
+Ist eine schließende Klammer gefunden, wird von hinten her das Feld "`aufgeräumt"': Die Elemente werden durch \verb|scan4[| vom Ende her per \verb|push| solange in einen Stapel befördert, bis die öffnende Klammer gefunden ist. Die öffnende Klammer bestimmt, was mit den aufgesammelten Elementen passiert: Werden die Elemente unverändert gelassen (Quotierung mit \verb|[|), werden sie innerhalb der Klammern in einem eigenen Kontext mit \verb|fcall| aufgerufen (so der Fall bei \verb|(| und \verb|{|), wird aus dem Ergebnis ein Mapping gemacht (was bei \verb|{| der Fall ist)?
+
+\begin{verbatim}    
+>> : scan4[ ( cs' stk ds' -- ds'' cs'' )
+>>   unpush dup
+>>   { \ [   [ drop swap               push swap ]
+>>     \ {   [ drop swap fcall mapping push swap ]
+>>     \ (   [ drop swap fcall         push swap ]
+>>     \ \   [ drop unpush rot cons \ \ push swap scan4[ ] 
+>>     :else [ rot cons swap scan4[ ]
+>>     nil   [ \ syntax-error [ unbalanced brackets ] _|_ ]
+>>   } case ;
+\end{verbatim}
+%>> 
+
+Consize verlangt immer eine ausgewogene Anzahl an öffnenden und schließenden Klammern, nicht jedoch, dass die schließende Klammer zur öff\-nen\-den passt. Auch wenn das höchst verwirrend zu lesen ist (und daher niemals so geschrieben werden sollte), das folgende Beispiel liefert ein Mapping, obwohl die schließende Klammer nicht passt.
+
+\begin{verbatim}
+> clear { 1 dup 2 3 )
+{ 1 1 2 3 }
+\end{verbatim}
+
+Sollen die Elemente für ein Mapping nicht ausgeführt werden, so ist mit einer Quotierung und \verb|mapping| zu arbeiten:
+
+\begin{verbatim}
+> clear { 1 dup 2 3 }
+{ 1 1 2 3 }
+> clear [ 1 dup 2 3 ] mapping
+{ 1 dup 2 3 }
+\end{verbatim}
+
+Mit \verb|parse-quot| werden die innerhalb einer Quotierung verwendeten Li\-te\-ral-Notationen in die entsprechenden Datentypen umgewandelt. 
+
+\begin{verbatim}  
+>> : parse-quot ( quot -- quot' )
+>>   \ [ push reverse \ ] push reverse call ;
+\end{verbatim}
+%>> 
+
+Die Folge der Wörter \verb|[|, \verb|1|, \verb|2|, \verb|3| und \verb|]| sieht zwar aus wie die Notation eines Stapels, es sind aber tatsächlich nur fünf Wörter, wie sich durch \verb|top| im Beispiel zeigt.
+
+\begin{verbatim}
+> clear ( \ [ 1 2 3 \ ] )
+[ [ 1 2 3 ] ]
+> top
+[
+\end{verbatim}
+
+Nach der Anwendung von \verb|parse-quot| ist die Wortfolge in einen Stapel verwandelt worden. Die Intention der Notation als Literal muss per \verb|parse-quot| ausdrücklich eingefordert werden.
+
+\begin{verbatim}
+> clear ( \ [ 1 2 3 \ ] )
+[ [ 1 2 3 ] ]
+> parse-quot
+[ [ 1 2 3 ] ]
+> top
+[ 1 2 3 ]
+\end{verbatim}
+
+\subsection{Wörter definieren: von \texttt{:} bis \texttt{;} definieren}
+\label{Sec:DefWords}
+
+Ohne eine spezielle Syntax zur Definition neuer Wörter bedarf es mindestens des Wortes \verb|def|, um ein neues Wort mit einem beliebigen Datum im Wörterbuch eintragen zu können.
+
+%>> % WRITE PROGRAMS, DEFINE WORDS
+%>> 
+\begin{verbatim}
+>> : def ( wrd itm -- ) swap get-dict assoc set-dict ;
+\end{verbatim} 
+
+Das Wort \verb|def+| ist ein um die Berücksichtigung des Stapeleffekts erweitertes \verb|def|; tatsächlich wird der Stapeleffekt ignoriert und verworfen.
+
+\begin{verbatim}      
+>> : def+ ( wrd [ effect ] [ body ] -- ) swap drop def ;
+\end{verbatim}
+%>> 
+
+Das Wort \verb|:| leitet die Definition eines neues Wortes unter einer über\-sicht\-lich\-er\-en Syntax ein. In der aktuellen Continuation wird mit \verb|scan4;| nach dem Wort \verb|;| gesucht, das das Ende der Definition markiert. Die Definition wird in ihre Anteile zerlegt und zur Verarbeitung durch \verb|def+| aufbereitet.
+
+\begin{verbatim}
+>> : : ( | ... '; -- quot ) 
+>>   [ ( ) swap scan4; destruct-definition def+ continue ] call/cc ;
+\end{verbatim}
+%>> 
+
+Das Wort \verb|scan4;| arbeitet wie ein \verb|scan4]| oder \verb|scan4[|. Kleine Unterschiede im Stapeleffekt erzeugen leichte Variationen im Aufbau der Wortdefinition.
+
+\begin{verbatim}
+>> : scan4; ( ds [ ] cs -- ds cs' quot )
+>>   unpush dup
+>>   { \ ;   [ drop swap reverse ]
+>>     \ \   [ drop unpush rot \ \ push cons swap scan4; ]
+>>     :else [ rot cons swap scan4; ]
+>>     nil   [ \ syntax-error [ incomplete definition ] _|_ ]
+>>   } case ;
+\end{verbatim}
+%>> 
+
+Das Wort \verb|destruct-definition| zerlegt die zwischen \verb|:| und \verb|;| aufgesammelten Wörter in das zu definierende Wort, den Stapeleffekt und den "`Rest"', den eigentlichen Rumpf der Wortdefinition. Per \verb|parse-quot| werden Literal-Notationen in die entsprechenden Datentypen umgewandelt. Die Umwandlung erfolgt damit zur Definitionszeit eines Worts und nicht zur Laufzeit, was die wiederholte, Zeitintensive Interpretation der Literale zur Laufzeit vermeidet.
+
+\begin{verbatim}  
+>> : destruct-definition ( quot -- wrd stackeffect body ) 
+>>   uncons                % extract word
+>>   ( ) swap              % prepare extraction of stack effect
+>>   dup top \ ( equal?    % extract stack effect
+>>     [ pop look4) ] when % if given
+>>   parse-quot ;          % and parse quotation
+\end{verbatim}
+%>> 
+
+Auch das Wort \verb|look4)| unterscheidet sich in seiner Arbeitsweise im Grunde nicht von \verb|scan4]|, \verb|scan4[| und \verb|scan4;|.
+
+\begin{verbatim} 
+>> : look4) ( [ ... ] quot -- [ ... ]' quot' )
+>>   unpush dup
+>>   { \ )   [ drop swap reverse swap ]
+>>     \ \   [ drop unpush rot cons swap look4) ]
+>>     :else [ rot cons swap look4) ]
+>>     nil   [ \ syntax-error [ incomplete stack effect ] _|_ ]
+>>   } case ;
+\end{verbatim}
+%>> 
+  
+\subsection{Datenwort definieren: \texttt{SYMBOL:}}
+\label{Sec:DefSymbols}
+
+In Consize erwartet jedes Wort, die zu verarbeitenden Daten auf dem Datastack vorzufinden. Es gibt wenige Ausnahmen von dieser Regel, und dazu gehören all die Wörter dieses Kapitels, die die Grammatik von Consize erweitern: \verb|[|, \verb|(|, \verb|{|, \verb|:| und das noch zu besprechende \verb|SYMBOL:|. Wir klassifizieren diese Wörter als "`syntaktische Wörter"'. Syntaktische Wörter benötigen Daten, die nicht auf dem Datastack, sondern auf dem Callstack zu finden sind. Das ist auf den ersten Blick nicht verträglich mit dem konkatenativen Paradigma.
+
+Die Ordnung wird dadurch wiederhergestellt, indem diese Wörter mit Hilfe von \verb|call/cc| nur einen definierten Teil der Daten vom Callstack abgreifen, die prinzipiell hätten auch auf dem Datastack stehen können, wozu es dann eines entsprechenden "`normalen"' Wortes bedürfte. Ganz deutlich wird das am Beispiel des Wortes \verb|:|, das eine Wortdefinition einleitet. Die Daten vom Callstack werden aufbereitet zur Verarbeitung durch \verb|def+|. Das syntaktische Wort \verb|:| hat in \verb|def+| seinen "`normalen"', den Datastack verarbeitenden Gegenpart. Bei \verb|[|, \verb|(| und \verb|{| ist es sogar noch einfacher. Diese Wörter repräsentieren zusammen mit ihren schließenden Gegenstücken ein einziges Datum auf dem Datastack.
+
+Syntaktische Wörter haben also einzig die Funktion, aus der "`normalen"' Postfix-Notation auszubrechen, um eine syntaktische Struktur anzubieten, von der man sich Vorteile in der Wahrnehmung durch den Programmierer bzw. die Programmiererin verspricht. Auf gut deutsch: Der Programmtext soll lesbarer werden. Lesbarkeit und syntaktische Spielereien stehen nicht im Widerspruch zum konkatenativen Paradigma, sie erfordern nur die Auflösung der syntaktischen Form in "`normale"' konkaktenative Strukturen.
+
+Ganz in diesem Sinne arbeitet das syntaktische Wort \verb|SYMBOL:|. Es erwartet genau ein Wort oben auf dem Callstack und baut den Code für die folgende Definitionsstruktur auf. Aus
+
+\begin{verbatim}
+SYMBOL: <word>
+\end{verbatim}
+
+wird
+
+\begin{verbatim}
+: <word> \ <word> ;
+\end{verbatim}
+
+Die Definition (ohne Stapeleffekt) sorgt dafür, dass das Wort sich selbst als Datum auf dem Datastack ablegt. Und genau das versteht Consize unter einem Symbol. Symbole sind Wörter, die sich selbst als Datum repräsentieren.
+
+\begin{verbatim}
+>> : SYMBOL: ( | itm -- )
+>>   [ unpush dup ( \ ; ) cons \ \ push cons \ : push
+>>     swap concat continue ] call/cc ;
+\end{verbatim}
+%>>   
+
+Jeder Gebrauch von \verb|call/cc|, der nicht zur Umsetzung eines syntaktischen Wortes dient, muss ernsthaft die Verträglichkeit mit dem konkatenativen Paradigma hinterfragen. Das Wort \verb|call/cc| macht die Tür zur Manipulation der aktuellen Continuation weiter auf als es für das konkatenative Paradigma notwendig ist. Tatsächlich stehen Continuations in jüngerer Zeit in der Kritik, bei "`unsachgemäßem"' Gebrauch unverträglich mit funktionalen Sprachen zu sein (Consize ist eine funktionale Sprache), was weitreichende und ungewollte Konsequenzen haben kann.\footnote{\url{http://lambda-the-ultimate.org/node/4586} bietet einen guten Einstieg in die Diskussion.} Als Lösung gelten begrenzte Continuations (\emph{delimited continuations}, die auch unter dem Namen \emph{partial continuations} firmieren), die einen unsachgemäßen Gebrauch erst gar nicht ermöglichen.
+
+\section{Die Interaktion mit Consize}
+
+Die Interaktion mit Consize beschränkt sich auf die Übergabe eines Programms beim Aufruf der Consize-VM. Damit lässt sich nicht wirklich arbeiten. Also gilt es, Consize die Interaktion per Konsole "`beizubringen"'.
+
+\subsection{Datenrepräsentation und -Ausgabe: \texttt{repr}, \texttt{println}}
+
+Die Wörter \verb|<space>| und \verb|<newline>| sind nützliche Helferlein. Beide Wörter erleichtern ein wenig die Konstruktion von Ausgaben über die Konsole. 
+
+%>> % PRINTING
+%>> 
+\begin{verbatim}
+>> : <space> ( -- space ) \space char ;
+>> : <newline> ( -- newline ) \newline char ;
+\end{verbatim}
+%>> 
+
+Das Wort \verb|println| steht für \emph{print line}; eine Abstraktion, die die Ausgabe auf der Konsole mit einem Zeilenumbruch enden lässt.
+
+\begin{verbatim}
+>> : println ( -- ) print <newline> print flush ;
+\end{verbatim}
+%>> 
+
+Die Consize-VM hat keinen Zugriff darauf, wie Daten innerhalb der VM gespeichert und kodiert sind. Es ist nicht einmal festgelegt, wie Stapel, Mappings, Funktionen und "`Nichts"' ausgegeben werden sollen. Nur für Wörter ist durch \verb|print| in der Consize-VM eine Repräsentation gegeben, die dem Wortnamen entspricht.
+
+Für die Repräsentation der verschiedensten Datentypen zeichnet sich das Wort \verb|repr| verantwortlich. Hier wird festgelegt, wie die Werte der Datentypen dargestellt (repräsentiert) werden sollen. Aus naheliegenden Gründen werden die Literal-Notationen für Stapel und Mappings verwendet, so wie Sie sie bereits aus Kap.~\ref{Sec:Basics} kennen. Nicht zuletzt erlaubt die Symmetrie von Repräsentation und Literal-Notation, dass eine Repräsentation eines Wertes grundsätzlich auch wieder von Consize eingelesen werden kann. Nur für Funktionen gibt es keine sinnvolle Repräsentation, weshalb einheitlich die Darstellung \verb|<fct>| gewählt wird.
+
+Da Consize nur für Wörter eine Repräsentation kennt, müssen die Repräsentationen für die zusammengesetzten Datentypen aus Einzelwörtern mit \verb|word| zu einem Repräsentationswort zusammengesetzt werden. Selbstverständlich ist der Prozess rekursiv.
+
+\begin{verbatim}
+>> : repr ( itm -- wrd ) 
+>>   dup type
+>>   { \ wrd [ ]
+>>     \ stk [ ( ) \ [ push <space> push swap 
+>>             [ repr push <space> push ] each
+>>             \ ] push reverse word ]
+>>     \ map [ unmap ( ) \ { push <space> push swap
+>>             [ repr push <space> push ] each
+>>             \ } push reverse word ]
+>>     \ fct [ drop \ <fct> ]
+>>     \ nil [ drop \ nil ]
+>>     :else [ \ repr-error [ unknown type ] _|_ ]
+>>   } case ;
+\end{verbatim}
+%>> 
+
+Die Repräsentation eines Stapels hat immer eine öffnende und eine schließende Klammer. Sollen die äußeren eckigen Klammern samt der Leer\-räu\-me entfernt werden, so hilft \verb|unbracket-stk-repr|. Ein leerer Stapel wird nach Entfernung der Klammern auf ein Leerzeichen reduziert.
+
+\begin{verbatim}
+>> : unbracket-stk-repr ( wrd -- wrd' ) % '[ ... ]' => '...'
+>>   unword
+>>     pop pop reverse pop pop reverse
+>>     dup empty? [ <space> push ] when
+>>   word ;
+\end{verbatim}
+%>> 
+
+% In der Einführung zu Consize, genauer in Kap.~\ref{Sec:DataCallStack}, haben wir für die Darstellung einer Continuation, also der gleichzeitigen Darstellung von Data- und Callstack eine Notation vereinbart, in der ein senkrechter Strich "`\verb!|!"' beide Stapel voneinander trennt. Das Wort \verb|printcc| gibt eine Continuation genau so auf der Konsole aus.
+
+% \begin{verbatim}  
+% >> : printcc ( ds cs -- ds cs )
+% >>   swap dup reverse repr unbracket-stk-repr print
+% >>   <space> print \ | print <space> print
+% >>   swap dup repr unbracket-stk-repr println ;
+% \end{verbatim}
+% %>> 
+  
+% \begin{verbatim}
+% > clear [ 2 1 ] [ swap drop ] printcc
+% 1 2 | swap drop
+% [ 2 1 ] [ swap drop ]
+% \end{verbatim}
+
+% Beachten Sie: Bei der Stapelnotation mit eckigen Klammern liegt das offene Stapelende immer links. Bei der Ausgabe der Continuation ist der Datastack mit seinem offenen Stapelende zum senkrechten Strich hin orientiert. Die Umkehrung in der Darstellung des Datastacks erledigt ein \verb|reverse| in \verb|printcc|.
+
+\subsection{Die Interaktion über die Konsole, die \texttt{repl}}
+
+\href{http://de.wikipedia.org/wiki/Lisp}{Lisp} gilt als die zweitälteste Programmiersprache nach Fortran. Mit Lisp kam die \href{http://en.wikipedia.org/wiki/Read\%E2\%80\%93eval\%E2\%80\%93print_loop}{\emph{Read-Evaluate-Print-Loop}} in die Welt. Die REPL beschreibt die Interaktion des Programmierers bzw. der Programmiererin mit Lisp über die Konsole: Die Eingabe wird eingelesen (\emph{read}), der eingegebene Ausdruck ausgewertet (\emph{evaluate}) und das Ergebnis der Auswertung auf der Konsole ausgegeben (\emph{print}). Dieser Ablauf wiederholt sich wieder und wieder -- das ist die Schleife (\emph{loop}) der Interaktion.
+
+Die REPL beschreibt das universelle Ablaufschema aller interaktiven Sprachen, zu denen Python, Ruby, Perl und eben auch Consize gehören.
+
+Der \verb|reader| macht über das "`\verb|>|"'-Zeichen (samt Leerzeichen) auf sich aufmerksam, nimmt per \verb|read-line| eine Eingabe entgegen, entfernt aus der Eingabe per \verb|uncomment| die Kommentare und aktiviert den Tokenizer mit \verb|tokenize|. Das Resultat ist eine Quotierung auf dem Datastack. Damit \verb|uncomment| funktioniert, muss ein \verb|<newline>| zur eingelesenen Eingabezeile hinzugefügt werden.
+
+%>> % INTERACTIVITY
+%>> 
+\begin{verbatim}  
+>> : reader ( -- quot )
+>>   \ > print <space> print flush read-line
+>>   ( ) <newline> push cons word
+>>   uncomment tokenize ;
+\end{verbatim}
+%>> 
+
+Der \verb|evaluator| ist gleichzusetzen mit \verb|call| in Consize. 
+
+\begin{verbatim}  
+>> : evaluator call ;
+\end{verbatim}
+%>> 
+
+Der \verb|printer| gibt das Ergebnis der Evaluation, den Datastack, auf der Konsole aus.
+
+\begin{verbatim}
+>> : printer ( -- )
+>>   get-ds reverse repr unbracket-stk-repr println ;
+\end{verbatim}
+%>> 
+
+Die \verb|repl| ist die sich wiederholende Abfolge von \verb|reader|, \verb|evaluator| und \verb|printer|.
+
+\begin{verbatim}  
+>> : repl reader evaluator printer repl ;
+\end{verbatim}
+%>> 
+
+So einfach ist es, eine Programmiersprache mit einer REPL zu versehen! Allerdings muss eine interaktive Programmiersprache eine Voraussetzung erfüllen: Kurze syntaktische Einheiten müssen gültige Programme darstellen und inkrementell den Programmzustand verändern können. 
+%\footnote{\url{http://denkspuren.blogspot.de/2010/01/scripting-languages.html}}
+Beide Belange erfüllt Consize. Traditionelle Compilersprachen wie Java, C, C++ und C\#\ sind allein schon von ihrer Grammatik nicht darauf ausgelegt, "`Kleinstprogramme"' zuzulassen.
+
+\subsection{Dateien lesen und starten: \texttt{(l)load}, \texttt{(l)run}}
+\label{Sec:Dateien}
+
+% ACHTUNG: Kommentare beginnen mit einem '%'-Zeichen und ignorieren ab
+% da an bis zum Zeilenumbruch jeglichen Text. Das heißt: Wörter, die mit
+% einem Prozentzeichen beginnen, sind tabu. Das ist sehr strikt.
+% Kompatibel mit Consize wäre es, das '%'-Zeichen als Einzelwort (mit
+% folgendem Space falls nicht sofort ein Zeilenumbruch folgt) für
+% Kommentare zu betrachen. XXX Überdenken!
+%
+% Man könnte 'uncomment' als Argument ein Wort übergeben,
+% das den Anfang eines Kommentars ausweist. Entsprechend
+% könnte 'undocument' per Argument flexibler sein und es
+% erlauben, mehrere Aspekte aus dem Quellcode zu extrahieren.
+
+Das Laden eines Consize-Programms erfordert nach dem Einlesen (\verb|slurp|) die Entfernung aller Kommentare (\verb|uncomment|) und das auf das Tokenizing reduzierte Parsen des Quelltextes. Das Wort \verb|run| ruft das geladene Programm auf.
+
+Mit \verb|lload| und \verb|lrun| gibt es die entsprechenden Wörter, wenn das Consize-Programm als "`literarisches Programm"' (\emph{literate program}, siehe Kap.~\ref{Sec:Parsing}), vorliegt.
+
+%>> % READING FILES
+%>> 
+\begin{verbatim}
+>> : load ( wrd -- quot ) slurp uncomment tokenize ;
+>> : lload ( wrd -- quot ) slurp undocument uncomment tokenize ;
+>> : run ( wrd -- ... ) load call ;
+>> : lrun ( wrd -- ... ) lload call ;
+\end{verbatim}
+%>> 
+
+Die folgenden drei Wörter sind nicht viel mehr als Abkürzungen, die bei der (Weiter-)Entwicklung der Prelude von Nutzen sind.
+
+\begin{verbatim}
+>> : prelude ( -- ... ) \ prelude.txt run ;
+>> : test-prelude ( -- ... ) \ prelude-test.txt run ;
+\end{verbatim}
+%>> 
+
+\subsection{Abbruch und Reflexion: \texttt{exit}, \texttt{abort}, \texttt{source}, \texttt{clear}}
+
+Consize ist ein \href{http://de.wikipedia.org/wiki/Reflexion\_(Programmierung)}{reflexives Programmiersystem}, d.h. es kann auf seinen aktuellen Programmzustand zugreifen und ihn verändern; manchmal spricht man auch von \href{http://de.wikipedia.org/wiki/Reflexion\_(Programmierung)}{Introspektion}. Die Fähigkeit dazu ist in der Consize-VM in dem Wort \verb|stepcc| angelegt. Der Programmzustand ist gegeben durch das Wörterbuch, den Data- und den Callstack.
+
+Die folgenden Wörter vereinfachen den Zugriff auf den aktuellen Programmzustand: \verb|source| gibt den mit einem Wort assoziierten Wert aus dem Wörterbuch auf der Konsole aus. Das Wort \verb|get-ds| legt den Datastack auf dem Datastack ab (was seltsam klingen mag, aber funktioniert), \verb|set-ds| verändert den Datastack und mit \verb|clear| kann der Datastack "`gelöscht"' werden.
+
+%>> % REFLECTION
+%>> 
+\begin{verbatim} 
+>> : source ( word -- ) lookup repr println ;
+\end{verbatim}
+%>> 
+
+\begin{verbatim}
+>> : get-ds ( -- stk ) [ swap dup push swap continue ] call/cc ;
+>> : set-ds ( stk -- ) [ swap top swap continue ] call/cc ;
+>> : clear ( -- ) ( ) set-ds ;
+\end{verbatim}
+%>> 
+
+Das Wort \verb|abort| unterbricht die Programmausführung und bietet die REPL zur Interaktion an. Das Wort \verb|exit| beendet die Arbeit der Consize-VM. Sobald der Callstack gänzlich abgearbeitet, d.h. leer ist, hat die Consize-VM ihre Aufgabe erfüllt. 
+
+\begin{verbatim}
+>> : abort ( -- ) [ drop [ printer repl ] continue ] call/cc ;
+>> : exit  ( -- ) [ drop ( ) continue ] call/cc ;
+\end{verbatim}
+%>> 
+
+\subsection{Debugging: \texttt{break}, \texttt{step}}
+
+In den \href{http://de.wikipedia.org/wiki/Computer#Entwicklung\_des\_modernen\_turingm.C3.A4chtigen\_Computers}{Urzeiten der Computerei} bestanden die Rechner teils aus elektromechanischen \href{http://de.wikipedia.org/wiki/Relais}{Relais} und teils aus rein elektronischen Bauteilen wie \href{http://de.wikipedia.org/wiki/Elektronenr\%C3\%B6hre}{Röhren}. Sie dürfen sich diese Bauteile in den Größendimensionen eines Daumens und größer vorstellen. Die damaligen Rechner beanspruchten mit ihren mehreren Tausend Bauteilen nicht nur den Platz ganzer Schränke, sondern den ganzer Räume. So soll einst ein Käfer, zu Englisch \emph{bug}, eine Fehlfunktion ausgelöst haben, als er in den Wirrungen des elektronischen Allerleis herumkrabbelte, einen Kurzschluss auslöste und sein Leben ließ. Seit diesem historisch dokumentierten Ereignis werden auch die \href{http://de.wikipedia.org/wiki/Programmfehler}{Programmfehler} in der Software als "`Bugs"' bezeichnet.
+
+Seinerzeit gestaltete sich die Suche nach einem verkohlten Käfer in den unendlichen Weiten der Hardware als Herausforderung. Mit der Erfindung des \href{http://de.wikipedia.org/wiki/Integrierter\_Schaltkreis}{Integrierten Schaltkreises} (\emph{integrated circuit}, IC) und der darauf folgenden drastischen Miniaturisierung der Hardware, gehört diese Art der Fehlersuche der Vergangenheit an. Doch nicht minder schwer und aufwendig ist bisweilen die Suche nach den meist unfreiwillig eingebauten "`Bugs"' in der Software.
+
+Die Suche nach dem Softwarefehler nennt man "`Debugging"' und das dazu verwendete Hilfsmittel als "`\href{http://de.wikipedia.org/wiki/Debugger}{Debugger}"'. Eine zentrale Funktion eines Debuggers ist die Einzelschritt-Ausführung eines Programm ab einem definierten \href{http://de.wikipedia.org/wiki/Debugger#Haltepunkte}{Haltepunkt}, dem \emph{breakpoint}. So kann man sozusagen in Zeitlupe, Schritt für Schritt verfolgen, was das Programm tut und zwischen den Einzelschritten den aktuellen Programmzustand inspizieren. All das soll helfen, einen Softwarefehler systematisch einzukreisen und zu entdecken. 
+
+Das Wort \verb|break| definiert einen Haltepunkt. Das Wort legt die aktuelle Continuation auf dem Datastack ab und bietet dazu den gewohnten interaktiven Dialog an.
+
+%>> % DEBUGGING
+%>> 
+\begin{verbatim}
+>> : break ( -- ds cs ) [ printer repl ] call/cc ;
+\end{verbatim}
+
+Ähnlich ist auch das Wort \verb|error| definiert, so dass ein Verarbeitungsfehler in Consize kontrolliert aufgefangen werden kann:
+
+\begin{verbatim}
+>> : error ( -- ) [ \ error printer repl ] call/cc ;
+\end{verbatim}
+%>> 
+
+Das Wort \verb|step| führt einen Rechenschritt mit der auf dem Datastack befindlichen Continuation aus.
+
+\begin{verbatim}
+>> : step ( ds cs -- ds' cs' )
+>>   dup empty? [ get-dict -rot stepcc rot drop ] unless ;
+\end{verbatim}
+%>> 
+
+\subsection{Unit-Testing: \texttt{unit-test}}
+
+Der \href{http://de.wikipedia.org/wiki/Softwaretest}{Softwaretest} ist eine qualitätssichernde Maßnahme und gerade auf der Modulebene so wichtig, dass eine Unterstützung zur Formulierung und Ausführung von \href{http://de.wikipedia.org/wiki/Modultest}{Modultests} (\emph{unit tests}) nicht fehlen soll. Für praktisch jede Programmiersprache wird für diesen Zweck eine \href{http://de.wikipedia.org/wiki/Liste\_von\_Modultest-Software}{Umgebung für Unit-Tests} bereitgestellt, die das Testen vereinfacht. In Consize ist so etwas in zwei Zeilen Code programmiert, wenn man auf die Ausgabe auf der Konsole verzichtet. Mit Konsolen-Ausgaben braucht es ein paar Zeilen mehr.
+
+%>> % UNIT-TESTING
+%>> 
+\begin{verbatim}
+>> : unit-test ( result quot -- )
+>>   [ \ test print [ <space> print repr print ] bi@ ] 2keep 
+>>   [ fcall equal? ] 2keep
+>>   rot
+>>     [ <space> print \ passed println 2drop ]
+>>     [ <space> print \ failed println \ with print <space> print
+>>       nip fcall repr println abort ]
+>>   if ;
+\end{verbatim}
+%>> 
+
+Ein Unittest erwartet den antizipierten Inhalt des Datastacks (\verb|result|) nach Abarbeitung des in \verb|quot| abgelegten Programms. Produziert der Aufruf von \verb|quot| nicht das mit \verb|result| vorgegebene Resultat, bricht die Ausführung ab und das erwartete Ergebnis wird zusammen mit der Abbruchmeldung ausgegeben. Die Angabe des erwarteten Ergebnisses hilft, den Fehlschlag des Tests besser zu verstehen.
+
+\begin{verbatim}
+> ( 5 ) [ 2 3 + ] unit-test
+test [ 5 ] [ 2 3 + ] passed
+
+> ( 7 ) [ 2 3 + ] unit-test
+test [ 7 ] [ 2 3 + ] failed
+with [ 5 ]
+\end{verbatim}
+
+\section{Serialisierung, Consize-Dumps und Bootstrapping}
+
+In einer funktionalen Programmiersprache mit referentieller Transparenz existiert das Konzept der Referenz nicht, was die Serialisierung von Daten sehr einfach macht. Insofern ist es nicht schwer, das Wörterbuch oder einen Teil davon in einer Datei abzuspeichern.
+
+\subsection{Die Serialisierung von Daten: \texttt{serialize}}
+
+Mit der \href{http://en.wikipedia.org/wiki/Serialization}{Serialisierung} eines Datums ist eine Beschreibungsform gemeint, die z.B.\ zur sequentiellen Ablage auf einem Datenträger zwecks Speicherung geeignet ist und eine vollständige Rekonstruktion des Datums erlaubt.
+
+Consize serialisiert Daten so, wie Sie es in der Einleitung zu Consize in Kap.~\ref{Sec:Datenstrukturen} (S.\pageref{Sec:Datenstrukturen}ff.) kennengelernt haben. Das Wort \verb|serialize| automatisiert den Vorgang, ein Datum einzig mit den Wörtern der Consize-VM in eine Wortfolge zur Erzeugung des Datums zu übersetzen.
+
+%>> % SERIALIZATION & DUMPING
+%>> 
+\begin{verbatim}
+>> : serialize ( quot -- quot' )
+>>   get-ds [ clear ] dip uncons     
+>>   [ -serialize- get-ds ] dip
+>>   swap reverse push set-ds ;
+\end{verbatim}
+%>> 
+
+\begin{verbatim}  
+>> : -serialize- ( item -- stream-of-items )
+>>   dup type
+>>   { \ wrd [ \ \ swap ] 
+>>     \ stk [ \ emptystack swap reverse [ -serialize- \ push ] each ]
+>>     \ map [ unmap -serialize- \ mapping ]
+>>     \ nil [ drop \ emptystack \ top ]
+>>     \ fct [ drop \ \ \ <non-serializeable-fct> ]
+>>     :else [ \ serialization-error [ invalid type ] _|_ ]
+>>   } case ;
+\end{verbatim}
+%>> 
+
+Mit \verb|call| können serialisierte Daten wieder rekonstruiert werden.
+
+\begin{verbatim}
+> clear [ 1 hello 2 ] serialize
+[ emptystack \ 2 push \ hello push \ 1 push ]
+> call
+[ 1 hello 2 ]
+\end{verbatim}
+
+\subsection{Ein Schnappschuss des Wörterbuchs: \texttt{dump}}
+
+Das Wort \verb|dump| serialisiert ein übergebenes Wörterbuch und speichert es im angegebenen Ziel. Das serialisierte Format wird um Code ergänzt, so dass beim Einlesen das Wörterbuch nicht nur rekonstruiert, sondern anschließend mit dem aktuellen Wörterbuch ge\verb|merge|d wird.
+
+\begin{verbatim}
+>> : dump ( dict filename -- )
+>>   swap serialize [ get-dict merge set-dict ] concat
+>>   repr unbracket-stk-repr swap spit ;
+\end{verbatim}
+%>> 
+
+Man nennt das Erfassen und das Speichern des aktuellen Programmzustands eines Programmsystems auch einen "`Dump erzeugen"'. Seien Sie übrigens ein wenig geduldig, das Erzeugen eines Dumps nimmt etwas Zeit in Anspruch.
+
+Wozu ist ein Dump von Consize überhaupt von Nutzen?
+
+Die Version der Prelude, die Sie aktuell lesen, ist die Prelude im Klartext. Diese Fassung der Prelude verwendet die in Kap.~\ref{Sec:Grammatik+} vorgestellten syntaktischen Erweiterungen für eine programmierfreundliche Darstellung des Quelltextes. Mit dieser Darstellung geht nur ein kleines Problem einher: Das Einlesen der Prelude dauert ein wenig, da das inkrementelle Definieren von Wörtern und das Auflösen syntaktischer Kodierungen etwas Zeit benötigt. Viel effizienter ist es, einen mit \verb|dump| erzeugten Dump der Prelude einzulesen. Dann startet die Consize-VM die Prelude wesentlich schneller.
+
+Wenn Sie mit \verb|get-dict \ prelude-dump.txt dump| einen Dump der Prelude erzeugen, kann das Argument beim Starten der Consize-VM entsprechend angepasst werden:
+
+\begin{verbatim}
+"\ prelude-dump.txt run say-hi"
+\end{verbatim}
+
+Per Dump ist die Prelude auf meinem Rechner um den Faktor 15-20 mal schneller geladen, als wenn die Prelude als Programmcode im "`Klartext"' prozessiert werden muss. Im ersten Fall wird nur das Wörterbuch rekonstruiert, im letzten Fall muss das Wörterbuch erst inkrementell konstruiert werden.
+
+\subsection{Bootstrapping Consize: \texttt{bootimage}}
+\label{Sec:Bootstrapping}
+
+Will man Consize mit dem Programmcode der Prelude starten, so kann das nicht gehen: In der Prelude werden syntaktische Wörter benutzt (siehe Kap.~\ref{Sec:Grammatik+}), die Consize zu Beginn nicht kennt.
+
+Das ist der Grund, warum die Prelude mit dem Laden des sogenannten Bootimage beginnt (siehe Kap.~\ref{Sec:LoadBootimage}). Das Bootimage ist ein Dump eines minimalen Wörterbuchs, das all die Wörter enthält, die notwendig sind, um die Verarbeitung der Prelude mit ihren syntaktischen Erweiterungen vorzubereiten.
+
+%>> % BOOTSTRAPPING
+%>> 
+\begin{verbatim}        
+>> : bootstrapping-dict ( -- dict )
+>>   [ def def+
+>>     cons uncons unpush -rot over
+>>     SYMBOL: case when if choose call fcall
+>>     scan4] scan4[ parse-quot destruct-definition
+>>     : scan4; look4)
+>>     read-word read-mapping ]
+>>   (  \ [  \ (  \ {  ) concat
+>>   dup [ lookup ] map zip cat mapping ;
+\end{verbatim}
+%>> 
+
+Mit dem Wörterbuch \verb|bootstrapping-dict| ist leicht mittels \verb|bootimage| ein initialer Dump produziert.
+ 
+\begin{verbatim}        
+>> : bootimage ( -- )
+>>   bootstrapping-dict \ bootimage.txt dump ;
+\end{verbatim}
+%>> 
+
+Ursprünglich habe ich das Bootimage per Hand geschrieben. Anfangs gab es auch keine gesonderte Datei mit dem Bootimage, die notwendigen Definitionen waren direkter Bestandteil der Prelude. Inzwischen nimmt mir das Wort \verb|bootimage| die Arbeit zu großen Teilen ab. Ich muss lediglich darauf achten, dass alle syntaktischen Wörter und die in den Wortdefinitionen verwendeten Wörter in dem Wörterbuch des Bootimages enthalten sind. Die Serialisierung und Speicherung als Datei habe ich schon zu einem sehr frühen Zeitpunkt der Entstehungsgeschichte der Prelude automatisiert.
+
+Dieser Automatismus verschleiert, wie das Bootimage historisch entstanden ist. Ursprünglich war einiges an Handarbeit nötig, um die Verarbeitung der Prelude mit den Literalen für Stapel und Mappings und mit der Notation für Definitionen zu ermöglichen. Um den Weg nachvollziehbar zu machen, sei hier der Ausgangspunkt des Bootimages, die Entstehung des Wortes \verb|def|, ausführlich beschrieben.
+
+Das Wort \verb|def| ist essentiell. Es steht im Brennpunkt aller weiterer Aktivitäten, die immer darauf abzielen, neue Wörter dem Wörterbuch hinzuzufügen. Aus Kap.~\ref{Sec:DefWords} kennen Sie die Definition:
+
+\begin{verbatim}
+: def ( wrd itm -- ) swap get-dict assoc set-dict ;
+\end{verbatim}
+
+Zu Beginn steht uns diese Schreibweise in Consize nicht zur Verfügung. Beim Start von Consize gibt es ausschließlich die Wörter der Consize-VM. Wir müssen uns den gewünschten Programmierkomfort Schritt für Schritt erarbeiten.
+
+Angenommen, das Wort \verb|def| wäre in Consize bereits definiert, dann könnten wir \verb|def| immerhin mit sich selbst definieren.
+
+\begin{verbatim}
+\ def [ swap get-dict assoc set-dict ] def
+\end{verbatim}
+
+Aber wie kann ein Wort sich selbst definieren ohne bereits definiert zu sein? Natürlich geht das nicht. Aber der Zirkelschluss, dass sich ein Wort selbst definiert, lässt sich händisch auflösen. Informatiker nennen diese Technik "`\href{http://de.wikipedia.org/wiki/Bootstrapping\_(Informatik)}{Bootstrapping}"'. Wir ersetzen einfach \verb|def| mit seiner eigenen Definition!
+
+\begin{verbatim}
+\ def [ swap get-dict assoc set-dict ] swap get-dict assoc set-dict
+\end{verbatim}
+
+Noch steht uns allerdings eines im Weg. Am Anfang der Prelude können wir nicht die Notation mit den eckigen Klammern nutzen. Wir müssen die Quotierung ebenfalls händisch aufbauen, sprich serialisieren.
+
+\begin{verbatim}
+\ def
+emptystack \ set-dict push \ assoc push \ get-dict push \ swap push
+swap get-dict assoc set-dict
+\end{verbatim}
+
+Das ist exakt der Code, mit dem die Prelude einst begann. Schrittweise kamen andere Wörter hinzu: \verb|def+|, \verb|cons|, \verb|choose|, \verb|if| usw. Die Reihenfolge der Wörter war getrieben von der Notwendigkeit, sich rasch nützliche Hilfsmittel zu schaffen, so dass das Programmieren in Consize zunehmend angenehmer wurde. Die mit einem Wort assoziierten Quotierungen habe ich per Hand serialisieren müssen.
+
+Ist dieser mühsame Prozess einer initialen Prelude zur Verarbeitung syntaktischer Wörter einmal bewältigt, dann kann die "`normale"' Prelude geladen, ein Bootimage erzeugt und der manuelle Vorbereitungsteil verworfen werden. Fortan können nach dem Start des Bootimages Änderungen an der Prelude geladen und eventuell ein neues, aktualisiertes Bootimage generiert werden. Plötzlich ist nicht mehr erkenntlich, was zuerst da war: der Dump oder die Prelude. Man braucht ein Bootimage, um die Prelude zu laden -- und eine Prelude, um ein Bootimage zu erzeugen.
+
+Das ist kurios und erinnert sehr an das \href{http://de.wikipedia.org/wiki/Henne-Ei-Problem}{Henne/Ei-Problem}. Was war zuerst da, die Henne oder das Ei? Ohne Huhn kein Ei und ohne Ei kein Huhn. Oder am Beispiel von \verb|def| ist es gar der Selbstbezug: ohne \verb|def| kein \verb|def|. Wir Informatiker halten uns nicht lange mit solchen philosophisch anmutenden Fragestellungen auf und durchbrechen per Bootstrapping die Selbstbezüglichkeit. Das Ergebnis: Der Kreislauf von Huhn und Ei ist in Gang gesetzt. Auf eben diese Weise haben wir das Wort \verb|def| aus der Taufe gehoben, um die restlichen Wörter zu definieren. Auch ist \verb|def| nun mit sich selber definierbar.
+Ist das einmal geschehen, können Sie kess die Frage nach dem "`Was war zuerst da?"' stellen, und die Menschheit in Debatten über den Anfang der Dinge verstricken.\footnote{Sie dürfen davon ausgehen, dass Hühner nicht per Bootstrapping entstanden sind ;-)}
+
+\section{Zum Schluß}
+
+\subsection{Begrüßung: \texttt{say-hi}}
+
+Die Prelude begrüßt mit \verb|say-hi| den Anwender bzw.\ die Anwenderin und startet die REPL. Nun ist Consize zur Interaktion bereit!
+
+%>> % HERE WE GO
+%>> 
+\begin{verbatim}
+>> : say-hi ( -- )
+>>   [ This is Consize -- A Concatenative Programming Language ]
+>>   ( ) [ push <space> push ] reduce
+>>   pop reverse word println
+>>   repl ;
+\end{verbatim}
+%>> 
+
+\subsection{Von der Dokumentation zum Code}
+
+Die Dokumentation zur Prelude, die Sie gerade lesen, enthält den voll\-stän\-di\-gen Code zur Prelude; das sind all die Textstellen, die mit "`\verb|>> |"' (inkl. Leerzeichen) ausgewiesen sind. Dieses Dokument ist also selbst ein Beispiel für ein "`literarisches Programm"'. Sie können den Quellcode der Prelude aus der Dokumentation mit dem folgendem Programm aus dem \href{http://de.wikipedia.org/wiki/LaTeX}{\LaTeX}-File extrahieren und unter einem neuen Dateinamen abspeichern.
+
+\begin{verbatim}
+> \ Consize.Prelude.tex slurp undocumment \ <filename> spit
+\end{verbatim}
+
+Achten Sie darauf, dass Sie sich nicht ungewollt die Datei mit der aktuellen Prelude überschreiben.
+
+
