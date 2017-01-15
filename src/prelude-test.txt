@@ -1,0 +1,297 @@
+%%% Test Cases for the Prelude of Consize
+%%% Copyright (c) 2013, Dominikus Herzberg, Heilbronn University
+%%% New BSD License: http://opensource.org/licenses/BSD-3-Clause
+
+% There is a subtle bug in Consize VM (consize.clj). The application of func
+% discards arguments on the data stack, if an error occured.
+% > 1 2 [ 3 2 ] [ rot ] get-dict func apply
+% [ 3 2 ] [ rot ] error
+% > clear 1 2 [ 3 2 ] [ swap ] get-dict func apply
+% 1 2 [ 2 3 ]
+
+% Consize VM
+
+( ( ) ) [ ( ) [ ] get-dict func apply ] unit-test % refactoring bug
+
+% Consize Prelude
+
+( [ ] ) [ \ read-word lookup ] unit-test
+( [ ] ) [ \ read-mapping lookup ] unit-test
+
+[ ] [ x y 2drop ] unit-test
+[ ] [ x y z 3drop ] unit-test
+[ x y x y ] [ x y 2dup ] unit-test
+[ x y z x y z ] [ x y z 3dup ] unit-test
+[ x x y ] [ x y dupd ] unit-test
+[ y x z ] [ x y z swapd ] unit-test
+[ z x y ] [ x y z -rot ] unit-test
+[ y z u x ] [ x y z u rot4 ] unit-test
+[ u x y z ] [ x y z u -rot4 ] unit-test
+[ x y x ] [ x y over ] unit-test
+[ x y z x y ] [ x y z 2over ] unit-test
+[ y ] [ x y nip ] unit-test
+[ z ] [ x y z 2nip ] unit-test
+[ x y z x ] [ x y z pick ] unit-test
+
+[   [ x ] ] [ x [   ] cons ] unit-test
+[ [ x y ] ] [ x [ y ] cons ] unit-test
+[ x [   ] ] [   [ x ] uncons ] unit-test
+[ x [ y ] ] [ [ x y ] uncons ] unit-test
+[ [   ] x ] [   [ x ] unpush ] unit-test
+[ [ y ] x ] [ [ x y ] unpush ] unit-test
+( true  ) [ [   ] empty? ] unit-test
+( false ) [ [ 1 ] empty? ] unit-test
+( 0 ) [ [       ] size ] unit-test
+( 3 ) [ [ x y z ] size ] unit-test
+
+% if 'current-time-millis' is not supported, comment test case out
+( 5 ) [ [ 2 3 + ] time drop ] unit-test % tests existence of 'time'
+
+( [ ] top ) [ nil ] unit-test
+( nil ) [ \ Xg6Frd lookup ] unit-test
+: Xg6Frd dummy ;
+( [ dummy ] ) [ \ Xg6Frd lookup ] unit-test
+\ Xg6Frd delete
+( nil ) [ \ Xg6Frd lookup ] unit-test
+( ( 2 4 ) ) [ { 1 2 3 4 } values ] unit-test
+( (     ) ) [ {         } values ] unit-test
+
+( 4 5 ) [ 4 2 3 [ + ] call ] unit-test
+( 4 2 3 ) [ 4 2 3 [ ] call ] unit-test
+( [ 4 5 ] ) [ [ 4 2 3 + ] fcall ] unit-test
+( [ ] ) [ [ ] fcall ] unit-test
+
+( \ t ) [ true  ] unit-test
+( \ f ) [ false ] unit-test
+
+[ this ] [ true  this that choose ] unit-test % true
+[ that ] [ false this that choose ] unit-test % false
+[ this ] [ \ take  this that choose ] unit-test % word
+[ this ] [ [ ]   this that choose ] unit-test % stack
+[ this ] [ { }   this that choose ] unit-test % mapping
+[ this ] [ \ rot lookup this that choose ] unit-test % function
+[ this ] [ nil   this that choose ] unit-test % nil
+
+( true  ) [ true  true  and ] unit-test
+( false ) [ true  false and ] unit-test
+( false ) [ false true  and ] unit-test
+( false ) [ false false and ] unit-test
+( 7 ) [ t 7 and ] unit-test
+( t ) [ 7 t and ] unit-test
+( f ) [ f 7 and ] unit-test
+( f ) [ 7 f and ] unit-test
+
+( true  ) [ true  true  or ] unit-test
+( true  ) [ true  false or ] unit-test
+( true  ) [ false true  or ] unit-test
+( false ) [ false false or ] unit-test
+( 7 ) [ 7 t or ] unit-test
+( t ) [ t 7 or ] unit-test
+( 7 ) [ 7 f or ] unit-test
+( 7 ) [ f 7 or ] unit-test
+
+( false ) [ true  true  xor ] unit-test
+( true  ) [ true  false xor ] unit-test
+( true  ) [ false true  xor ] unit-test
+( false ) [ false false xor ] unit-test
+( f ) [ 7 8 xor ] unit-test
+( 7 ) [ 7 f xor ] unit-test
+( 7 ) [ f 7 xor ] unit-test
+( f ) [ f f xor ] unit-test
+
+( true  ) [ false not ] unit-test
+( false ) [ true  not ] unit-test
+( f ) [ 7 not ] unit-test
+
+( 6 ) [ 5 true  [ 1 + ] [ 1 - ] if ] unit-test
+( 6 ) [ 5 3     [ 1 + ] [ 1 - ] if ] unit-test
+( 4 ) [ 5 false [ 1 + ] [ 1 - ] if ] unit-test
+( 4 ) [ 5 true  [ 1 + ] [ 1 - ] if-not ] unit-test
+( 4 ) [ 5 3     [ 1 + ] [ 1 - ] if-not ] unit-test
+( 6 ) [ 5 false [ 1 + ] [ 1 - ] if-not ] unit-test
+( 6 ) [ 5 true  [ 1 + ] when ] unit-test
+( 6 ) [ 5 3     [ 1 + ] when ] unit-test
+( 5 ) [ 5 false [ 1 + ] when ] unit-test
+( 5 ) [ 5 true  [ 1 + ] unless ] unit-test
+( 5 ) [ 5 3     [ 1 + ] unless ] unit-test
+( 6 ) [ 5 false [ 1 + ] unless ] unit-test
+
+( 7 ) [ 6     [ 1 + ] [ 0 ] if* ] unit-test
+( 0 ) [ false [ 1 + ] [ 0 ] if* ] unit-test
+( 7 ) [ 6     [ 1 + ]     when* ] unit-test
+(   ) [ false [ 1 + ]     when* ] unit-test
+( 5 6 ) [ 5 6     [ 1 - ] unless* ] unit-test
+( 4   ) [ 5 false [ 1 - ] unless* ] unit-test
+
+[ :else ] [ :else ] unit-test
+[ yes ] [ 1 { 1 [ yes ] :else [ no ] } case ] unit-test
+[ no  ] [ 2 { 1 [ yes ] :else [ no ] } case ] unit-test
+[     ] [ 2 { 1 [ yes ]              } case ] unit-test
+
+(  8 ) [ 7  ( [ dup 0 > ] [ 1 + ] [ dup 0 < ] [ 1 - ] [ ] ) cond ] unit-test
+( -8 ) [ -7 ( [ dup 0 > ] [ 1 + ] [ dup 0 < ] [ 1 - ] [ ] ) cond ] unit-test
+(  0 ) [ 0  ( [ dup 0 > ] [ 1 + ] [ dup 0 < ] [ 1 - ] [ ] ) cond ] unit-test
+
+( [ x ] 1 ) [ [ ] x 1 [ push ] dip ] unit-test
+( [ x ] 1 2 ) [ [ ] x 1 2 [ push ] 2dip ] unit-test
+( [ x ] 1 2 3 ) [ [ ] x 1 2 3 [ push ] 3dip ] unit-test
+( [ x ] 1 2 3 4 ) [ [ ] x 1 2 3 4 [ push ] 4dip ] unit-test
+( 1 ) [ 1 [ ] dip ] unit-test
+( 1 2 ) [ 1 2 [ ] 2dip ] unit-test
+( 1 2 3 ) [ 1 2 3 [ ] 3dip ] unit-test
+( 1 2 3 4 ) [ 1 2 3 4 [ ] 4dip ] unit-test
+
+( [ 1 ] 1 ) [ [ ] 1 [ push ] keep ] unit-test
+( 5 2 3 ) [ 2 3 [ + ] 2keep ] unit-test
+( 24 2 3 4 ) [ 2 3 4 [ * * ] 3keep ] unit-test
+( 1 1 ) [ 1 [ ] keep ] unit-test                % dup  == [ ] keep ;
+( 1 2 1 2 ) [ 1 2 [ ] 2keep ] unit-test         % 2dup == [ ] 2keep ;
+( 1 2 3 1 2 3 ) [ 1 2 3 [ ] 3keep ] unit-test   % 3dup == [ ] 3keep ;
+
+( 4 2 ) [ 3 [ 1 + ] [ 1 - ] bi ] unit-test
+( 4 3 ) [ 3 [ 1 + ] [     ] bi ] unit-test
+( 3 2 ) [ 3 [     ] [ 1 - ] bi ] unit-test
+( 3 dup ) [ 3 [     ] [     ] bi ] unit-test     % dup  == [ ] [ ] bi
+
+( 5 1 )     [ 3 2 [ + ] [ - ] 2bi ] unit-test
+( 5 3 2 )   [ 3 2 [ + ] [   ] 2bi ] unit-test
+( 3 2 1 )   [ 3 2 [   ] [ - ] 2bi ] unit-test
+( 3 2 2dup ) [ 3 2 [   ] [   ] 2bi ] unit-test   % 2dup == [ ] [ ] 2bi
+
+( 6 2 ) [ 3 2 1 [ + + ] [ - - ] 3bi ] unit-test  % 3dup == [ ] [ ] 3bi
+
+( 3 1 4 ) [ 2 [ 1 + ] [ 1 - ] [ 2 * ] tri ] unit-test
+( 2 1 4 ) [ 2 [     ] [ 1 - ] [ 2 * ] tri ] unit-test
+( 3 2 4 ) [ 2 [ 1 + ] [     ] [ 2 * ] tri ] unit-test
+( 3 1 2 ) [ 2 [ 1 + ] [ 1 - ] [     ] tri ] unit-test
+( 2 2 2 ) [ 2 [     ] [     ] [     ] tri ] unit-test
+
+( 5 1 6 )   [ 3 2 [ + ] [ - ] [ * ] 2tri ] unit-test
+( 3 2 1 6 ) [ 3 2 [   ] [ - ] [ * ] 2tri ] unit-test
+
+( 9 3 24 ) [ 4 3 2 [ + + ] [ - - ] [ * * ] 3tri ] unit-test
+
+% ( true ) [ 3 ( [ 1 + ] [ 1 - ] ) [ unstack bi ] [ cleave ] bi ] unit-test
+( 4 2 ) [ 3 ( [ 1 + ] [ 1 - ] ) cleave ] unit-test  % like 'bi'
+( 4 3 ) [ 3 ( [ 1 + ] [     ] ) cleave ] unit-test
+( 3 2 ) [ 3 ( [     ] [ 1 - ] ) cleave ] unit-test
+( 3 3 ) [ 3 ( [     ] [     ] ) cleave ] unit-test
+( 4 ) [ 3 ( [ 1 + ] ) cleave ] unit-test
+( 3 ) [ 3 ( [     ] ) cleave ] unit-test
+(   ) [ 3 (         ) cleave ] unit-test
+
+( 5 1 6 ) [ 3 2 ( [ + ] [ - ] [ * ] ) 2cleave ] unit-test
+( 9 3 24 ) [ 4 3 2 ( [ + + ] [ - - ] [ * * ] ) 3cleave ] unit-test
+
+( 3 9 )  [ 2 3 [ 1 + ] [ dup * ] bi* ] unit-test
+( 3 12 ) [ 1 2 3 4 [ + ] [ * ] 2bi* ] unit-test
+( 5 9 1 ) [ 4 3 2 [ 1 + ] [ dup * ] [ 1 - ] tri* ] unit-test
+( 11 12 1 ) [ 6 5 4 3 2 1 [ + ] [ * ] [ - ] 2tri* ] unit-test
+
+( 2 ) [ 1 ( [ 1 + ] ) spread ] unit-test
+( 1 ) [ 1 ( [     ] ) spread ] unit-test
+( 1 ) [ 1 (         ) spread ] unit-test
+( 4 4 [ 1 + ] [ 1 - ] bi* ) [ 4 4 ( [ 1 + ] [ 1 - ] ) spread ] unit-test
+( 5 3 25 ) [ 4 4 5 ( [ 1 + ] [ 1 - ] [ dup * ] ) spread ] unit-test
+( 2 3 [ ] [ ] bi* ) [ 2 3 ( [ ] [ ] ) spread ] unit-test
+
+( 4 9 ) [ 2 3 [ dup * ] bi@ ] unit-test
+( 3 7 ) [ 1 2 3 4 [ + ] 2bi@ ] unit-test
+( 4 9 16 ) [ 2 3 4 [ dup * ] tri@ ] unit-test
+( 3 7 11 ) [ 1 2 3 4 5 6 [ + ] 2tri@ ] unit-test
+
+( f ) [ 2 -3 [ 0 > ] both? ] unit-test
+( t ) [ 2 -3 [ 0 > ] either? ] unit-test
+
+% each, map, reduce
+
+( 1 4 9 ) [ ( 1 2 3 ) [ dup * ] each ] unit-test
+(       ) [ (       ) [ dup * ] each ] unit-test
+( 1 2 3 ) [ ( 1 2 3 ) [       ] each ] unit-test
+(       ) [ (       ) [       ] each ] unit-test
+(     9 ) [ (     3 ) [ dup * ] each ] unit-test
+
+( 1 2 3 ) [ ( 1 2 3 ) unstack ] unit-test
+(       ) [ (       ) unstack ] unit-test
+( 1     ) [ ( 1     ) unstack ] unit-test
+
+( 5 7 9 ) [ ( 1 2 3 ) ( 4 5 6 ) [ + ] 2each ] unit-test
+( 5     ) [ ( 1 2 3 ) ( 4     ) [ + ] 2each ] unit-test
+(       ) [ (       ) ( 4 5 6 ) [ + ] 2each ] unit-test
+(       ) [ (       ) (       ) [ + ] 2each ] unit-test
+
+( 9 12 ) [ ( 1 2 ) ( 3 4 ) ( 5 6 ) [ + + ] 3each ] unit-test
+
+( ( 1 4 9 ) ) [ ( 1 2 3 ) [ dup * ] map ] unit-test
+( (       ) ) [ (       ) [ dup * ] map ] unit-test
+( ( 1 2 3 ) ) [ ( 1 2 3 ) [       ] map ] unit-test
+( (       ) ) [ (       ) [       ] map ] unit-test
+( (     9 ) ) [ (     3 ) [ dup * ] map ] unit-test
+
+% 'reduce' gets tested via 'sum' etc.
+
+( 0 1 2 3 4 ) [ ( 1 2 3 4 ) 0 [ ] reduce ] unit-test
+( 10 ) [ ( 1 2 3 4 ) sum ] unit-test
+( 24 ) [ ( 1 2 3 4 ) prod ] unit-test
+( ( 1 2 3 ) ) [ ( ( 1 ) ( 2 3 ) ) cat ] unit-test
+
+( t ) [ ( 1 3 -4 5 0 7 2 ) [ 0 <= ] any? ] unit-test % there are two
+( t ) [ ( 1 3 -4 5 0 7 2 ) [ 0 <  ] any? ] unit-test % there is one
+( f ) [ ( 1 3  4 5 0 7 2 ) [ 0 <  ] any? ] unit-test % there is none
+
+( t ) [ ( 1 3  4 5 0 7 2 ) [ 0 >= ] all? ] unit-test % all are true
+( f ) [ ( 1 3  4 5 0 7 2 ) [ 0 >  ] all? ] unit-test % one is false
+( f ) [ ( 1 3 -4 5 0 7 2 ) [ 0 >  ] all? ] unit-test % two are false
+
+
+( ( 5 7 9 ) ) [ ( 1 2 3 ) ( 4 5 6 ) [ + ] 2map ] unit-test
+( ( 5     ) ) [ ( 1 2 3 ) ( 4     ) [ + ] 2map ] unit-test
+( (       ) ) [ (       ) ( 4 5 6 ) [ + ] 2map ] unit-test
+( (       ) ) [ (       ) (       ) [ + ] 2map ] unit-test
+
+( ( 9 12 ) ) [ ( 1 2 ) ( 3 4 ) ( 5 6 ) [ + + ] 3map ] unit-test
+
+( 36 ) [ ( 1 2 3 ) ( 1 2 3 ) 1 [ * * ] 2reduce ] unit-test
+(  6 ) [ ( 1 ) ( 2 ) ( 3 ) 1 [ * * * ] 3reduce ] unit-test
+
+% zip, 3zip, 4zip
+
+[ ( ) ] [ ( ) ( ) zip ] unit-test
+[ ( ) ] [ ( 1 ) ( ) zip ] unit-test
+[ ( ) ] [ ( ) ( 1 ) zip ] unit-test
+[ ( ( 1 2 ) ) ] [ ( 1 ) ( 2 ) zip ] unit-test
+[ ( ( 1 2 ) ( 3 4 ) ( 5 6 ) ) ] [ ( 1 3 5 ) ( 2 4 6 ) zip ] unit-test
+
+( ( ) ) [ ( ) ( ) ( ) 3zip ] unit-test
+( ( ) ) [ ( 1 ) ( ) ( 2 3 ) 3zip ] unit-test
+( ( ) ) [ ( ) ( 2 3 ) ( 1 ) 3zip ] unit-test
+( ( ) ) [ ( 2 3 ) ( 1 ) ( ) 3zip ] unit-test
+( ( ( 1 3 5 ) ( 2 4 6 ) ) ) [ ( 1 2 ) ( 3 4 ) ( 5 6 ) 3zip ] unit-test
+
+( ( ( 1 3 5 7 ) ( 2 4 6 8 ) ) )
+  [ ( 1 2 ) ( 3 4 ) ( 5 6 ) ( 7 8 ) 4zip ] unit-test
+
+% Looping Combinators
+
+% 'do' is implicitly tested by 'while'
+(  0 ) [ 7 [ 1 - dup 0 > ] loop ] unit-test
+( 24 ) [ 1 4 [ [ * ] keep 1 - dup 0 > ] loop drop ] unit-test
+( ( 1 2 3 4 5 6 ) prod ) % faculty function
+      [ 6 1 [ over 0  > ] [ over * [ 1 - ] dip ] while nip ] unit-test
+( 1 ) [ 0 1 [ over 0  > ] [ over * [ 1 - ] dip ] while nip ] unit-test
+( ( 1 2 3 4 5 6 ) prod ) % faculty function
+      [ 6 1 [ over 0 == ] [ over * [ 1 - ] dip ] until nip ] unit-test
+( 1 ) [ 0 1 [ over 0 == ] [ over * [ 1 - ] dip ] until nip ] unit-test 
+
+% tests for 'Y' implicitly test 'X'
+
+( [ swap 1 + ] 2 ) [ 1 [ swap 1 + ] X ] unit-test % existence of 'X'  
+( 24 ) [ 4 1 [ swap dup 0 equal? [ drop 1 ] when [ * ] keep 1 - swap ] Y nip ] unit-test
+(  1 ) [ 0 1 [ swap dup 0 equal? [ drop 1 ] when [ * ] keep 1 - swap ] Y nip ] unit-test
+(  1 ) [ 1 1 [ swap dup 0 equal? [ drop 1 ] when [ * ] keep 1 - swap ] Y nip ] unit-test
+  
+% Compositional Combinators
+
+( 4 ) [ 3 1 [ + ] curry call ] unit-test
+( 5 ) [ 1 2 3 [ + * ] 2curry call ] unit-test
+( 14 ) [ 1 2 3 4 [ * + * ] 3curry call ] unit-test
