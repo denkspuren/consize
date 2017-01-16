@@ -19,13 +19,13 @@ Dominikus Herzberg, [@denkspuren](https://twitter.com/denkspuren)
 
 ## Run Consize
 
-Running Consize requires Clojure 1.5. Right now, the code is not compatible with Clojure 1.8. This is on my todo list.
+Running Consize requires a Java runtime environment and Clojure 1.5. Right now, the code is not compatible with Clojure 1.8. This is on my todo list.
 
 ~~~
 >java -cp clojure-1.5.1-slim.jar clojure.main consize.clj "\ prelude-plain.txt run say-hi"
 ~~~
 
-Be patient, wait for a moment -- and Consize show up with
+Be patient, wait for a moment -- and Consize shows up with
 
 ~~~
 This is Consize -- A Concatenative Programming Language
@@ -60,6 +60,64 @@ Run the suite of unit tests to check if everything works as expected.
 ~~~
 \ prelude-test.txt run
 ~~~
+
+## How to Extract the Prelude from the Documentation?
+
+The prelude is a Consize program extending Consize considerably for practical use. Without the prelude there is no interactive console to interact with (called the REPL, _Read Evaluate Print Loop_), there are no means to define new words etc. You wouldn't have much fun with Consize without the prelude.
+
+The prelude is written as a _literate program_ (see [literate programming](https://en.wikipedia.org/wiki/Literate_programming)), that means the code is embedded in its documentation. Literate programming is a technique to keep the documentation and the code in sync. Have a look at [Consize.Prelude.tex](/doc/Consize.Prelude.tex) and watch out for lines starting with either `>>` oder `%>>`; the `%`-sign marks a comment in LaTeX. All these lines make up the prelude (with the marking prefix removed).
+
+To extract the prelude from the documentation, you do not need a special program, Consize has the word `undocument` for that. Run Consize and type the following in the REPL; the word `slurp` reads a file, the word `spit` writes a file.
+
+~~~
+> \ ../doc/Consize.Prelude.tex slurp undocument \ new.prelude-plain.txt spit
+~~~
+
+You will find a file named `new.prelude-plain.txt` in your `/src` directory. You can restart Consize with the new prelude. Leave Consize with entering `exit` and restart Consize on the command line interface:
+
+~~~
+>java -cp clojure-1.5.1-slim.jar clojure.main consize.clj "\ new.prelude-plain.txt run say-hi"
+~~~
+
+To produce an image of the current status of the dictionary, type
+
+~~~
+This is Consize -- A Concatenative Programming Language
+> get-dict \ new.prelude-dump.txt dump
+~~~
+
+The image file `new.prelude-dump.txt` loads faster than the plain source code file `new.prelude-plain.txt`. The reason is that the source code requires syntactic preprocessing to fill the dictionary with word definitions whereas the image file just reconstructs the dictionary.
+
+It's a good idea to verify whether something is broken. Run the test suite with each version of the Prelude, `new.prelude-plain.txt` and `new.prelude-dump.txt`. Start each version separately, run the tests, exit for testing the other version.
+
+~~~
+>java -cp clojure-1.5.1-slim.jar clojure.main consize.clj "\ new.prelude-plain.txt run say-hi"
+This is Consize -- A Concatenative Programming Language
+> \ prelude-test.txt run
+~~~
+
+~~~
+>java -cp clojure-1.5.1-slim.jar clojure.main consize.clj "\ new.prelude-dump.txt run say-hi"
+This is Consize -- A Concatenative Programming Language
+> \ prelude-test.txt run
+~~~
+
+If you want to, you can also generate `bootimage.txt`. The bootimage is a dump of a minimalistic directory that includes all the word definitions required to load the prelude. To produce the bootimage type the following in the REPL; take care, the current version of the bootimage gets overwritten by that -- you might create a copy beforehand.
+
+~~~
+> bootimage
+~~~
+
+After that, run both versions of Consize again (plain file and image file) and run the test suite one more time. If there are no problems, you are almost done.
+
+Delete the old versions of the prelude and rename the ones you have created:
+
+* rename `new.prelude-plain.txt` to `prelude-plain.txt`
+* rename `new.prelude-dump.txt` to `prelude.txt`
+
+Congratulations, you are done!
+
+By the way, did you notice that we had to use a running version of the prelude and the bootimage to extract a new version of the prelude from the documentation and generate a fresh bootimage afterwards? This is a typical process for image-based self-referential implementations. Otherwise you would have to extract the prelude by hand and to generate the bootimage by hand -- which I did for the very first incarnation of the bootimage.
 
 ## Generate the Documentation
 
