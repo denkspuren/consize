@@ -16,7 +16,6 @@ Enjoy,
 
 Dominikus Herzberg, [@denkspuren](https://twitter.com/denkspuren)
 
-
 ## Run Consize
 
 Running Consize requires a Java runtime environment and Clojure 1.5. Right now, the code is not compatible with Clojure 1.8. This is on my todo list.
@@ -67,9 +66,15 @@ Run the suite of unit tests to check if everything works as expected.
 
 The prelude is a Consize program extending Consize considerably for practical use. Without the prelude there is no interactive console to interact with (called the REPL, _Read Evaluate Print Loop_), there are no means to define new words etc. You wouldn't have much fun with Consize without the prelude.
 
-The prelude is written as a _literate program_ (see [literate programming](https://en.wikipedia.org/wiki/Literate_programming)), that means the code is embedded in its documentation. Literate programming is a technique to keep the documentation and the code in sync. Have a look at [Consize.Prelude.tex](/doc/Consize.Prelude.tex) and watch out for lines starting with either `>>` oder `%>>`; the `%`-sign marks a comment in LaTeX. All these lines make up the prelude (with the marking prefix removed).
+The prelude is written as a _literate program_ (see [literate programming](https://en.wikipedia.org/wiki/Literate_programming)), that means the code is embedded in its documentation. Literate programming is a technique to keep the documentation and the code in sync.
 
-To extract the prelude from the documentation, you do not need a special program, Consize has the word `undocument` for that. Run Consize and type the following in the REPL; the word `slurp` reads a file, the word `spit` writes a file.
+Have a look at [Consize.Prelude.tex](/doc/Consize.Prelude.tex) and watch out for lines starting with either `>>` oder `%>>`; the `%`-sign marks a comment in LaTeX. All these lines make up the prelude (with the marking prefix removed).
+
+To extract the prelude from the documentation, you do not need a special program, Consize has the word `undocument` for that.
+
+> There is no need to extract the Prelude if you are not interested in updating and/or extending Consize. Consize is delivered with "batteries included", i.e. with a prelude and a tiny bootimage. So you might stop here and just enjoy running and using Consize.
+
+Run Consize and type the following in the REPL; the word `slurp` reads a file, the word `spit` writes a file.
 
 ~~~
 > \ ../doc/Consize.Prelude.tex slurp undocument \ new.prelude-plain.txt spit
@@ -122,6 +127,8 @@ Congratulations, you are done!
 By the way, did you notice that we had to use a running version of the prelude and the bootimage to extract a new version of the prelude from the documentation and generate a fresh bootimage afterwards? This is a typical process for image-based self-referential implementations. Otherwise you would have to extract the prelude by hand and to generate the bootimage by hand -- which I did for the very first incarnation of the bootimage.
 
 ## Generate the Documentation
+
+> If you have no interest in updating the documentation, skip this section!
 
 To produce the PDF document yourself, install a TeX distribution on your computer such as [MikTeX](https://miktex.org/) for Windows. Start the compilation process with `Consize.tex`. On Windows you might use `TeXworks` for that purpose, which is released with MikTeX.
 
