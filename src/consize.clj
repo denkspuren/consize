@@ -1,9 +1,9 @@
 ;;; Consize -- A concatenative programming language (when size matters)
-;;; Copyright (c) 2013, Dominikus Herzberg, Heilbronn University, Germany
+;;; Copyright (c) 2017, Dominikus Herzberg, Technische Hochschule Mittelhessen
 ;;; New BSD License: http://opensource.org/licenses/BSD-3-Clause
 (ns
 	^{:doc "Consize -- A concatenative programming language (when size matters)"
-	  :author "Dominikus Herzberg, Heilbronn University, Germany" }
+	  :author "Dominikus Herzberg, Technische Hochschule Mittelhessen, Germany" }
   consize
   (:use [clojure.string :only (lower-case split trim)]))
 
