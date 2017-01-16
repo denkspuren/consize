@@ -55,11 +55,11 @@
 \includeonly{%
 Consize.AIntro,
 Consize.Basics,
-%Consize.FunctionalProgramming,
 Consize.Core,
 Consize.EqualityIdentity,
 Consize.Prelude,
-Consize.Mathe
+Consize.Mathe,
+Consize.Patterns
 }
 % \includeonly{Consize.Prelude}
 % \includeonly{Consize.Math}
@@ -70,8 +70,8 @@ Consize.Mathe
 % \title{\bf Programmieren mit Consize}
 \title{\bf Konkatenative Programmierung mit Consize}
 \author{Dominikus Herzberg\thanks{%
-Copyright \copyright\ 2017, Dominikus Herzberg\medskip\newline Dieses Werk bzw.\ dieser Inhalt steht unter der Creative-Commons-Lizenz CC~BY-NC-SA 3.0: \href{http://creativecommons.org/licenses/by-nc-sa/3.0/deed.de}{Namensnennung -- keine kommerzielle Nutzung -- Weitergabe unter gleichen Bedingungen}.}%
-\\Hochschule Heilbronn}
+Copyright \copyright\ 2017, Dominikus Herzberg\medskip\newline Dieses Werk bzw.\ dieser Inhalt steht unter der Creative-Commons-Lizenz CC~BY-NC-SA 4.0: \href{https://creativecommons.org/licenses/by-nc-sa/4.0/}{Namensnennung -- keine kommerzielle Nutzung -- Weitergabe unter gleichen Bedingungen}.}%
+\\Technische Hochschule Mittelhessen}
 \maketitle
 
 Viele Leser und Leserinnen haben mir geholfen, kleinere und größere Mängel im Text zu beseitigen. Mein Dank geht an:
@@ -95,6 +95,7 @@ Felix Radzanowski. % (2).
 
 %%\dominitoc
 \tableofcontents
+% right now Consize.FunctionalProgramming.tex is not part of the docu
 
 \include{Consize.AIntro}
 
@@ -104,13 +105,13 @@ Felix Radzanowski. % (2).
 
 \include{Consize.EqualityIdentity}
 
-\include{Consize.FunctionalProgramming}
-
 \include{Consize.Prelude}
 
 \appendix
 
 \include{Consize.Mathe}
+
+\include{Consize.Patterns}
 
 %\bibliographystyle{alpha}
 %\bibliography{consizebib}
