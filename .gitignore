@@ -17,9 +17,5 @@ pom.xml.asc
 *.gz
 
 # /doc
-/doc/Manuscript.tex
 /doc/Manuscript.Aufgaben.tex
 /doc/Consize.ZMaterial.tex
-/doc/Consize.PreludeOld.2012-10-19.tex
-/doc/Consize.Mathe.tex
-/doc/Consize.FunctionalProgramming.tex
