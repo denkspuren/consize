@@ -1,5 +1,5 @@
 %%% A Prelude for Consize in Consize
-%%% Copyright (c) 2013, Dominikus Herzberg, Heilbronn University
+%%% Copyright (c) 2017, Dominikus Herzberg, https://www.thm.de
 %%% New BSD License: http://opensource.org/licenses/BSD-3-Clause
 %%%
 %%% Consize is very much inspired by Factor, see http://factorcode.org.
@@ -25,11 +25,11 @@
 : -rot ( x y z -- z x y ) rot rot ;
 : rot4 ( x y z u -- y z u x ) [ rot ] dip swap ;
 : -rot4 ( x y z u -- u x y z ) swap [ -rot ] dip ;
+: pick ( x y z -- x y z x ) rot dup [ -rot ] dip ;
 : over ( x y -- x y x ) swap dup -rot ;
-: 2over ( x y z -- x y z x y ) rot dup -rot4 rot dup -rot4 ;
+: 2over ( x y z -- x y z x y ) pick pick ;
 : nip ( x y -- y ) swap drop ;
 : 2nip ( x y z -- z ) nip nip ;
-: pick ( x y z -- x y z x ) rot dup [ -rot ] dip ;
 
 % FRIENDS & HELPERS
 
