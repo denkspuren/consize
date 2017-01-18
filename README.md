@@ -6,7 +6,7 @@ I designed Consize for research purposes and for educational purposes. For examp
 
 Consize comes with comprehensive documentation explaining the concatenative paradigm, the interpreter and the built-in library, the so called _prelude_. Consize comes with comprehensive documentation. The documentation is written in German, since my German students are my primary target audience. Though English is the _lingua franca_ in informatics, it is a barrier to learn new concepts of an uncommon programming paradigm in a foreign language. Nonetheless, I might consider rewriting the documentation in English.
 
-I feel always thrilled by the fact that the interpreter is not more than 150 lines of code written in Clojure. Basically, Consize is written in Consize and bootstrapped from a small image, which has also been produced by and with Consize.
+I feel always thrilled by the fact that the interpreter is not more than 150 lines of code written in [Clojure](https://clojure.org). Basically, Consize is written in Consize and bootstrapped from a small image, which has also been produced by and with Consize.
 
 Regarding conciseness: Consize has numerous words for functional programming, most words being composed of one, two or three lines of code; Consize comes with a unit test framework implemented in eight lines of code; you can set breakpoints and step through the code for debugging purposes implemented in three lines of code; serialization and producing image dumps comes also in some few lines. Do you have an interest in meta-programming? Not only has Consize a meta-protocol to handle unknown words, but _continuations_ which allow you to manipulate the future of computations and is used to implement an _ad hoc_ parser to extend the grammar of Consize.
 
@@ -18,7 +18,7 @@ Dominikus Herzberg, [@denkspuren](https://twitter.com/denkspuren)
 
 ## Run Consize
 
-Running Consize requires a Java runtime environment and Clojure. Both should be installed on your system.
+Running Consize requires a Java runtime environment and Clojure. Here, I assume that you have installed Clojure 1.8.0 or higher on your system.
 
 ~~~
 >java -cp clojure-1.8.0-slim.jar clojure.main consize.clj "\ prelude.txt run say-hi"
@@ -72,7 +72,7 @@ Have a look at [Consize.Prelude.tex](/doc/Consize.Prelude.tex) and watch out for
 
 To extract the prelude from the documentation, you do not need a special program, Consize has the word `undocument` for that.
 
-> There is no need to extract the Prelude if you are not interested in updating and/or extending Consize. Consize is delivered with "batteries included", i.e. with a prelude and a tiny bootimage. So you might stop here and just enjoy running and using Consize.
+> There is no need to extract the prelude if you are not interested in updating and/or extending Consize. Consize is delivered with "batteries included", i.e. with a prelude and a tiny bootimage. So you might stop here and just enjoy running and using Consize.
 
 Run Consize and type the following in the REPL; the word `slurp` reads a file, the word `spit` writes a file.
 
@@ -83,7 +83,7 @@ Run Consize and type the following in the REPL; the word `slurp` reads a file, t
 You will find a file named `new.prelude-plain.txt` in your `/src` directory. You can restart Consize with the new prelude. Leave Consize with entering `exit` and restart Consize on the command line interface:
 
 ~~~
->java -cp clojure-1.5.1-slim.jar clojure.main consize.clj "\ new.prelude-plain.txt run say-hi"
+>java -cp clojure-1.8.0-slim.jar clojure.main consize.clj "\ new.prelude-plain.txt run say-hi"
 ~~~
 
 To produce an image of the current status of the dictionary, type
@@ -98,13 +98,13 @@ The image file `new.prelude-dump.txt` loads faster than the plain source code fi
 It's a good idea to verify whether something is broken. Run the test suite with each version of the Prelude, `new.prelude-plain.txt` and `new.prelude-dump.txt`. Start each version separately, run the tests, exit for testing the other version.
 
 ~~~
->java -cp clojure-1.5.1-slim.jar clojure.main consize.clj "\ new.prelude-plain.txt run say-hi"
+>java -cp clojure-1.8.0-slim.jar clojure.main consize.clj "\ new.prelude-plain.txt run say-hi"
 This is Consize -- A Concatenative Programming Language
 > \ prelude-test.txt run
 ~~~
 
 ~~~
->java -cp clojure-1.5.1-slim.jar clojure.main consize.clj "\ new.prelude-dump.txt run say-hi"
+>java -cp clojure-1.8.0-slim.jar clojure.main consize.clj "\ new.prelude-dump.txt run say-hi"
 This is Consize -- A Concatenative Programming Language
 > \ prelude-test.txt run
 ~~~
