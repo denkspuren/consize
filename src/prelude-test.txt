@@ -53,8 +53,16 @@
 ( [ dummy ] ) [ \ Xg6Frd lookup ] unit-test
 \ Xg6Frd delete
 ( nil ) [ \ Xg6Frd lookup ] unit-test
-( ( 2 4 ) ) [ { 1 2 3 4 } values ] unit-test
+
+% Clojure 1.5.1: { 1 2 3 4 } values => [ 2 4 ] % ordered
+% Clojure 1.8.0: { 1 2 3 4 } values => [ 4 2 ] % unordered
+% My mistake: test case shouldn'r rely on order of elements
+% Resorted to implicitly testing the result, since a `sort`
+% word is not available.
 ( (     ) ) [ {         } values ] unit-test
+( ( 2   ) ) [ { 1 2     } values ] unit-test
+% ( ( 2 4 ) ) [ { 1 2 3 4 } values ] unit-test % not used anymore
+( 6 ) [ { 1 2 3 4 } values sum ] unit-test
 
 ( 4 5 ) [ 4 2 3 [ + ] call ] unit-test
 ( 4 2 3 ) [ 4 2 3 [ ] call ] unit-test
