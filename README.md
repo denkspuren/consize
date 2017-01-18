@@ -18,10 +18,10 @@ Dominikus Herzberg, [@denkspuren](https://twitter.com/denkspuren)
 
 ## Run Consize
 
-Running Consize requires a Java runtime environment and Clojure 1.5. Right now, the code is not compatible with Clojure 1.8. This is on my todo list.
+Running Consize requires a Java runtime environment and Clojure. Both should be installed on your system.
 
 ~~~
->java -cp clojure-1.5.1-slim.jar clojure.main consize.clj "\ prelude.txt run say-hi"
+>java -cp clojure-1.8.0-slim.jar clojure.main consize.clj "\ prelude.txt run say-hi"
 ~~~
 
 You can also call Consize with a plain version of the prelude called `prelude-plain.txt`. This version will be a little bit slower at startup time than `prelude.txt`.
