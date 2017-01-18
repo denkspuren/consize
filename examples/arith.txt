@@ -1,0 +1,341 @@
+Projekt: Symbolisches Rechnen mit Ganzzahlen
+(c) Dominikus Herzberg, 2017 -- Creative Commons Lizenz CC BY-NC-SA 4.0
+
+Angenommen, Consize wäre nicht mit Rechenoperationen ausgestattet. Dann müssten wir das Rechnen mit Zahlen selber nachrüsten und zwar als rein symbolische Operationen. Genau das wollen wir in diesem Projekt tun.
+
+Wir nehmen an, dass Ganzzahlen wie folgt als Sequenzen kodiert sind: Der erste Wert weist eine Zahl mit dem Wort '+' als positive Ganzzahl, mit dem Wort '-' als negative Ganzzahl und mit 'z' als Null aus. Dieser Vorzeichenkodierung folgen die Ziffern der Ganzzahl in umgekehrter Reihenfolge. Führende Nullen sind nicht erlaubt. Beispiele:
+
+10 = +10 => [ + 0 1 ]
+-10 => [ - 0 1 ]
+0 => [ z 0 ]
+548 => [ + 8 4 5 ]
+
+Kodierungen wie z.B. '[ - 0 ]', '[ + 0 ]', '[ + 9 9 0 ]' stellen keine Ganzzahlen gemäß der getroffenen Kodierungsvereinbarung dar.
+
+Definieren Sie zunächst die Wörter 'pos?', 'neg?' und 'zero?', die 't' bzw 'f' auf dem Datastack ablegen, je nachdem, ob die Ganzzahl positiv (d.h. größer Null), negativ (d.h. kleiner Null) oder Null ist. (Ein Hinweis aus Sicht des Software Engineering: Ihre Definitionen sind nicht verantwortlich für ungültige Zahlenkodierungen!)
+
+>> % ??? -- Definition für 'pos?'
+>> % ??? -- Definition für 'neg?'
+>> % ??? -- Definition für 'zero?'
+
+>> : zero? ( n -- ? ) [ z 0 ] equal? ;
+>> : pos? ( n -- ? ) top \ + equal? ;
+>> : neg? ( n -- ? ) top \ - equal? ;
+
+>> [ f ] [ [ z 0 ] pos? ] unit-test
+>> [ t ] [ [ + 1 ] pos? ] unit-test
+>> [ t ] [ [ + 4 ] pos? ] unit-test
+>> [ f ] [ [ - 2 1 ] pos? ] unit-test
+>> [ f ] [ [ - 1 ] pos? ] unit-test
+>> [ f ] [ [ z 0 ] neg? ] unit-test
+>> [ f ] [ [ + 4 ] neg? ] unit-test
+>> [ t ] [ [ - 2 1 ] neg? ] unit-test
+>> [ t ] [ [ z 0 ] zero? ] unit-test
+>> [ f ] [ [ + 4 ] zero? ] unit-test
+>> [ f ] [ [ - 2 1 ] zero? ] unit-test
+
+Schreiben Sie zwei Wörter, 'inc' und 'dec', die eine Ganzzahl inkrementieren bzw. dekrementieren. Verwenden Sie, sofern geeignet, 'pos?', 'neg?' und 'zero?'. Die Aufgabe lässt sich leichter bewältigen, wenn Sie 'inc' und 'dec' zunächst nur für positive Ganzzahlen definieren und im zweiten Schritt auf negative Ganzzahlen inkl. Null ausweiten. 
+
+>> % ??? -- Definition für 'inc'
+>> % ??? -- Definition für 'dec'
+
+>> : inc ( n -- n+1 )
+>>   unpush
+>>   { \ + [ [ + ] swap inc concat ]
+>>     \ - [ dup [ 1 ] equal?
+>>             [ drop [ z 0 ] ]
+>>             [ [ - ] swap dec concat ]
+>>           if ] 
+>>     \ z [ [ + ] swap inc concat ]
+>>     \ 0 [ \ 1 push ]
+>>     \ 1 [ \ 2 push ]
+>>     \ 2 [ \ 3 push ]
+>>     \ 3 [ \ 4 push ]
+>>     \ 4 [ \ 5 push ]
+>>     \ 5 [ \ 6 push ]
+>>     \ 6 [ \ 7 push ]
+>>     \ 7 [ \ 8 push ]
+>>     \ 8 [ \ 9 push ]
+>>     \ 9 [ [ 0 ] swap
+>>         dup [ ] equal?
+>>           [ \ 1 push ]
+>>           [ inc ]
+>>         if concat ]
+>>   } case ;
+  
+>> : dec ( n -- n-1 )
+>>   unpush
+>>   { \ + [ dup [ 1 ] equal?
+>>             [ drop [ z 0 ] ]
+>>             [ [ + ] swap dec concat ]
+>>           if ]  
+>>     \ - [ [ - ] swap inc concat ]
+>>     \ z [ [ - ] swap inc concat ]
+>>     \ 9 [ \ 8 push ]
+>>     \ 8 [ \ 7 push ]
+>>     \ 7 [ \ 6 push ]
+>>     \ 6 [ \ 5 push ]
+>>     \ 5 [ \ 4 push ]
+>>     \ 4 [ \ 3 push ]
+>>     \ 3 [ \ 2 push ]
+>>     \ 2 [ \ 1 push ]
+>>     \ 1 [ \ 0 push ]
+>>     \ 0 [ [ 9 ] swap
+>>           dup [ 1 ] equal?
+>>             [ pop ]
+>>             [ dec ]
+>>           if concat ]
+>>   } case ;
+
+>> [ [ + 1 ] ] [ [ z 0 ] inc ] unit-test
+>> [ [ z 0 ] ] [ [ + 1 ] dec ] unit-test
+>> [ [ + 2 ] ] [ [ + 1 ] inc ] unit-test
+>> [ [ + 1 ] ] [ [ + 2 ] dec ] unit-test
+>> [ [ + 0 1 ] ] [ [ + 9 ] inc ] unit-test
+>> [ [ + 9 ] ] [ [ + 0 1 ] dec ] unit-test
+>> [ [ + 0 0 1 ] ] [ [ + 9 9 ] inc ] unit-test
+>> [ [ + 9 9 ] ] [ [ + 0 0 1 ] dec ] unit-test
+>> [ [ + 0 0 2 ] ] [ [ + 9 9 1 ] inc ] unit-test
+>> [ [ + 9 9 1 ] ] [ [ + 0 0 2 ] dec ] unit-test
+>> [ [ + 0 9 5 ] ] [ [ + 9 8 5 ] inc ] unit-test
+>> [ [ + 9 8 5 ] ] [ [ + 0 9 5 ] dec ] unit-test
+
+>> [ [ - 1 ] ] [ [ z 0 ] dec ] unit-test
+>> [ [ z 0 ] ] [ [ - 1 ] inc ] unit-test
+>> [ [ - 2 ] ] [ [ - 1 ] dec ] unit-test
+>> [ [ - 1 ] ] [ [ - 2 ] inc ] unit-test
+>> [ [ - 0 1 ] ] [ [ - 9 ] dec ] unit-test
+>> [ [ - 9 ] ] [ [ - 0 1 ] inc ] unit-test
+>> [ [ - 0 0 1 ] ] [ [ - 9 9 ] dec ] unit-test
+>> [ [ - 9 9 ] ] [ [ - 0 0 1 ] inc ] unit-test
+>> [ [ - 0 0 2 ] ] [ [ - 9 9 1 ] dec ] unit-test
+>> [ [ - 9 9 1 ] ] [ [ - 0 0 2 ] inc ] unit-test
+>> [ [ - 0 9 5 ] ] [ [ - 9 8 5 ] dec ] unit-test
+>> [ [ - 9 8 5 ] ] [ [ - 0 9 5 ] inc ] unit-test
+
+Die Addition bzw. Subtraktion zweier Ganzzahlen kann -- unter Berücksichtigung der Vorzeichen -- auf die fortwährende Inkrementierung bzw. Dekrementierung zurückgeführt werden. Definieren Sie die Wörter 'add' und 'sub'. Sie dürfen (und sollen) auf die bis hierher definierten Wörter 'inc', 'dec' und 'pos?', 'neg?' und 'zero?' zurückgreifen.
+
+>> % ??? -- Definition für 'add'
+>> % ??? -- Definition für 'sub'
+
+>> : add ( x y -- z )
+>>   dup top { \ z [ drop ]
+>>             \ + [ dec swap inc swap add ]
+>>             \ - [ inc swap dec swap add ]
+>>           } case ;
+          
+>> : sub ( x y -- z )
+>>   dup top { \ z [ drop ]
+>>             \ + [ pop \ - push add ]
+>>             \ - [ pop \ + push add ]
+>>           } case ;
+          
+>> [ [ z 0 ] ] [ [ z 0 ] [ z 0 ] add ] unit-test
+>> [ [ z 0 ] ] [ [ z 0 ] [ z 0 ] sub ] unit-test
+
+>> [ [ + 1 ] ] [ [ z 0 ] [ + 1 ] add ] unit-test
+>> [ [ + 1 ] ] [ [ + 1 ] [ z 0 ] add ] unit-test
+>> [ [ + 2 ] ] [ [ + 1 ] [ + 1 ] add ] unit-test
+>> [ [ z 0 ] ] [ [ + 1 ] [ - 1 ] add ] unit-test
+>> [ [ z 0 ] ] [ [ - 1 ] [ + 1 ] add ] unit-test
+>> [ [ - 2 ] ] [ [ - 1 ] [ - 1 ] add ] unit-test
+>> [ [ + 0 0 1 ] ] [ [ + 0 5 1 ] [ - 0 5 ] add ] unit-test
+>> [ [ + 0 0 1 ] ] [ [ - 0 5 ] [ + 0 5 1 ] add ] unit-test
+
+>> [ [ - 1 ] ] [ [ z 0 ] [ + 1 ] sub ] unit-test
+>> [ [ + 1 ] ] [ [ + 1 ] [ z 0 ] sub ] unit-test
+>> [ [ z 0 ] ] [ [ + 1 ] [ + 1 ] sub ] unit-test
+>> [ [ + 2 ] ] [ [ + 1 ] [ - 1 ] sub ] unit-test
+>> [ [ - 2 ] ] [ [ - 1 ] [ + 1 ] sub ] unit-test
+>> [ [ z 0 ] ] [ [ - 1 ] [ - 1 ] sub ] unit-test
+>> [ [ - 0 0 1 ] ] [ [ - 0 5 1 ] [ - 0 5 ] sub ] unit-test
+>> [ [ - 0 0 1 ] ] [ [ + 0 5 ] [ + 0 5 1 ] sub ] unit-test
+
+Definieren Sie die Multiplikation von zwei Zahlen als 'mult'.
+
+>> % ??? -- Definition für 'mult'       
+
+>> : mult ( x y -- z ) [ z 0 ] -rot *mult* ;
+>> : *mult* ( r x y -- z )
+>>   over top { \ z [ drop drop ]
+>>              \ + [ swap dec -rot dup rot add -rot *mult* ]
+>>              \ - [ swap inc -rot dup rot swap sub -rot *mult* ]
+>>            } case ;
+ 
+>> [ [ z 0 ] ] [ [ z 0 ] [ z 0 ] mult ] unit-test
+>> [ [ z 0 ] ] [ [ z 0 ] [ + 9 9 ] mult ] unit-test
+>> [ [ z 0 ] ] [ [ - 9 9 ] [ z 0 ] mult ] unit-test
+>> [ [ + 5 1 ] ] [ [ + 5 ] [ + 3 ] mult ] unit-test
+>> [ [ - 5 1 ] ] [ [ - 3 ] [ + 5 ] mult ] unit-test
+>> [ [ - 5 1 ] ] [ [ + 3 ] [ - 5 ] mult ] unit-test
+>> [ [ + 5 1 ] ] [ [ - 5 ] [ - 3 ] mult ] unit-test
+>> [ [ - 5 0 1 ] ] [ [ - 7 ] [ + 5 1 ] mult ] unit-test
+          
+>> : fact ( n -- n! ) dup zero? [ inc ] [ dup dec fact mult ] if ;
+>> [ ( [ + 1 ] [ + 1 ] [ + 2 ] [ + 6 ] [ + 4 2 ] ) ]
+>> [ ( [ z 0 ] [ + 1 ] [ + 2 ] [ + 3 ] [ + 4 ] ) [ fact ] map ] unit-test
+
+Das Eingabeformat für Zahlen ist umständlich. Die Arbeit kann erleichtert werden durch ein Wort 'int ( wrd -- stk )', das ein Wort, das eine Zahl repräsentiert, umwandelt in das vereinbarte Format für Ganzzahlen.
+
+>> % ??? -- Definition für 'int'
+    
+>> : int ( wrd -- stk )
+>>   unword dup top
+>>   { \ 0 [ drop [ z 0 ] ]
+>>     \ + [ pop reverse \ + push ]
+>>     \ - [ pop reverse \ - push ]
+>>     :else [ reverse \ + push ]
+>>   } case ;
+
+>> [ [ z 0 ] ] [ 0 int ] unit-test
+>> [ [ - 1 ] ] [ -1 int ] unit-test
+>> [ [ + 1 ] ] [ 1 int ] unit-test
+>> [ [ + 1 ] ] [ +1 int ] unit-test
+>> [ [ + 3 2 1 ] ] [ 123 int ] unit-test
+>> [ [ + 3 2 1 ] ] [ +123 int ] unit-test
+>> [ [ - 3 2 1 ] ] [ -123 int ] unit-test
+
+Auch das Ausgabeformat ist umständlich zu lesen. Das Wort 'repr-int ( stk -- wrd )' erzeugt aus dem internen Zahlenformat wieder ein Wort, das die Zahl repräsentiert.
+
+>> % ??? -- Definition für 'repr-int'
+
+>> : repr-int ( stk -- wrd )
+>>   unpush \ - equal?
+>>     [ reverse \ - push word ]
+>>     [ reverse          word ]
+>>   if ;
+
+>> [ 0 ] [ 0 int repr-int ] unit-test
+>> [ 1 ] [ 1 int repr-int ] unit-test
+>> [ 1 ] [ +1 int repr-int ] unit-test
+>> [ -1 ] [ -1 int repr-int ] unit-test
+>> [ 123 ] [ 123 int repr-int ] unit-test
+>> [ 123 ] [ +123 int repr-int ] unit-test
+>> [ -123 ] [ -123 int repr-int ] unit-test
+
+*CHALLENGE* Idealerweise möchten wir Zahlen "ganz normal" eingeben, ohne den Gebrauch von 'int'. Schreiben Sie ein Wort 'int? ( wrd -- t/f )', das ermittelt, ob ein Wort eine Ganzzahl ist, oder nicht. Hinweis: Selbstverständlich dürfen Sie *nicht* das Wort 'integer?' verwenden! Die Testfälle definieren, welche Wörter als Repräsentationen für Zahlen akzeptiert werden.
+
+Die damit umgesetzte Grammatik sei wir folgt skizziert:
+
+<integer> := <digit0> | <signed-digits> ;
+<signed-digits> := <sign>? <digit1-9> <digit0-9>* ;
+
+>> % ??? -- Definition für 'int?'
+
+>> : is_sign? ( wrd -- t/f )
+>>   { \ + [ true ]
+>>     \ - [ true ]
+>>     :else [ false ] } case ;
+    
+>> : is_1-9? ( wrd -- t/f )
+>>   { \ 1 [ true ]
+>>     \ 2 [ true ]
+>>     \ 3 [ true ]
+>>     \ 4 [ true ]
+>>     \ 5 [ true ]
+>>     \ 6 [ true ]
+>>     \ 7 [ true ]
+>>     \ 8 [ true ]
+>>     \ 9 [ true ]
+>>     :else [ false ] } case ;
+        
+>> : is_0-9? ( wrd -- t/f )
+>>   dup \ 0 equal? [ drop true ] [ is_1-9? ] if ;
+
+>> : int? ( wrd -- t/f )
+>>   dup \ 0 equal?
+>>     [ drop true ]
+>>     [ unword dup top is_sign? [ pop ] when
+>>       dup top is_1-9?
+>>         [ pop [ is_0-9? ] map true [ and ] reduce ]
+>>         [ drop false ]
+>>       if
+>>     ] if ; 
+    
+>> [ t ] [ 0 int? ] unit-test
+>> [ f ] [ +0 int? ] unit-test
+>> [ f ] [ -0 int? ] unit-test
+>> [ f ] [ 00 int? ] unit-test
+>> [ f ] [ 000 int? ] unit-test
+>> [ t ] [ 1 int? ] unit-test
+>> [ t ] [ 123 int? ] unit-test
+>> [ t ] [ 90 int? ] unit-test
+>> [ t ] [ +123 int? ] unit-test
+>> [ f ] [ 0123 int? ] unit-test
+>> [ f ] [ +0123 int? ] unit-test
+>> [ t ] [ -1 int? ] unit-test
+>> [ t ] [ -123 int? ] unit-test
+>> [ t ] [ -90 int? ] unit-test
+>> [ t ] [ -123 int? ] unit-test
+>> [ f ] [ -0123 int? ] unit-test
+>> [ f ] [ 12dsf int? ] unit-test
+>> [ f ] [ -23df int? ] unit-test
+>> [ f ] [ 00asd int? ] unit-test
+
+Automatisieren Sie die Erkennung einer Zahl bei ihrer Eingabe über die Konsole. Passen Sie dazu das Wort 'read-word' an. Wörter, die keine Zahlen repräsentieren müssen nachwievor unverändert auf den Datastack abgelegt werden.
+
+>> % : read-word ( wrd -- ... ) ??? ;
+
+>> : read-word ( wrd -- wrd/int ) dup int? [ int ] when ;
+
+>> [ x ] [ x ] unit-test
+>> [ hello ] [ hello ] unit-test
+>> [ [ z 0 ] ] [ 0 ] unit-test
+>> [ +0 ] [ +0 ] unit-test
+>> [ -0 ] [ -0 ] unit-test
+>> [ [ + 3 2 1 ] ] [ 123 ] unit-test
+>> [ 12x ] [ 12x ] unit-test
+>> [ 1x3 ] [ 1x3 ] unit-test
+>> [ x23 ] [ x23 ] unit-test
+>> [ [ + 3 2 1 ] ] [ +123 ] unit-test
+>> [ [ - 3 2 1 ] ] [ -123 ] unit-test
+>> [ -0123 ] [ -0123 ] unit-test
+
+Bei der Interaktion mit Consize gibt das Wort 'printer' eine Repräsentation des Datastacks aus; es verwendet dazu 'repr'. 
+Passen Sie den Code von 'repr' an, so dass das interne Format für Zahlen bei der Ausgabe als Wort wiedergegeben wird gemäß 'repr-int'. Beachten Sie: Wir müssen natürlich davon ausgehen, dass alle Stapel, die ein 'z', '+' oder '-' als oberstes Element haben, eine Ganzzahl darstellen.
+
+>> % : repr ( -- ) ??? ;
+
+>> \ repr' lookup nil equal?
+>>   [ \ repr' \ repr lookup def ] when
+  
+>> : repr ( itm -- wrd )
+>>   dup type \ stk equal?
+>>     [ dup top { \ z [ repr-int ]
+>>                 \ + [ repr-int ]
+>>                 \ - [ repr-int ]
+>>                 :else [ repr' ] } case ]
+>>     [ repr' ]
+>>   if ;
+
+>> [ 0 ] [ [ z 0 ] repr ] unit-test
+>> [ 123 ] [ [ + 3 2 1 ] repr ] unit-test
+>> [ -123 ] [ [ - 3 2 1 ] repr ] unit-test
+>> [ 0 ] [ 0 repr ] unit-test
+>> [ 123 ] [ 123 repr ] unit-test
+>> [ 123 ] [ +123 repr ] unit-test
+>> [ -123 ] [ -123 repr ] unit-test
+
+Ersetzen Sie die Wörter '+', '-' und '*' mit 'add', 'sub' und 'mult'. Ihr Programm zur Berechnung der Fakultät sollte ohne jegliche Änderungen laufen. 
+
+>> : + add ;
+>> : - sub ;
+>> : * mult ;
+
+Übrigens: Runde Klammern erzeugen ebenfalls Quotierungen, allerdings wird der Inhalt zuvor ausgewertet. Ein Beispiel:
+
+% > ( x dup )
+% [ x x ]
+
+Erläutern Sie, warum im Unit-Test zu 'fact' runde Klammern verwendet werden *müssen*!
+
+>> : fact ( n -- n! ) dup 0 equal? [ 1 + ] [ dup 1 - fact * ] if ;
+>> [ ( 1 1 2 6 24 ) ] [ ( 0 1 2 3 4 ) [ fact ] map ] unit-test
+
+>> 4 fact
+>> \ ready println
+
+>> % : read-word ; % restore 'old' definition before running this file again
+
+>> abort
+
