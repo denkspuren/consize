@@ -1,0 +1,111 @@
+
+
+: qs ( seq pred -- seq' )
+  swap dup empty?
+    [ nip ]
+    [ unpush rot swapu dup
+      [ [ filter ] [ remove ] 2bi ] dip
+      unpush
+      [ swap over [ qs ] 2bi@ ] dip
+      push concat
+    ]
+  if ;
+
+[ ( ) ] [ ( ) [ < ] qs ] unit-test
+[ ( 1 ) ] [ ( 1 ) [ < ] qs ] unit-test
+[ ( 1 2 ) ] [ ( 2 1 ) [ < ] qs ] unit-test
+[ ( 1 2 ) ] [ ( 1 2 ) [ < ] qs ] unit-test
+[ ( 1 2 3 ) ] [ ( 1 2 3 ) [ < ] qs ] unit-test
+[ ( 1 2 3 ) ] [ ( 1 3 2 ) [ < ] qs ] unit-test
+[ ( 1 2 3 ) ] [ ( 2 1 3 ) [ < ] qs ] unit-test
+[ ( 1 2 3 ) ] [ ( 2 3 1 ) [ < ] qs ] unit-test
+[ ( 1 2 3 ) ] [ ( 3 1 2 ) [ < ] qs ] unit-test
+[ ( 1 2 3 ) ] [ ( 3 2 1 ) [ < ] qs ] unit-test
+[ ( 1 2 3 4 ) ] [ ( 4 1 3 2 ) [ < ] qs ] unit-test  
+  
+: qs' ( seq -- seq' )
+  dup empty?
+  [ [ top ] [ pop ] [ top [ < ] swapu ] tri
+    [ filter ] [ remove ] 2bi
+    [ qs' ] bi@
+    rot push concat
+  ] unless ;
+
+[ ( ) ] [ ( ) qs' ] unit-test
+[ ( 1 ) ] [ ( 1 ) qs' ] unit-test
+[ ( 1 2 ) ] [ ( 2 1 ) qs' ] unit-test
+[ ( 1 2 ) ] [ ( 1 2 ) qs' ] unit-test
+[ ( 1 2 3 ) ] [ ( 1 2 3 ) qs' ] unit-test
+[ ( 1 2 3 ) ] [ ( 1 3 2 ) qs' ] unit-test
+[ ( 1 2 3 ) ] [ ( 2 1 3 ) qs' ] unit-test
+[ ( 1 2 3 ) ] [ ( 2 3 1 ) qs' ] unit-test
+[ ( 1 2 3 ) ] [ ( 3 1 2 ) qs' ] unit-test
+[ ( 1 2 3 ) ] [ ( 3 2 1 ) qs' ] unit-test
+[ ( 1 2 3 4 ) ] [ ( 4 1 3 2 ) qs' ] unit-test
+
+: first top ;
+: second pop top ;
+: rest pop ;
+: rrest pop pop ;
+
+: bubble ( seq -- seq' )
+  dup rest empty?
+  [ [ rrest ] [ first ] [ second ] tri
+    2dup > [ swap ] unless
+    [ push bubble ] dip push 
+  ] unless ;
+  
+[ (   ) ] [ (   ) bubble ] unit-test
+[ ( 1 ) ] [ ( 1 ) bubble ] unit-test
+[ ( 1 2 ) ] [ ( 1 2 ) bubble ] unit-test
+[ ( 1 2 ) ] [ ( 2 1 ) bubble ] unit-test
+[ ( 1 2 3 ) ] [ ( 1 2 3 ) bubble ] unit-test
+[ ( 1 2 3 ) ] [ ( 1 3 2 ) bubble ] unit-test
+[ ( 1 2 3 ) ] [ ( 2 1 3 ) bubble ] unit-test
+[ ( 2 1 3 ) ] [ ( 2 3 1 ) bubble ] unit-test
+[ ( 1 2 3 ) ] [ ( 3 1 2 ) bubble ] unit-test
+[ ( 2 1 3 ) ] [ ( 3 2 1 ) bubble ] unit-test
+[ ( 1 3 2 4 ) ] [ ( 4 1 3 2 ) bubble ] unit-test
+[ ( 1 1 1 ) ] [ ( 1 1 1 ) bubble ] unit-test
+
+
+: fix ( val quot -- res ) % named recursion
+  2dup call rot over equal? [ nip ] [ swap fix ] if ;
+  
+: bsort ( seq -- seq' ) [ bubble ] fix ;
+  
+[ ( ) ] [ ( ) bsort ] unit-test
+[ ( 1 ) ] [ ( 1 ) bsort ] unit-test
+[ ( 1 2 ) ] [ ( 2 1 ) bsort ] unit-test
+[ ( 1 2 ) ] [ ( 1 2 ) bsort ] unit-test
+[ ( 1 2 3 ) ] [ ( 1 2 3 ) bsort ] unit-test
+[ ( 1 2 3 ) ] [ ( 1 3 2 ) bsort ] unit-test
+[ ( 1 2 3 ) ] [ ( 2 1 3 ) bsort ] unit-test
+[ ( 1 2 3 ) ] [ ( 2 3 1 ) bsort ] unit-test
+[ ( 1 2 3 ) ] [ ( 3 1 2 ) bsort ] unit-test
+[ ( 1 2 3 ) ] [ ( 3 2 1 ) bsort ] unit-test
+[ ( 1 2 3 4 ) ] [ ( 4 1 3 2 ) bsort ] unit-test
+[ ( 1 2 3 4 5 6 ) ] [ ( 4 1 6 3 2 5 ) bsort ] unit-test
+  
+: X dup call ;
+
+: Y ( val quot -- res ) % anonymous recursion
+  [ [ 2dup call rot over equal? ] dip
+    swap [ drop nip ] [ [ swap ] dip X ] if ] X ;
+    
+: bsort ( seq -- seq' ) [ bubble ] Y ;
+  
+[ ( ) ] [ ( ) bsort ] unit-test
+[ ( 1 ) ] [ ( 1 ) bsort ] unit-test
+[ ( 1 2 ) ] [ ( 2 1 ) bsort ] unit-test
+[ ( 1 2 ) ] [ ( 1 2 ) bsort ] unit-test
+[ ( 1 2 3 ) ] [ ( 1 2 3 ) bsort ] unit-test
+[ ( 1 2 3 ) ] [ ( 1 3 2 ) bsort ] unit-test
+[ ( 1 2 3 ) ] [ ( 2 1 3 ) bsort ] unit-test
+[ ( 1 2 3 ) ] [ ( 2 3 1 ) bsort ] unit-test
+[ ( 1 2 3 ) ] [ ( 3 1 2 ) bsort ] unit-test
+[ ( 1 2 3 ) ] [ ( 3 2 1 ) bsort ] unit-test
+[ ( 1 2 3 4 ) ] [ ( 4 1 3 2 ) bsort ] unit-test
+[ ( 1 2 3 4 5 6 ) ] [ ( 4 1 6 3 2 5 ) bsort ] unit-test
+
+

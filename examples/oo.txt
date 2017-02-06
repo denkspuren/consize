@@ -1,0 +1,413 @@
+% (c) Dominikus Herzberg, 2012 -- Creative Commons Lizenz CC BY-NC-SA 3.0
+%
+% Es gibt verschiedene Ausprägungen der Objekt-Orientierung. Die prominenteste
+% Form ist die klassenbasierte Objekt-Orientierung, wie sie z.B. durch Java,
+% C#, Python oder Ruby bereitgestellt wird. Durch JavaScript ist auch
+% die prototyp-basierte Objekt-Orientierung bekannt geworden. Aus vergangenen
+% Zeiten, den Jahren, in denen Lisp populär war, stammt das Common Lisp Objekt
+% System (CLOS).
+%
+% Allen OO-Formen ist gemeinsam, dass Objekte zur Datenhaltung dienen und ein
+% Mechanismus existiert, gemeinsame Eigenschaften zusammenzufassen und
+% auszulagern (Code Reuse). Im Kern schlägt sich der Aspekt des Code Resue in
+% unterschiedlichen Ansätzen zur Vorhaltung der Methoden nieder. Bei der
+% klassenbasierten OO sind die Methoden an den syntaktischen Kontext der
+% Klasse gebunden, den Reuse erlaubt der Mechanismus der Vererbung. Bei der
+% prototyp-basierten OO sind Methoden an den syntaktischen Kontext der Objekte
+% gebunden, Prototyp-Beziehung ermöglichen den Reuse. Bei CLOS sind Methoden
+% vollständig von den Klassen und Objekten losgelöst und bilden durch
+% Namensgleichheit eine logische Einheit als generische Funktionen, auch hier
+% bildet die Vererbungsbeziehung von Klassen den Mechanismus für Code Reuse.
+% Die OO der konkatenative Sprache Factor arbeitet nach diesem Vorbild. 
+%
+% Grundsätzlich ist keine Form der OO der anderen überlegen. Es ist vielmehr
+% so, dass die verschiedenen Varianten unterschiedliche Vorgehensweisen
+% anregen, ein Softwaresystem zu modellieren und zu organisieren. Die Idee der
+% generischen Funktionen bleibt jedoch die flexibelste in dem Sinne, dass sie
+% die geringsten syntaktischen Kontextbezüge einfordert.
+%
+% Nachfolgend bauen wir die Infrastruktur auf, die OO mit Hilfe von generischen
+% Wörter umsetzt. Tatsächlich greift die Infrastruktur sogar noch weiter.
+% Wir werden generische Wörter einführen, deren Verhalten abhängt von einem
+% Dispatch-Wert, der über eine Dispatch-Funktion ermittelt wird.
+% Die Dispatch-Funktion ist frei definierbar und kann beliebig viele Werte auf
+% dem Datastack umfassen. OO-Systeme berücksichtigen in der Regel nur ein
+% Argument, nämlich das Objekt, und dispatchen bezüglich des Objekttyps.
+% Generische Wörter in Consize sind nicht auf "single dispatch" beschränkt,
+% sondern erlauben einen "multiple dispatch".
+%
+% Ergänzend führen wir die Option ein, Hierarchien von Dispatch-Werten
+% zu definieren. Die Auflösung der Hierarchie in einen Pfad von
+% Dispatch-Werten kann ebenso bestimmt werden. Damit kann das Dispatch-System
+% von Consize den Vererbungsmechanismus klassenbasierter OO nachbilden, 
+% einschließlich Mehrfachvererbung, ohne das Konzept der Klasse anbieten zu
+% müssen. Die Ideen gehen übrigens auf das Dispatch-System der Sprache Clojure
+% zurück.
+
+% Die Programme und Testfälle in dieser Datei können mit Consize über die
+% Konsole ausgeführt werden:
+%
+% > \ <dateiname>.txt run
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+% Generische Wörter haben einen definierten Aufbau der mit ihnen assoziierten
+% Quotierungen:
+% wrd -> dispatch { val1 [ quot1 ] val2 [ quot2 ] ... } case
+%
+% Die einleitende Quotierung ermittelt den Dispatch-Wert aus einer beliebigen
+% Anzahl von Werten auf dem Datastack. Es ist also nicht nur ein "single
+% dispatch" sondern auch ein "multiple dispatch" realisierbar. 
+% Die einzelnen Werte 'val1', 'val2' etc. heißen "Dispatch-Werte", die dazu
+% gehörigen Quotierungen "Methoden".
+
+% Den Aufruf der entsprechenden Methode in Abhängigkeit vom ermittelten
+% Dispatch-Wert realisiert 'case'. Die einem generischen Wort zugrunde liegende
+% Programmstruktur entspricht einem typischen "case"-Programm. Ein generisches
+% Wort löst die syntaktischen Beschränkungen auf: Der Dispatch-Anteil wird mit
+% der Definition des generischen Wortes gesetzt, die 'case'-Anteile mit den
+% einzelnen Methoden.
+
+% Ein neues generisches Wort wird mit 'def-generic+' eingeführt. Das Wort baut
+% das Grundgerüst des Schemas für generische Wörter auf. Mit 'def-generic'
+% wird auf die Angabe eines Stapeleffekts verzichtet.
+  
+: def-generic+ ( wrd [ effect ] [ dispatch ] -- )
+  [ { :else [ _|_ ] } case ] concat def+ ;
+
+: def-generic ( wrd [ dispatch ] -- ) [ ??? ] swap def-generic+ ;
+  
+% Neue Methoden fügt 'def-method' zum Schema des generischen Worts hinzu.
+% Hinweise: Der Code ist vorbereitet für die spätere Ersetzung von 'case'
+% durch 'chase'.
+
+: def-method ( wrd val quot -- )
+  swap rot                              % quot val wrd
+  [ lookup reverse pop top assoc ] keep % { val quot ... } wrd
+  [ lookup reverse top swap ] keep      % case/chase { val quot ... } wrd
+  [ lookup reverse pop pop swapu swapu reverse ] keep
+  swap def ;                            % wrd [ ... { ... } chase/case ] | def 
+  
+% Man kann normale "case"-Programmierung nun inkrementell aufbauen und
+% über mehrere Stellen im Quelltext verteilen. 
+
+\ ndrop [ ] def-generic
+\ ndrop 1 [ drop ] def-method
+\ ndrop 2 [ drop drop ] def-method
+\ ndrop 3 [ drop drop drop ] def-method
+\ ndrop 4 [ 2 ndrop 2 ndrop ] def-method
+
+[ x y ] [ x y z 1 ndrop ] unit-test
+[ x   ] [ x y z 2 ndrop ] unit-test
+[ x y ] [ x y z u v 3 ndrop ] unit-test
+[ x   ] [ x y z u v 4 ndrop ] unit-test
+
+% Für beliebige Werte von 'ndrop' müssen der Dispatch ein wenig verändert 
+% und die Methoden angepasst werden.
+
+\ ndrop [ dup ] def-generic % ( itm_1 ... itm_n n -- )
+\ ndrop 0 [ drop ] def-method
+\ ndrop :else [ swap drop 1 - ndrop ] def-method
+
+[ x y ] [ x y z 1 ndrop ] unit-test
+[ x   ] [ x y z 2 ndrop ] unit-test
+[ x y ] [ x y z u v 3 ndrop ] unit-test
+[ x   ] [ x y z u v 4 ndrop ] unit-test
+[     ] [ x y z u v 5 ndrop ] unit-test
+[ x y ] [ x y 0 ndrop ] unit-test
+
+% EXPERIMENTAL -- DIE SYNTAX IST NOCH IN ARBEIT
+%
+% Die Syntax, die man vorsehen könnte:
+% GENERIC: wrd ( stackeffect ) dispatch ;
+% M: dispatch-value wrd program ;
+% M: 
+
+: pull ( ... [ itm @ds ] [ @cs ] -- ... @ds @cs itm | push )
+  swap unpush dup \ \ equal?
+    [ drop unpush rot swapu \ \ push ]
+    [ rot swapu ]
+  if ;
+
+: GENERIC: ( | ... '; -- ) % see definition of ':' in prelude
+  [ [ ] swap scan4; destruct-definition
+    nip def-generic continue ] call/cc ;
+      
+: M: ( | ... '; -- ) % see definition of ':' in prelude
+  [ [ ] swap scan4; 
+    [ swap ] step drop
+    destruct-definition
+    nip unpush swap def-method continue ] call/cc ;
+
+GENERIC: ndrop ( x1 x2 ... xn n -- ) ;
+M: 1 ndrop drop ;
+M: 2 ndrop drop drop ;
+M: 3 ndrop drop drop drop ;
+M: 4 ndrop 2 ndrop 2 ndrop ;
+
+[ x y ] [ x y z 1 ndrop ] unit-test
+[ x   ] [ x y z 2 ndrop ] unit-test
+[ x y ] [ x y z u v 3 ndrop ] unit-test
+[ x   ] [ x y z u v 4 ndrop ] unit-test
+
+% -- ENDE EXPERIMENTAL
+
+% Auch Pattern-basierte Programmierung liegt nahe:
+
+\ fact [ dup 0 == ] def-generic
+\ fact true  [ drop 1 ] def-method
+\ fact false [ dup 1 - fact * ] def-method
+
+[ ( 1 1 2 6 24 120 720 ) ] [ [ 0 1 2 3 4 5 6 ] [ fact ] map ] unit-test
+
+% Der generierte Source-Code zum generischen Wort entspricht der "normalen"
+% Fakultätsfunktion, die kein 'if', sondern ein 'case' verwendet. Aus
+%
+% : fact ( n -- n! ) dup 0 == [ drop 1 ] [ dup 1 - fact * ] if ;
+%
+% wird
+%
+% : fact ( n -- n! ) dup 0 ==
+%   { true  [ drop 1 ]
+%     false [ dup 1 - fact * ] } case ;
+%
+% Das ist der Code, der durch das generische Wort generiert wird!
+% 
+% Die Fakultätsfunktion kann aber kürzer noch direkt über den Abbruchwert
+% dispatchen!
+
+\ fact [ dup ] def-generic
+\ fact 0     [ drop 1 ] def-method
+\ fact :else [ dup 1 - fact * ] def-method
+
+[ ( 1 1 2 6 24 120 720 ) ] [ [ 0 1 2 3 4 5 6 ] [ fact ] map ] unit-test
+
+% Das Wort 'if' kann auch über ein generisches Wort definiert werden. 
+
+abort
+
+\ if [ rot ] def-generic
+\ if false [ f call ] def-method
+\ if :else [ t call ] def-method
+
+% Consize arbeitet problemlos mit der überschriebenen "alten" Version von 'if'
+% weiter. Schauen Sie sich auch einmal den generierten Code an!
+
+[ 4 ] [ 3 true [ 1 + ] [ 1 - ] if ] unit-test
+[ 2 ] [ 3 false [ 1 + ] [ 1 - ] if ] unit-test
+[ 4 ] [ 3 dup [ 1 + ] [ 1 - ] if ] unit-test
+
+% Das folgende 'xor'-Beispiel macht deutlich, wie pattern-basierte
+% Programmierung über zwei Dispatch-Werte möglich ist.
+
+\ xor [ [ ] swapu swapu ] def-generic
+\ xor ( true  true  ) [ false ] def-method
+\ xor ( true  false ) [ true  ] def-method
+\ xor ( false true  ) [ true  ] def-method
+\ xor ( false false ) [ false ] def-method
+
+( false ) [ true true xor ] unit-test
+( true  ) [ true false xor ] unit-test
+( true  ) [ false true xor ] unit-test
+( false ) [ false false xor ] unit-test
+
+% Man kann das Wort 'repr' neu definieren als generisches Wort, das für jeden
+% Typen eine eigene Methode zur Erzeugung der Repräsentation vorhält. Als
+% Vorlage mag der Code für 'repr' aus der Prelude dienen.
+
+\ repr [ dup type ] def-generic
+\ repr \ wrd [ ] def-method
+\ repr \ stk [ [ ] \ [ push <space> push swap 
+                [ repr push <space> push ] each
+                \ ] push reverse word ] def-method
+\ repr \ map [ unmap [ ] \ { push <space> push swap
+                [ repr push <space> push ] each
+                \ } push reverse word ] def-method
+\ repr \ fct [ drop \ <fct> ] def-method
+\ repr \ nil [ drop \ nil ] def-method
+\ repr :else [ drop \ repr-error ] def-method
+
+% Der Code benötigt nicht unbedingt eigene Testfälle -- bei der Anzeige des
+% Durchlaufs der übrigen Testfälle würde ein Repräsentationsfehler sofort
+% auffallen. Und die REPL würde ebenfalls brechen.
+%
+% Interessant ist, sich den aus dieser Definition erzeugten Code anzuschauen
+% mit '\ repr source'. Der Code ist identisch mit der ursprünglichen
+% Definition aus der Prelude. Entscheidender Unterschied: Das generische Wort
+% lässt sich noch beliebig erweitern, das nicht-generische Wort nicht.
+%
+% Anmerkung: Man kann 'def-generic' und 'def-method' so anpassen, dass exakt
+% der Original-Code von 'repr' konstruiert wird. Die hier vorgestellte
+% Variante erlaubt sehr einfach eine Erweiterung, die wir weiter unten
+% vornehmen.
+
+% Folgend wollen wir Mappings zur Darstellung von Objekten nutzen. 'mget' und
+% 'mtype' sind dazu hilfreiche Wörter. Per Konvention haben alle Objekte einen
+% Typen, der durch ':type' im Mapping ausgewiesen ist.
+
+: mget ( map key -- val ) swap \ key-error get ;
+: mtype ( map -- val ) \ :type mget ;
+
+% Die folgenden Objekte repräsentieren Wesen oder Dinge einer Welt, in der
+% alles eine ':power' und ein Energieniveau ':level' hat. Beide Slots nehmen
+% eine Ganzzahl auf.
+%
+% Es ist ein generisches Wort 'strength' zu definieren, dass folgende
+% Unterscheidung macht:
+% * Ist das Objekt vom Typ 'thing', ist 'strength' identisch mit dem Wert
+%   von ':power'.
+% * Für 'human' ist 'strength' die Summe aus ':power' und ':level'.
+% * Für 'superhuman' ist 'strength' das Produkt aus ':power' und ':level'.
+
+\ strength [ dup mtype ] def-generic
+\ strength superhuman [ [ :power mget ] [ :level mget ] bi * ] def-method
+\ strength human [ [ :power mget ] [ :level mget ] bi + ] def-method
+\ strength thing [ :power mget ] def-method
+
+( 3 ) [ { :type superhuman :power 3 :level 1 } strength ] unit-test
+( 6 ) [ { :type human :power 4 :level 2 } strength ] unit-test
+( 5 ) [ { :type thing :power 5 :level 8 } strength ] unit-test
+
+% An dem Beispiel zeigt sich: OO kann auch sehr gut mit der Trennung von
+% Daten (dem Objekt) und Methoden zum generischen Wort funktionieren. Auf
+% diese Weise lässt sich das Verhalten von Objekten an beliebigen Stellen
+% im Code erweitern.
+
+% Lassen wir die Typen von Mappings sich nahtlos einfügen in die Menge der
+% bisherigen Standard-Typen von Consize.
+
+% Der folgende Code ist sicher gegen wiederholte Ausführung; sonst würde
+% sich das Type-Wort immer wieder neu wegschreiben und überschreiben.
+
+\ type lookup dup type \ fct equal?
+  [ \ _type_ swap def ]
+  [ drop ]
+if
+
+: type ( itm -- wrd )
+  dup _type_ dup \ map equal?
+    [ drop mtype dup \ key-error equal? [ drop \ map ] when ]
+    [ nip ]
+  if ;
+
+[ nil ] [ nil type ] unit-test
+[ fct ] [ \ dup lookup type ] unit-test
+[ wrd ] [ \ word type ] unit-test
+[ stk ] [ [ ] type ] unit-test
+[ map ] [ { } type ] unit-test
+[ human ] [ { :type human :power 4 :level 2 } type ] unit-test
+[ thing ] [ { :type thing :power 5 :level 8 } type ] unit-test
+
+% Anmerkung: Man könnte an dieser Stelle für Objekte der Typen 'human' und
+% 'thing' Repräsentations-Methoden zum generischen Wort 'repr' hinzufügen.
+
+% Um eine leichtgewichtige Form der OO ohne Klassen zu haben, benötigen wir
+% (a) eine Möglichkeit, eine Hierarchie von Typen auszudrücken und (b) eine
+% Strategie, die Hierarchie zu durchlaufen (üblicherweise Method Resolution
+% Order (MRO) genannt). In Python ist die MRO ausführlich dokumentiert, siehe
+% http://www.python.org/download/releases/2.3/mro/ (2012-11-20)
+
+% Eine Hierarchie von Typen werde durch ein Mapping ausgedrückt, das einen
+% Typen auf eine Sequenz von Supertypen abbildet. Die MRO sei: depth first,
+% width from left to right.
+
+: path ( val { hierarchy } -- [ seq ] )
+  2dup false get dup       % val h f/res f/res
+    [ rot [ ] swapu        % h res [ val ]
+     -rot swap             % [ val ] res h
+     [ path concat ] swapu % [ val ] res [ h path concat ]
+     each ]
+    [ drop [ ] rot push nip ] % [ val ]
+  if ;
+  
+% Die in 'path' umgesetzte Strategie ist nicht perfekt, da sie möglicherweise
+% Elemente mehrfach in den Pfad aufnimmt, siehe z.B. den letzten Testfall.
+% Sich wiederholende Werte im Pfad haben nur einen Performanz-Nachteil, der
+% hier nicht stören soll.
+  
+( [ z ] )         [ z { a [ b c ] c [ d ] } path ] unit-test
+( [ a c d b ] )   [ a { a [ c b ] c [ d ] } path ] unit-test
+( [ a c d e b ] ) [ a { a [ c b ] c [ d e ] } path ] unit-test
+( [ a b c d e ] ) [ a { a [ b c ] c [ d e ] } path ] unit-test
+( [ a b d c d ] ) [ a { a [ b c ] b [ d ] c [ d ] } path ] unit-test
+
+% Das Wort 'chase' ist eine Erweiterung von 'case'. Statt zu einem Key-Wert
+% in einem Mapping die Zielquotierung auszuführen, übergibt man 'chase' eine
+% Sequenz von Key-Werten. 'chase' sucht die Werte der Reihe nach ab, bis im
+% Mapping eine Assoziation gefunden ist. Schlagen alle Keys fehl, wird eine
+% Assoziation mit ':default' als Key gesucht. Die Quotierung zur gefundenen
+% Assoziation wird ausgeführt.
+  
+: chase ( vals { val1 quot1 ... } -- ... )
+  swap dup empty?                 % map vals t/f
+    [ drop \ :default swap case ] % :default map | case
+    [ unpush -rot over            % val map vals' map
+      [ chase ] swapu swapu       % val map [ vals' map chase ]
+      get call ]                  % | get call
+  if ;
+
+[ 3 ] [ [ a c b ] { b [ 1 ] c [ 2 ] a [ 3 ] :default [ 4 ] } chase ] unit-test  
+[ 2 ] [ [ z c b ] { b [ 1 ] c [ 2 ] a [ 3 ] :default [ 4 ] } chase ] unit-test
+[ 1 ] [ [ z c b ] { b [ 1 ] x [ 2 ] a [ 3 ] :default [ 4 ] } chase ] unit-test
+[ 4 ] [ [ x y z ] { b [ 1 ] c [ 2 ] a [ 3 ] :default [ 4 ] } chase ] unit-test
+
+% Mit 'path' und 'chase' kann nun eine Hierarchie von Dispatch-Werten auf
+% Passung untersucht werden. 
+
+% Wir gehen davon aus, dass die Dispatch-Hierarchie über das Wort
+% 'hierarchy' abrufbar ist.
+
+: *hierarchy* { } ;
+
+% Wir definieren das Wort 'call-method' neu, ohne dabei die Struktur eines
+% generischen Wortes aus '[ dispatch ] { val1 [ quot1 ] ... } call-method'
+% zu zerstören.
+
+: def-generic ( wrd [ dispatch ] -- )
+  [ *hierarchy* path { :else [ _|_ ] } chase ] concat def ;
+
+% Und fertig ist das OO-System! Machen wir einen einfachen Test. Wir führen
+% eine Hierarchie ein und definieren ein generisches Wort 'name', das wir
+% nach jedem Test erweitern, so dass die Antworten jeweils anders ausfallen.
+
+: *hierarchy* { Child [ Person ] Person [ Human Creature ] } ;
+  
+\ name [ dup type ] def-generic
+\ name Creature [ drop no-name ] def-method
+
+: james-child { :type Child first-name James last-name Bond } ;
+
+[ no-name ] [ james-child name ] unit-test
+
+\ name Person [ last-name mget ] def-method
+
+[ Bond ] [ james-child name ] unit-test
+
+\ name Child  [ first-name mget ] def-method
+
+[ James ] [ james-child name ] unit-test
+
+: james-person { :type Person first-name James last-name Bond } ;
+
+[ Bond ] [ james-person name ] unit-test
+
+% Wenn man möchte, kann zur Dispatch-Hierarchie nach ihrer Festlegung statisch
+% für jeden Dispatch-Wert der Suchpfad berechnet werden, so dass das nicht zur
+% Laufzeit geschehen muss. Man könnte sogar die entsprechende Methode zum
+% generischen Wort vorab heraussuchen lassen, so dass OO praktisch ohne
+% Einbußen in der Performanz realisiert werden kann.
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+% Links zur Vertiefung des Themas:
+% http://denkspuren.blogspot.de/2012/05/root-of-polymorphism-anti-if-campaign.html
+%
+% Concatenation-based Inheritance for JavaScript
+% http://lively.cs.tut.fi/publications/TR6-JavaScriptConcatenation-Taivalsaari.pdf
+%
+% Method Resolution Order in Python
+%  http://www.python.org/download/releases/2.3/mro/
+
+% Idee: Zustandsautomaten mit generischen Wörtern umsetzen
+% TODO: Default-Verhalten testen
+% TODO: Link zu Clojure, CLOS
+% TODO: Syntax für generische Wörter, die dem Vorbild von Factor folgt.

@@ -1,0 +1,24 @@
+% Der X-Kombinator ist die einfachste Variante für die anonyme Rekursion.
+% Mit "anonymer Rekursion" ist ein Selbstaufruf gemeint ohne Bezug auf eine
+% benamte Quotierung. Das kann nur funktionieren, wenn das aufgerufene
+% Programm eine Kopie von sich auf dem Datastack vorhält.
+
+: X dup call ;
+
+: fact ( n -- n! ) dup 0 equal? [ drop 1 ] [ dup 1 - fact * ] if ;
+
+[ [ 1 1 2 6 24 120 720 ] ] [ [ 0 1 2 3 4 5 6 ] [ fact ] map ] unit-test
+
+: factX [ swap dup 0 equal? [ 2drop 1 ] [ dup 1 - rot X * ] if ] X ;
+
+[ [ 1 1 2 6 24 120 720 ] ] [ [ 0 1 2 3 4 5 6 ] [ factX ] map ] unit-test
+
+[ 720 ]
+[ 6
+  [ swap dup 0 equal? [ 2drop 1 ] [ dup 1 - rot X * ] if ] X
+] unit-test
+
+[ [ 1 1 2 6 24 120 720 ] ]
+[ [ 0 1 2 3 4 5 6 ]
+  [ [ swap dup 0 equal? [ 2drop 1 ] [ dup 1 - rot X * ] if ] X ]
+  map ] unit-test

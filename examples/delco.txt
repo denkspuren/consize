@@ -1,0 +1,216 @@
+% Implementation of Delimited Continuations in Consize, @denkspuren 2014-11-06
+
+% The words `scan` and `scanWithDefault` are helpers to built implementations
+% for `call/dc` and `shift` by means of `call/cc`.
+
+% Note: Word `\` is not treated in a special manner. It is an artefact
+% of call/cc. With delimited continuations only, the backslash must be
+% superseeded by an equivalent convention such as `\ <word> \`. Here,
+% the backslash initiates and marks the end of a sequences of words
+% pushed on the datastack without further ado.
+
+: scan ( [ @Acc ] [ @SL #Key @SR ] { #Key #Val } -- [ @SL{reverse}  @Acc ] [ @SR ] #Val ,
+         [ @Acc ] [ @Stk         ] { #Key #Val } -- [ @Stk{reverse} @Acc ] [     ] nil  )
+  [ unpush dup nil equal? ] dip swap
+    [ 2drop nil ] % there are no more items to scan
+    [ dupd
+      [ nil get ] keep swap
+      { nil   [ [ rot cons swap ] dip scan ]
+        :else [ nil get ]
+      } case ]
+  if ;
+
+( [ 2 1 0 ] [ 3 4 5 ] \ XXX ) 
+[ [ 0 ] [ 1 2 reset 3 4 5 ] { \ reset \ XXX \ 3 \ YYY } scan ] unit-test
+
+( [ 2 1 ] [ 4 5 ] \ YYY ) 
+[ ( ) [ 1 2 3 4 5 ] { \ reset \ XXX \ 3 \ YYY } scan ] unit-test
+
+( [ 5 4 2 1 ] [ ] nil )
+[ ( ) [ 1 2 4 5 ] { \ reset \ XXX \ 3 \ YYY } scan ] unit-test
+
+( [ ] [ ] nil ) [ ( ) [ ] { } scan ] unit-test
+
+: scanWithDefault ( [ @Acc ] [ @SL #Key @SR ] { #Key #Val } #Dflt -- [ @SL{reverse} @Acc ] [ @SR ] #Val ,
+                    [ @Acc ] [ @Stk         ] { #Key #Val } #Dflt -- [ ]    [ @Acc{reverse} @Stk ] #Dflt )
+  [ scan dup nil equal? ] dip swap       % Was scan successful?
+    [ nip nip [ reverse ( ) swap ] dip ] % no:  drop #Val, recover @Stk
+    [ drop ]                             % yes: drop #Dflt
+  if ;
+
+( [ 2 1 ] [ 3 4 ] \ XXX )
+[ ( ) [ 1 2 reset 3 4 ] { \ reset \ XXX } \ YYY scanWithDefault ] unit-test
+
+( [ ] [ 0 1 2 3 4 ] \ YYY )
+[ [ 0 ] [ 1 2 3 4 ] { \ reset \ XXX } \ YYY scanWithDefault ] unit-test
+
+( [ ] [ 1 2 3 4 ] \ YYY )
+[ [ ] [ 1 2 3 4 ] { \ reset \ XXX } \ YYY scanWithDefault ] unit-test
+
+% Word `call/dc` looks into the future of execution (meaning it inspects
+% the continuation of the callstack) and searches for a marker that delimits
+% its horizon of sight. If the marker is found the "delimited continuation"
+% is available for reflection and manipulation.
+%
+% Read `call/dc` as: "`call` (a quotation) with delimited continuation
+% (on the datastack)". `call/dc` expects a mapping with markers and
+% quotations to call; in addition, a default quotation is given in case
+% no marker applies. 
+
+: call/dc ( { #Key [ @Quot ] } [ @Default ] -- [ @DC ] [ @Quot/@Default ] | call )
+  [ swap unpush [ unpush ] dip [ ( ) rot ] 2dip scanWithDefault
+    [ push ] 2dip
+    swap concat   % emulates `call`
+    continue
+  ] call/cc ;
+
+% *Example:*
+%
+% > { \ reset [ \ RESET ] } [ \ ??? ] call/dc 1 2 reset 3 4
+% [ 2 1 ] RESET 3 4
+%
+% The code up to `reset` is captured, put on the datastack as a stack
+% with the items in reverse order. Quotation `[ \ RESET ]` is called.
+
+[ [ 2 1 ] RESET 3 4 ]
+[ { \ reset [ \ RESET ] } [ \ ??? ] call/dc 1 2 reset 3 4 ] unit-test
+
+% *Example:*
+%
+% > { \ reset [ \ RESET ] } [ \ ??? ] call/dc 1 2 3 4
+% [ ] ??? 1 2 3 4
+%
+% There is no delimiter called `reset` in the current continuation.
+% That's why an empty stack is left on the datastack and the default
+% quotation `[ \ ??? ]` is called.
+
+[ [ ] ??? 1 2 3 4 ]
+[ { \ reset [ \ RESET ] } [ \ ??? ] call/dc 1 2 3 4 ] unit-test
+
+% Open Issue:
+%
+% I'm skeptical about the default quotation handed over to `call/dc`.
+% If no delimiter is found in the current continuation, `call/dc`
+% knows something about the future of execution by exclusion: it
+% knows which words won't appear in the entire future. Knowledge about
+% the entire future of execution is "dysfunctional", i.e. it is not
+% compliant to the functional paradigm. If at all, knowledge should
+% be limited (specified by delimiters) and not unlimited.
+% I guess it should be considered as a programmer's fault to use
+% `call/dc` with non-matching delimiters. The programmer should know
+% the programs future by looking into the source code following
+% `call/dc`.
+
+% The implementation of `shift` fixes that problem. There is no
+% default quotation, just a mapping of delimiters and quotations to
+% be handed over to `shift`. If a delimiter is found, the associated
+% quotation is called with the delimited continuation on the datastack.
+% If there is no delimiter, `shift` drops the mapping and simply
+% continues execution as a fallback behavior. Without metawords such
+% as `get-ds` you cannot reliably predict whether `shift` "failed"
+% (no matching delimiter) or not. If `shift` fails your program is
+% likely to mess up because of unbalanced stack effects (none of the
+% quotations of the mapping has been called) and the like.
+% For programmer's safety one might prefer a variant of `shift` raising
+% an error in case of non-matching delimiters.
+%
+% Note that `shift` puts the delimited continuation unreversed on the
+% datastack; `call/dc` works with reversed delimited continuations.
+
+: shift ( { #Key [ @Quot ] } | @DC #Key @RCS } -- [ @DC ] | @Quot @RCS )
+  [ swap unpush [ ( ) rot ] dip scan
+    dup nil equal?                     % Was scan successfull?
+      [ 2drop reverse continue ]       % no:  resume execution
+      [ swap concat                    % yes: emulate `call` and
+        [ reverse push ] dip continue  %      push @DC on DS
+      ]
+    if
+  ] call/cc ; 
+
+% *Example:*
+% 
+% > 0 { \ reset [ \ RESET ] } shift 1 2 reset 3 4 
+% 0 [ 1 2 ] RESET 3 4
+
+( 0 [ 1 2 ] \ RESET 3 4 )
+[ 0 { \ reset [ \ RESET ] } shift 1 2 reset 3 4 ] unit-test
+
+% *Example:*
+% 
+% > 0 { \ reset [ \ RESET ] } shift 1 2 3 4 
+% 0 1 2 3 4
+
+( 0 1 2 3 4 ) [ 0 { \ reset [ \ RESET ] } shift 1 2 3 4 ] unit-test
+( 0 1 2 3 4 ) [ 0 { } shift 1 2 3 4 ] unit-test
+
+% The implementation of `shift` is more flexible than `shift/reset`. Usually,
+% `shift` searches only for the delimiter called `reset`. Our implementation
+% allows the programmer to configure one or more "keywords" as delimiters.
+% Word `shift/reset` implements that non-configurable version of `shift`.
+
+: reset ; % `reset` is ignored and has no effect
+
+: shift/reset ( [ @Quot ] | @DC reset @RCS -- [ @DC{reverse} ] | @Quot @RCS )
+  [ ] cons \ reset push mapping shift ;
+
+( 0 [ 1 2 ] \ RESET 3 4 ) [ 0 [ \ RESET ] shift/reset 1 2 reset 3 4 ] unit-test
+( 0 1 2 3 4 ) [ 0 1 2 reset 3 4 ] unit-test
+( 0 1 2 3 4 ) [ 0 [ \ RESET ] shift/reset 1 2 3 4 ] unit-test
+
+% --------------------------------------------------------------------------
+%
+% The implementation of `shift/reset` seems to be compliant with literature.
+%
+% The following examples for demonstrating `shift/reset` are transcriptions
+% of the examples described in:
+%
+% Gasbichler, Martin and Sperber, Michael: "Final Shift for Call/cc:
+% Direct Implementation of Shift and Reset", in Proceeding of ICFP'02,
+% October 4-6, 2002, Pittburgh, Pennsylvania, USA
+% http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.11.3425
+
+% A `reset` without a `shift` has no effect.
+%
+% (+ 1 (reset 3)) ~-> 4
+[ 4 ] [ 1 3 reset + ] unit-test
+
+% In Scheme, a delimited continuation is a function which is constituted by
+% the expression that ranges from `shift` up to the nearest delimiting "outer"
+% `reset`. The `shift` expression could be regarded as the slot to be filled
+% by an argument. The `reset` expression is the nearest outer delimiter.
+% (Remember that in Scheme expressions are evaluated inside/out.)
+%
+% Referring to the following examples, the continuation is in all three cases
+% given by `(lambda (x) (* 2 x))`.
+%
+% At runtime, the first argument of `shift` (a symbol) is bound to the function
+% representing the delimited continuation. The second argument is an
+% expression. The expression is evaluated and the result substitutes the
+% form given by `reset`.
+%
+% (+ 1 (reset (* 2 (shift k 4)))) ~-> 5
+%
+% corresponds to
+%
+% (+ 1 4) => 5
+%
+% Remember that `shift/reset` in Consize behaves like `shift` in Scheme.
+
+[ 5 ] [ 1 4 [ drop ] shift/reset 2 * reset + ] unit-test
+
+% (+ 1 (reset (* 2 (shift k (k 4))))) ~-> 9
+%
+% corresponds to
+%
+% (+ 1 ((lambda (x) (* 2 x)) 4)) => (+ 1 8) => 9
+
+[ 9 ] [ 1 4 [ call ] shift/reset 2 * reset + ] unit-test
+
+% (+ 1 (reset (* 2 (shift k (k (k 4)))))) ~-> 17
+%
+% corresponds to
+%
+% (+ 1 ((lambda (x) (* 2 x)) ((lambda (x) (* 2 x)) 4)))
+% => (+ 1 ((lambda (x) (* 2 x)) 8)) => (+ 1 16) => 17
+
+[ 17 ] [ 1 4 [ dup dip call ] shift/reset 2 * reset + ] unit-test

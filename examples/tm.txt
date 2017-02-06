@@ -1,0 +1,146 @@
+% (c) Dominikus Herzberg, 2012 -- Creative Commons Lizenz CC BY-NC-SA 3.0
+%
+% Die Turing-Maschine besteht aus (1) einem zumindest gedanklich unendlich
+% langen Band, (2) einem beweglichen Schreib-/Lesekopf, der ein Zeichen aus
+% einer Zellen vom Band lesen und ein Zeichen in eine Bandzelle schreiben kann,
+% und (3) einem Steuermechanismus, der das Turing-Programm enthält und den
+% gesamten Ablauf steuert.
+%
+% Siehe auch http://de.wikipedia.org/wiki/Turingmaschine
+
+% Das Band der Turing-Maschine lässt sich mit Hilfe zweier Stapel realisieren.
+% Mit dem Wort 'write' wird ein Zeichen vom Band gelesen, mit 'read' eines
+% geschrieben. Per Vereinbarung spiegelt das oberste Zeichen auf 'stk2' die
+% Position des Schreib-/Lesekopfes wider. Das Wort 'left' entspricht einer
+% Bewegung des Bands nach links, 'right' nach rechts. Alternativ kann man eine
+% Bandbewegung nach links auch als Kopfbewegung nach rechts interpretieren und
+% eine Bandbewegung nach rechts als Kopfbewegung nach links. Das ist allein
+% eine Sache der Perspektive.
+
+: read ( stk1 stk2 -- stk1 stk2' wrd ) unpush ;
+: write ( stk1 stk2 wrd -- stk1 stk2' ) push ;
+: left ( stk1 stk2 -- stk1' stk2' ) read rot swap write swap ;
+: right ( stk1 stk2 -- stk1' stk2' ) swap left swap ;
+
+( [ ] [ ] nil ) [ [ ] [ ] read ] unit-test
+[ [ ] [ ] x ] [ [ ] [ x ] read ] unit-test
+[ [ ] [ y ] x ] [ [ ] [ x y ] read ] unit-test
+[ [ ] ( nil ) ] [ [ ] [ ] nil write ] unit-test
+[ [ ] [ x y ] ] [ [ ] [ y ] x write ] unit-test
+[ [ x ] [ ] ] [ [ ] [ x ] left ] unit-test
+[ ( nil x ) [ ] ] [ [ x ] [ ] left ] unit-test
+[ [ ] [ x ] ] [ [ x ] [ ] right ] unit-test
+[ [ ] ( nil x ) ] [ [ ] [ x ] right ] unit-test
+
+% Das Turing-Programm wird gerne als Tabelle dargestellt. Wir nutzen dazu ein
+% Mapping, das schematisch wie folgt aufgebaut ist; es ist die Vereinbarung,
+% wie sie auch in der Vorlesung "Grundlagen der Informatik" verwendet wird.
+% Der Endzustand ist mit 'HALT' zu bezeichnen, für das Vorbelegungszeichen ist
+% der Wert 'nil' zu verwenden, 'L' und 'R' bezeichnen die Bewegungsrichtung des
+% Schreib-/Lesekopfes(!) nach links bzw. rechts.
+%
+% { [ fromState read ] [ write move toState ] ... }
+%
+% Mit dieser Darstellung können nur deterministische Turing-Maschinen 
+% abgebildet werden.
+
+% Mit 'query' steht ein generelles Wort zur Verfügung, das wie ein 'get'
+% arbeitet, jedoch das Mapping auf dem Datastack belässt und für nicht im
+% Mapping vorhandene Schlüssel-Abfragen ein 'key-error' auf dem Datastack
+% hinterlässt. Mit 'query' befragen wir die Tabelle nach dem Resultat bei
+% gegebenem State und gelesenem Zeichen.
+
+: query ( map key -- map val ) over \ key-error get ;
+
+[ { 1 2 3 4 } 4 ] [ { 1 2 3 4 } 3 query ] unit-test
+[ { 1 2 3 4 } key-error ] [ { 1 2 3 4 } 0 query ] unit-test
+
+% Das Wort 'next' beschreibt einen Verarbeitungsschritt der Turing-Maschine.
+% In den durch '%' eingeleiteten Kommentare ist die Veränderung des
+% des Stapeleffekts dokumentiert.
+
+: next ( tp ltape rtape state -- tp ltape' rtape' state' )
+  [ read ] dip              % tp ltape rtape sym state
+  [ ] rot push swap push    % tp ltape rtape [ state sym ]
+  -rot [ query ] 2dip rot   % tp ltape rtape [ write move state' ]
+  unpush swap [ write ] dip % tp ltape rtape'' [ move state' ]
+  unpush \ L equal?         % tp ltape rtape'' [ state' ] t/f
+    [ right ] [ left ] choose dip % tp ltape' rtape' [ state' ]
+  top ;                           % tp ltape' rtape' state'
+
+% Die über 'next' definierten Einzelschritte werden solange ausgeführt, bis
+% der Zustand 'HALT' erreicht ist. Diesen Prozess steuert das Wort 'turing'.
+  
+: turing ( tp ltape rtape state -- tp ltape' rtape' state' )
+  dup \ HALT equal? [ next turing ] unless ;
+
+% Zum Ausprobieren an der Konsole sind ein paar Konfigurationen der
+% Turing-Maschine gegeben. Um mit einer Konfiguration zu arbeiten, ist das
+% unmittelbar folgende 'clear' durch ein 'abort' zu ersetzen.
+  
+{ [ 1 1 ] [ 1 L 1 ]
+  [ 1 0 ] [ 1 R 2 ]
+  [ 2 1 ] [ 0 R 2 ]
+  [ 2 0 ] [ 1 L 3 ]
+  [ 3 0 ] [ 0 L 3 ]
+  [ 3 1 ] [ 1 R 4 ]
+  [ 4 0 ] [ 0 L HALT ] }
+[ ] [ 0 1 1 1 1 1 1 0 ] 1
+
+clear
+
+{ ( 1 nil ) ( nil R 1 )
+  ( 1 1 ) ( 1 R 1 )
+  ( 1 \ - ) ( \ - R 1 )
+  ( 1 = ) ( nil L 2 )
+  ( 2 1 ) ( = L 3 )
+  ( 2 \ - ) ( nil L HALT )
+  ( 3 1 ) ( 1 L 3 )
+  ( 3 \ - ) ( \ - L 4 )
+  ( 4 nil ) ( nil L 4 )
+  ( 4 1 ) ( nil R 1 ) }
+[ ] [ 1 1 1 - 1 = ] 1
+
+clear
+
+{ [ 1 _ ] [ _ R 1 ]
+  [ 1 1 ] [ 1 R 1 ]
+  [ 1 M ] [ M R 1 ]
+  [ 1 = ] [ _ L 2 ]
+  [ 2 1 ] [ = L 3 ]
+  [ 2 M ] [ _ L HALT ]
+  [ 3 1 ] [ 1 L 3 ]
+  [ 3 M ] [ M L 4 ]
+  [ 4 _ ] [ _ L 4 ]
+  [ 4 1 ] [ _ R 1 ] }
+[ ] [ 1 1 1 M 1 = ] 1
+
+clear
+
+{ [ 0 _ ] [ _ R 0 ]
+  [ 0 1 ] [ 1 R 1 ]
+  [ 1 _ ] [ 1 R 2 ]
+  [ 1 1 ] [ 1 R 1 ]
+  [ 2 _ ] [ _ L 3 ]
+  [ 2 1 ] [ 1 R 2 ]
+  [ 3 _ ] [ _ L 3 ]
+  [ 3 1 ] [ _ L 4 ]
+  [ 4 _ ] [ _ R HALT ]
+  [ 4 1 ] [ 1 L 4 ] }
+[ ] [ _ 1 1 _ 1 1 _ ] 0
+
+abort
+
+{ [ 0 _ ] [ _ R 0 ]
+  [ 0 1 ] [ 1 R 1 ]
+  [ 1 _ ] [ 1 R 2 ]
+  [ 1 1 ] [ 1 R 1 ]
+  [ 2 _ ] [ _ L 3 ]
+  [ 2 1 ] [ 1 R 2 ]
+  [ 3 _ ] [ _ L 3 ]
+  [ 3 1 ] [ _ L 4 ]
+  [ 4 _ ] [ _ R HALT ]
+  [ 4 1 ] [ 1 L 4 ] }
+[ ] [ _ 1 _ 1 1 1 1 _ ] 0
+
+clear
