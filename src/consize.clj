@@ -26,11 +26,11 @@
 ;; Words for type and equality
 "type" (fn [itm & r]
 	(cond (string? itm) (conj r "wrd")
-		    (seq?    itm) (conj r "stk")
-		    (map?    itm) (conj r "map")
-		    (fn?     itm) (conj r "fct")
-		    (nil?    itm) (conj r "nil") ; experimental
-				:else         (conj r "_|_"))), ; Exit because of internal error
+		  (seq?    itm) (conj r "stk")
+		  (map?    itm) (conj r "map")
+		  (fn?     itm) (conj r "fct")
+	      (nil?    itm) (conj r "nil") ; experimental
+		  :else         (conj r "_|_"))), ; Exit because of internal error
 
 "equal?" (fn [x y & r] (conj r (if (= x y) "t" "f"))),
 "identical?" (fn [x y & r] (conj r (if (identical? x y) "t" "f"))), ; optional
@@ -103,8 +103,8 @@
 				(string? itm)
 					(let [res (dict itm nil)]
 						(cond (seq? res) (conj r dict ds (concat res rcs)) ; concatenation
-							  	(fn?  res) (conj r dict (apply res ds) rcs)  ; apply fn on ds
-							  	:else (conj r dict (conj ds itm) (conj rcs "read-word"))))
+							  (fn?  res) (conj r dict (apply res ds) rcs)  ; apply fn on ds
+							  :else (conj r dict (conj ds itm) (conj rcs "read-word"))))
 				(fn? itm) (apply itm rcs ds dict r) ; apply fn on continuation
 				(map? itm) (conj r dict (conj ds itm) (conj rcs "read-mapping"))
 				:else (conj r dict (conj ds itm) rcs))
