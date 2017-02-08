@@ -152,3 +152,7 @@
 	(first ((VM "apply") (first ((VM "func") VM
 					(first (apply (VM "tokenize") ((VM "uncomment") 
 					(reduce str (interpose " " *command-line-args*))))))) () )))
+;;
+;; : call/cc [ dup empty? ]
+;;
+;;
