@@ -157,10 +157,10 @@ Here is the basic idea of how the definition of `rot'` ("rot prime") is construc
 >> : rot' [ [ rot ] curry call/2 ] call/1 ;
 ~~~
 
-An alternative is to use `call/2` to capture two arguments, pull them both inside `[ rot ]` and call for the final argument with `call/1`. This solution is slightly longer. That's why I prefer the former one.
+An alternative is to use `call/2` to capture two arguments, pull them both inside `[ rot ]` with `2curry` and call for the final argument with `call/1`. Both definitions work equally well. I prefer the former one for no specific reason.
 
 ~~~
-: rot' [ [ rot ] curry curry call/1 ] call/2 ;
+: rot' [ [ rot ] 2curry call/1 ] call/2 ;
 ~~~
 
 If we factor out the quotation `[ rot ]`, we know how to define `call/3` and redefine `rot'`.
