@@ -1,8 +1,24 @@
 ## Partial Application
 
-What does [_partial application_](https://en.wikipedia.org/wiki/Partial_application) mean? If you apply a function to less arguments than required (that's why it is called _partial_ application), the result is not an error. Instead, a new function is returned which awaits application to the reamining arguments. If the new function is applied to the remaining arguments the new function returns the result as if the original function were called with all required arguments.
+**Table of Contents**
 
-In short: You call a function with fewer arguments than required, which gives you a new function that lets you supply the remaining arguments later on.
+<!-- TOC -->
+
+- [Partial Application](#partial-application)
+    - [A Partial Call with `call/1`](#a-partial-call-with-call1)
+    - [Implementation of "safe" words](#implementation-of-safe-words)
+        - [One argument: `not'` and `call/1`](#one-argument-not-and-call1)
+        - [Two arguments: `+'` and `call/2`](#two-arguments--and-call2)
+        - [Three arguments: `rot'` and `call/3`](#three-arguments-rot-and-call3)
+        - [Four arguments: `call/4`](#four-arguments-call4)
+    - [Concluding thoughts](#concluding-thoughts)
+    - [Unit Tests](#unit-tests)
+
+<!-- /TOC -->
+
+What does [_partial application_](https://en.wikipedia.org/wiki/Partial_application) mean? If you apply a function to less arguments than required (that's why it is called _partial_ application), the result is not an error. Instead, a new function is returned which awaits application to the reamining arguments. If the new function is applied to the remaining arguments the new function returns the result as if the original function were called with all required arguments. By the way, the new function might be subject to partial application as well.
+
+In short: You call a function with fewer arguments than required, which gives you a new function that lets you supply the remaining arguments later on, partially or completely.
 
 Consize doesn't support partial application out of the box. All primitive functions are _unsafe_ in that respect. If you do not provide enough arguments to, say, `+`, you'll notice an error.
 
@@ -34,14 +50,21 @@ In concatenative programming quotations are the equivalent of functions in appli
 >>   [ arg? ] dip swap [ call ] [ [ call/1 ] curry ] if ;
 ~~~
 
-Let's run a simple example. Call partially `dup` with no arguments on the data stack. A new quotation is generated.
+Let's run a simple example. Call `dup` partially with no arguments on the data stack. A new quotation is generated.
 
 ~~~
 > clear [ dup ] call/1
 [ \ [ dup ] call/1 ]
 ~~~
 
-You might `call` the quotation which changes nothing at all, because there is still an argument missing on the data stack. Formally speaking, the quotation is a fix point with respect to `call`:
+You might `call` the quotation which changes nothing at all, because there is still an argument missing on the data stack.
+
+~~~
+> call
+[ \ [ dup ] call/1 ]
+~~~
+
+Formally speaking, the quotation is a fix point with respect to `call`.
 
 ~~~
 > [ call ] Y
@@ -89,7 +112,7 @@ f
 
 #### Two arguments: `+'` and `call/2`
 
-Two arguments are a bit more tricky to handle. If the outer `call/1` discovers an argument, the quotation is called which curries the argument inside `[ + ]` (that's what `curry` does) and the inner `call/1` awaits the second argument.  
+Two arguments are a bit more tricky to handle. See the definition of a "safe" variant of addition, `+'` ("plus prime"), below. If the outer `call/1` discovers an argument, the quotation is called which pulls the argument inside `[ + ]` (that's essentially what `curry` does) and the inner `call/1` awaits the second argument.  
 
 ~~~
 >> : +' [ [ + ] curry call/1 ] call/1 ;
@@ -113,13 +136,13 @@ Works wonderfully. If all arguments are supplied, `+'` works like `+`.
 5
 ~~~
 
-An alternative implementation for `+'` demonstrates how the unsafe primitive `+` can be factored out.
+An alternative implementation for `+'` demonstrates how the quotation `[ + ]` can be factored out.
 
 ~~~
 : +' [ + ] [ curry call/1 ] curry call/1 ;
 ~~~
 
-This insight leads the way to define `call/2` and redefine `+'`.
+The refactoring leads the way to define `call/2` and redefine `+'`.
 
 ~~~
 >> : call/2 [ curry call/1 ] curry call/1 ;
@@ -128,13 +151,13 @@ This insight leads the way to define `call/2` and redefine `+'`.
 
 #### Three arguments: `rot'` and `call/3`
 
-Here is the basic idea of how the definition is constructed: Assumed that two arguments are already given, we can capture both arguments via `curry` and issue a `call/1` for the third and final argument. That is what the code in the inner quotation does. Now let's work outwards. To capture the first and the second argument, we need further `call/1` words. The additional `curry` in the outer quotation is just there to place the first argument just in front of `[ rot ]`.
+Here is the basic idea of how the definition is constructed: Assumed that two arguments are already given, we can capture both arguments via `curry` and issue a `call/1` for the third and final argument. That is what the code in the inner quotation does. Now let's work outwards. To capture the first and the second argument, we need further `call/1` words. The additional `curry` in the outer quotation is there to place the first argument just in front of `[ rot ]`.
 
 ~~~
 >> : rot' [ [ [ rot ] curry curry call/1 ] curry call/1 ] call/1 ;
 ~~~
 
-If we factor out the quotation with the primitive word `[ rot ]`, we know how to define `call/3` and redefine `rot'`.
+If we factor out the quotation `[ rot ]`, we know how to define `call/3` and redefine `rot'`.
 
 ~~~
 : rot' [ rot ] [ [ curry curry call/1 ] curry curry call/1 ] curry call/1 ;
@@ -147,7 +170,7 @@ If we factor out the quotation with the primitive word `[ rot ]`, we know how to
 
 #### Four arguments: `call/4`
 
-You might notice the schema. This is how `call/2` and `call/3` are built.
+You might notice the schema. This is how `call/2` and `call/3` are structured.
 
 ~~~
 : call/2 [ curry call/1 ] curry call/1 ;
@@ -177,7 +200,36 @@ It works like a charm.
 
 ### Concluding thoughts
 
-It took me some time to see how easy partial application is with `call/1`. The question is how useful partial application is. Code like `1 +' 3 *` doesn't work.
+It took me some time to see how easy partial application is with `call/1`. Prior attempts didn't let me factor out "safeguarded" quotation, which hints to a bad design in concatenative programming.
+
+However, the question is how useful partial application in a concatenative environment is. Evaluating code like `clear 1 +' 3 *'` raises a problem (`*'` is meant to be a safe `*`). `1 +'` leads to a quotation representing the partial application (a partial call). Meaning there is no number, yet. Evaluation continues with `3` and `*'`. Multiplication requires two arguments and is doomed, you cannot multiply a number with a quotation.
+
+~~~
+> : *' [ * ] call/2 ;
+
+> clear 1 +' 3 *'
+[ 3 [ \ [ \ 1 + ] call/1 ] ] [ * printer repl ] error
+~~~
+
+Similarly, `clear 1 +' dup'` duplicates the quotation of the partial call, which produces nonsense.
+
+~~~
+> : dup' [ dup ] call/1 ;
+
+> clear 1 +' dup'
+[ \ [ \ 1 + ] call/1 ] [ \ [ \ 1 + ] call/1 ]
+~~~
+
+Partial calls only make sense if evaluation continues as if the data stack were empty afterwards. If evaluation would work that way, the following results are to be expected:
+
+~~~
+> clear 1 +' 3 *'
+[ \ [ \ 1 + ] call/1 ] [ \ [ \ 3 * ] call/1 ]
+> clear 1 +' dup'
+[ \ [ \ 1 + ] call/1 ] [ \ [ dup ] call/1 ]
+~~~
+
+Such an evaluation strategy might lead to code which is resolved to primitive words only. Interpretation as compilation. I need to further investigate this idea.
 
 ### Unit Tests
 
@@ -185,14 +237,23 @@ It took me some time to see how easy partial application is with `call/1`. The q
 >> ( 1 true  ) [ 1 arg? ] unit-test
 >> (   false ) [   arg? ] unit-test
 
->> ( [ \ 1 ]   ) [ 1 [   ] curry ] unit-test
->> ( [ \ 1 2 ] ) [ 1 [ 2 ] curry ] unit-test
-
->> ( 2 [ drop ] curry ) [ 2 [ drop ] curry/1 ] unit-test
->> ( [ drop ] curry/1 ) [ [ drop ] curry/1 call ] unit-test
->> ( 2 [ drop ] curry ) [ [ drop ] curry/1 2 swap call ] unit-test
-
 >> ( 2 dup ) [ 2 [ dup ] call/1 ] unit-test
 >> (   [ dup ] call/1 ) [ [ dup ] call/1        call ] unit-test
->> ( 2 [ dup ] call/1 ) [ [ dup ] call/1 2 swap call ] unit-test 
+>> ( 2 [ dup ] call/1 ) [ [ dup ] call/1 2 swap call ] unit-test
+
+>> (   [ + ] call/2 ) [ [ + ] call/2 call ] unit-test
+>> ( 3 [ + ] call/2 ) [ 3 [ + ] call/2 call ] unit-test
+>> ( 2 3 [ + ] call/2 ) [ 3 [ + ] call/2 2 swap call ] unit-test
+>> ( 2 3 [ + ] call ) [ 2 3 [ + ] call/2 ] unit-test
+
+>> ( [ rot ] call/3 ) [ [ rot ] call/3 call ] unit-test
+>> ( 3 [ rot ] call/3 ) [ 3 [ rot ] call/3 call ] unit-test
+>> ( 2 3 [ rot ] call/3 ) [ 2 3 [ rot ] call/3 call ] unit-test
+>> ( 1 2 3 [ rot ] call ) [ 1 2 3 [ rot ] call/3 ] unit-test
+>> ( 1 2 3 [ rot ] call ) [ 3 [ rot ] call/3 2 swap call 1 swap call ] unit-test
+>> \ testing println
+>> ( [ + + + ] call/4 ) [ [ + + + ] call/4 call ] unit-test
+>> ( 4 [ + + + ] call/4 ) [ 4 [ + + + ] call/4 call ] unit-test
+>> ( 1 2 3 4 [ + + + ] call ) [ 1 2 3 4 [ + + + ] call/4 ] unit-test
+>> ( 1 2 3 4 [ + + + ] call ) [ [ + + + ] call/4 4 swap call 3 swap call 2 swap call 1 swap call ] unit-test
 ~~~
