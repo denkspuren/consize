@@ -2,6 +2,8 @@
 
 **Note**: _This is work in progress._
 
+Running it: `\ ..\examples\Monad.md lrun`
+
 A lambda expression such as `x -> x + 1` generates an anonymous function, i.e. a function that cannot be referenced by a name. An anonymous function is a value like any other, the difference being that a function represents a computation that can be called for evaluation purposes. The body of the lambda expression (the right hand side of `->`) describes the computation. Typically, the body refers to variables 
 
 
@@ -33,3 +35,17 @@ Nested Lambdas
 >> : apply' ( s q -- s ) get-dict func apply ;
 
 Any word is only entiteled to consume as much data as specified; it might produce any number of values on an intermediate data stack but return only as much values as specified -- i.e. any intermediate values on the intermediate data stack which are not to be returned are deleted.
+
+>> : stack ( x -- (x) ) ( ) cons ;
+>> : 2stack ( x y -- (y x) ) [ stack ] dip push ;
+>> : 3stack ( x y z -- (z y x) ) [ 2stack ] dip push ;
+>> : 4stack [ 3stack ] dip push ;
+>> : 5stack [ 4stack ] dip push ;
+
+: return-Maybe ( v -- mv ) ( \ Just ) cons ;
+
+: bind-Maybe ( mv [v -- mv'] )
+  over \ Nothing equal?
+    [ drop ]
+    [ [ top ] dip call ]
+  if ;
