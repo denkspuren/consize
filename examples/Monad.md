@@ -99,4 +99,46 @@ The test cases still pass.
 >> ( \ Nothing ) [ \ Nothing \ Nothing add-m ] unit-test
 ~~~
 
+`join n = n >>= id`, type `M (M t) → M t`
 
+~~~
+>> : id ( x -- x ) dup drop ; % ensures having a stack effect
+>> : join-Maybe ( m(mv) -> mv' ) [ id ] bind-Maybe ; % join flattens a monad
+
+>> ( 3 return-Maybe ) [ 3 return-Maybe return-Maybe join-Maybe ] unit-test
+~~~
+
+`fmap f m = m >>= (return . f)`, type `(t → u) → M t → M u`
+
+~~~
+>> : fmap-Maybe ( mx [x -- y] -- my ) [ return-Maybe ] concat bind-Maybe ;
+
+>> ( 6 return-Maybe ) [ 3 return-Maybe [ 2 * ] fmap-Maybe ] unit-test
+~~~
+
+## List Monad
+
+Reference: https://www.schoolofhaskell.com/school/starting-with-haskell/basics-of-haskell/13-the-list-monad
+
+https://en.wikibooks.org/wiki/Haskell/Understanding_monads/List
+
+Bin mir bei `bind-List` nicht sicher, wie es arbeiten soll.
+
+~~~
+>> : return-List [ ] cons ;
+>> : fmap-List over empty?
+>>     [ drop ]
+>>     [ swap uncons rot dup [ fmap-List ] curry bi* cons ]
+>>   if ;
+>> : fmap-List over empty?
+>>     [ drop ]
+>>     [ swap uncons rot dup [ fmap-List ] curry bi* cons ]
+>>   if ;
+>> : join-List dup empty?
+>>   [ uncons join-List concat ] unless ;
+>> : bind-List fmap-List join-List ;
+
+>> ( ( 3 ) ) [ 3 return-List ] unit-test
+>> ( ( 3 ) ) [ 3 return-List return-List join-List ] unit-test
+>> ( ( 1 4 9 ) ) [ ( 1 2 3 ) [ dup * ] fmap-List ] unit-test
+~~~
