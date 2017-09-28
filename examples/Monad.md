@@ -42,10 +42,15 @@ Any word is only entiteled to consume as much data as specified; it might produc
 >> : 4stack [ 3stack ] dip push ;
 >> : 5stack [ 4stack ] dip push ;
 
-: return-Maybe ( v -- mv ) ( \ Just ) cons ;
+>> : return-Maybe ( v -- mv ) ( \ Just ) cons ;
 
-: bind-Maybe ( mv [v -- mv'] )
-  over \ Nothing equal?
-    [ drop ]
-    [ [ top ] dip call ]
-  if ;
+>> : bind-Maybe ( mv [v -- mv'] )
+>>   over \ Nothing equal?
+>>     [ drop ]
+>>     [ [ top ] dip call ]
+>>   if ;
+
+>> : add-m ( mx my -- mz ) 2stack [ [ [ + return-Maybe ] bind-Maybe ] curry bind-Maybe ] apply' top ;
+
+>> ( 2 3 + return-Maybe ) [ 2 return-Maybe 3 return-Maybe add-m ] unit-test
+>> ( \ Nothing ) [ \ Nothing 3 return-Maybe add-m ] unit-test
