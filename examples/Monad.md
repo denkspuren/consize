@@ -68,4 +68,18 @@ Any word is only entiteled to consume as much data as specified; it might produc
 >> ( 6 return-Maybe ) [ 2 return-Maybe 3 return-Maybe [ * ] liftM2 ] unit-test
 >> ( \ Nothing ) [ 2 return-Maybe \ Nothing [ * ] liftM2 ] unit-test
 >> ( \ Nothing ) [ \ Nothing 2 return-Maybe [ * ] liftM2 ] unit-test
->> % one more test required
+>> ( \ Nothing ) [ \ Nothing \ Nothing [ * ] liftM2 ] unit-test
+
+So we can redefine `add-m` as
+
+>> : add-m ( mx my -- mz ) [ + ] liftM2 ;
+
+The test cases still pass.
+
+>> ( 2 3 + return-Maybe ) [ 2 return-Maybe 3 return-Maybe add-m ] unit-test
+>> ( \ Nothing ) [ \ Nothing 3 return-Maybe add-m ] unit-test
+>> ( \ Nothing ) [ 2 return-Maybe \ Nothing add-m ] unit-test
+>> ( \ Nothing ) [ \ Nothing \ Nothing add-m ] unit-test
+
+
+
