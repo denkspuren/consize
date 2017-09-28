@@ -52,5 +52,10 @@ Any word is only entiteled to consume as much data as specified; it might produc
 
 >> : add-m ( mx my -- mz ) 2stack [ [ [ + return-Maybe ] bind-Maybe ] curry bind-Maybe ] apply' top ;
 
+>> ( [ 2 Just ] ) [ 2 return-Maybe ] unit-test
+>> ( 2 return-Maybe ) [ 2 return-Maybe [ return-Maybe ] bind-Maybe ] unit-test
+
 >> ( 2 3 + return-Maybe ) [ 2 return-Maybe 3 return-Maybe add-m ] unit-test
 >> ( \ Nothing ) [ \ Nothing 3 return-Maybe add-m ] unit-test
+>> ( \ Nothing ) [ 2 return-Maybe \ Nothing add-m ] unit-test
+>> ( \ Nothing ) [ \ Nothing \ Nothing add-m ] unit-test
