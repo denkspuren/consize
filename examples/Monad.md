@@ -32,26 +32,37 @@ Nested Lambdas
 
 ( 1 2 3 ) [ + ] apply'
 
+~~~
 >> : apply' ( s q -- s ) get-dict func apply ;
+~~~
 
 Any word is only entiteled to consume as much data as specified; it might produce any number of values on an intermediate data stack but return only as much values as specified -- i.e. any intermediate values on the intermediate data stack which are not to be returned are deleted.
 
+~~~
 >> : stack ( x -- (x) ) ( ) cons ;
 >> : 2stack ( x y -- (y x) ) [ stack ] dip push ;
 >> : 3stack ( x y z -- (z y x) ) [ 2stack ] dip push ;
 >> : 4stack [ 3stack ] dip push ;
 >> : 5stack [ 4stack ] dip push ;
+~~~
 
+~~~
 >> : return-Maybe ( v -- mv ) ( \ Just ) cons ;
+~~~
 
+~~~
 >> : bind-Maybe ( mv [v -- mv'] )
 >>   over \ Nothing equal?
 >>     [ drop ]
 >>     [ [ top ] dip call ]
 >>   if ;
+~~~
 
+~~~
 >> : add-m ( mx my -- mz ) 2stack [ [ [ + return-Maybe ] bind-Maybe ] curry bind-Maybe ] apply' top ;
+~~~
 
+~~~
 >> ( [ 2 Just ] ) [ 2 return-Maybe ] unit-test
 >> ( 2 return-Maybe ) [ 2 return-Maybe [ return-Maybe ] bind-Maybe ] unit-test
 
@@ -59,7 +70,9 @@ Any word is only entiteled to consume as much data as specified; it might produc
 >> ( \ Nothing ) [ \ Nothing 3 return-Maybe add-m ] unit-test
 >> ( \ Nothing ) [ 2 return-Maybe \ Nothing add-m ] unit-test
 >> ( \ Nothing ) [ \ Nothing \ Nothing add-m ] unit-test
+~~~
 
+~~~
 >> : liftM2 ( mx my [q] -- mz )
 >>   [ 2stack ] dip
 >>   [ return-Maybe ] concat [ bind-Maybe ] curry [ curry bind-Maybe ] curry apply' top ;
@@ -69,17 +82,21 @@ Any word is only entiteled to consume as much data as specified; it might produc
 >> ( \ Nothing ) [ 2 return-Maybe \ Nothing [ * ] liftM2 ] unit-test
 >> ( \ Nothing ) [ \ Nothing 2 return-Maybe [ * ] liftM2 ] unit-test
 >> ( \ Nothing ) [ \ Nothing \ Nothing [ * ] liftM2 ] unit-test
+~~~
 
 So we can redefine `add-m` as
 
+~~~
 >> : add-m ( mx my -- mz ) [ + ] liftM2 ;
+~~~
 
 The test cases still pass.
 
+~~~
 >> ( 2 3 + return-Maybe ) [ 2 return-Maybe 3 return-Maybe add-m ] unit-test
 >> ( \ Nothing ) [ \ Nothing 3 return-Maybe add-m ] unit-test
 >> ( \ Nothing ) [ 2 return-Maybe \ Nothing add-m ] unit-test
 >> ( \ Nothing ) [ \ Nothing \ Nothing add-m ] unit-test
-
+~~~
 
 
