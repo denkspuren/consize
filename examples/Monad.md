@@ -59,3 +59,13 @@ Any word is only entiteled to consume as much data as specified; it might produc
 >> ( \ Nothing ) [ \ Nothing 3 return-Maybe add-m ] unit-test
 >> ( \ Nothing ) [ 2 return-Maybe \ Nothing add-m ] unit-test
 >> ( \ Nothing ) [ \ Nothing \ Nothing add-m ] unit-test
+
+>> : liftM2 ( mx my [q] -- mz )
+>>   [ 2stack ] dip
+>>   [ return-Maybe ] concat [ bind-Maybe ] curry [ curry bind-Maybe ] curry apply' top ;
+
+>> ( 5 return-Maybe ) [ 2 return-Maybe 3 return-Maybe [ + ] liftM2 ] unit-test
+>> ( 6 return-Maybe ) [ 2 return-Maybe 3 return-Maybe [ * ] liftM2 ] unit-test
+>> ( \ Nothing ) [ 2 return-Maybe \ Nothing [ * ] liftM2 ] unit-test
+>> ( \ Nothing ) [ \ Nothing 2 return-Maybe [ * ] liftM2 ] unit-test
+>> % one more test required
