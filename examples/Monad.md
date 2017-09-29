@@ -99,6 +99,75 @@ The test cases still pass.
 >> ( \ Nothing ) [ \ Nothing \ Nothing add-m ] unit-test
 ~~~
 
+### `add-m'` and `do`
+
+
+
+~~~
+2stack
+do [ bind-Maybe ]
+  curry |
+  + return-Maybe
+;
+top
+~~~
+
+: SPREAD ( [ quot1 ... quotn ] -- ... ) % def inspired by Factor
+  ( ) [ swap dup empty?
+          [ drop ]
+          [ [ dip ] rot concat cons ]
+        if ]
+  reduce ;
+
+: spread ( itm1 ... itmn [ quot1 ... quotn ] -- ... ) SPREAD call ;
+
+Source of the following code: https://en.wikibooks.org/wiki/Haskell/do_notation
+
+~~~
+do { x1 <- action1
+   ; x2 <- action2
+   ; mk_action3 x1 x2 }
+~~~
+
+~~~
+action1 >>= (\ x1 -> action2 >>= (\ x2 -> mk_action3 x1 x2 ))
+~~~
+
+~~~
+( [ action1 ]
+  [ action2 ]
+  [ action3 ... ] )
+[ bind ] do
+~~~
+
+action1 [ action2 [ action3 ... ] bind ] bind 
+
+~~~
+>> : add-m' ( mx my -- mz ) 2stack
+>>   [ [ [ + return-Maybe ] bind-Maybe ] curry bind-Maybe ] apply' top ;
+~~~
+
+( [ ]
+  [ [ ] curry ]
+  [ + return-Maybe ]
+)
+[ bind-Maybe ] do
+
+
+`bind` means: Take a value and if you do not call the function, abort the execution context of the monad.
+
+So find means to notate bind in sequential order with the option to skip the rest of the computation.
+
+## `if`-Monade
+
+Nach dem Schema: Wenn Wert nicht legitim, dann verwerfe den Anufruf der Funktion, ansonsten rufe sie auf. Das erfordert aber schon eine andere Entscheidungsqualität, sonst nicht umsetzbar.
+
+: id dup drop ;
+: return-When id ;
+: bind-When over true equal? 
+
+## `join` and `fmap`
+
 `join n = n >>= id`, type `M (M t) → M t`
 
 ~~~
