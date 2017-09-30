@@ -1,5 +1,38 @@
 # Monad
 
+A lot has been written about monads in functional programming. It is a concept of an almost mythological cult.
+
+Here, I approach monads from a very technical point of view. No math (that means, no category), no philosophy, just the plain concept. Technically, monads are not that complicated.
+
+A monad is three things: a type constructor `m` and two methods called `bind` and `return`. And that's it.
+
+Simple, isn't it? Before you read on: What is a type constructor? This is just a way of saying that the notion of a monad is a generic concept. The letter `m` is not a specific monad but a placeholder for a specific monad. You might have heard about monads such as the `Maybe` monad, the `List` monad, the `IO` monad and so on. These monads are concrete monads of the generic concept of a monad `m`.
+
+Because of _m_ being a placeholder, I called `bind` and `return` methods. As a matter of fact, `bind` and `return` are functions. Calling them methods should remind you that each specific monad has its own implementations of `bind` and `return`. The implementation of `bind` and `return` for the `Maybe` monad is completely different from the way how `bind` and `return` function for the `List` monad.
+
+
+
+
+
+
+
+A monad type is written as _M a_ meaning: The monad _M_ encapsultates a type _a_. The Monad is a container that contains a value of type _a_. A monad comes with two methods called `bind` and `return`. In Haskell, `bind` is notated as `>>=`, which is used in infix notation (like `+` is used in between two numbers, the arguments to `+`). When I talk about "methods" I mean two functions which are specific for a certain monad. The implementation of `bind` and `return` for a monad called `Maybe` is completely different from the implementation of `bind` and `return` for another monad, say the `State` or `List` monad.
+
+Method `return` expects a value of type _a_ and returns a monad `return` is a method of encapsulting that value. In Haskell, the type signature of that method is written as _a → Ma_. In short: Get a value of type _a_ in and get a monad with that value out, the type of that monad being _Ma_. In other words, `return` is a constructor method, it creates a monadic value. 
+
+In Consize, type signature are notated in a different way. We would say that method `return` (called a _word_ in concatenative programming) expects a value of type _a_ on the data stack, takes it and leaves a new value, a monadic value of type _Ma_ on the data stack.
+
+~~~
+return ( a -- Ma )
+~~~ 
+
+The other method of a monad, `bind`, takes a monadic value of type _Ma_ and a function. The function takes a value of type _a_ and returns a new monadic value of type _Mb_. The return value of `bind` is a monadic value of type _Mb_. The type signature of `bind` reads as _Ma → (a → Mb) → Mb_.
+
+
+ The notation _M a_ is taken from Haskell. In Haskell, _a_ is a type variable. One and the same monad 
+
+    
+
 **Note**: _This is work in progress._
 
 Running it: `\ ..\examples\Monad.md lrun`
