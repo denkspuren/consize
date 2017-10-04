@@ -2,7 +2,26 @@
 
 A lot has been written about monads in functional programming. It is a concept of an almost mythological cult.
 
-Here, I approach monads from a very technical point of view. No math (that means, no category), no philosophy, just the plain concept. Technically, monads are not that complicated.
+Here, I approach monads from a very technical point of view. No math (that means, no category theory), no philosophy on monads, just the plain concept. Technically, monads are not that complicated.
+
+A monad is three things and three constraints: A type including two methods called `bind` and `return`; and three constraints that must be fullfilled so that the type and its two methods may not only claim to be a monad but are rightfully called to be so. And that's it.
+
+A monad type is special in the sense that a monad is a capsule that contains a value of some other type. In Haskell, the notion of a monad _m_ encapsulating a value of some type _a_ is written as `m a`.
+
+Let us take an example. The `Maybe` monad has two options: either it is represented by the value `Nothing` (not containing anything) or it is `Just a`
+A monad such as the `Maybe` is open to the type of the value it contains.
+
+~~~
+data Maybe a   =   Nothing | Just a
+~~~
+
+The type variable `a` 
+
+
+
+the type constructor for monads is written as `m a`, with `m` being the monad type and `a` being some other type. The type constructor is a construct to express the notion of a monad type so that you know how to build a concrete version of a monad.
+
+
 
 A monad is three things: a type constructor `m` and two methods called `bind` and `return`. And that's it.
 
