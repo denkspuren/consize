@@ -1,5 +1,7 @@
 # Consize
 
+> If you are interested in doing some research on concatenative programming, see my announcement (in German): [Compiler-Optimierung durch partielle Interpretation umgesetzt für die konkatenative Sprache Consize](research/PartialInterpretation.Topic.md); this might result in a beautiful master thesis ;-) 
+
 Consize is a concatenative programming language. It is a close relative to the [Factor programming language](https://factorcode.org/). The word "Consize" is intentionally misspelled, it is a combination of the words "concatenative" and "size". Concatenative programs tend to be small in size and concise. 
 
 I designed Consize for research purposes and for educational purposes. For example, Consize is used in my master course "Kernel Architectures in Programming Languages" (Kernel-Architekturen in Programmiersprachen) at the Department of Mathematics, Natural Sciences and Informatics, University of Applied Sciences Mittelhessen (Technische Hochschule Mittelhessen), Germany.
