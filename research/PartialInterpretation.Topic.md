@@ -1,8 +1,12 @@
-# Partielle Interpreation in Consize
+# Partielle Interpretation in Consize
 
 > Dieses Thema ist offen zur Bearbeitung. Melden Sie sich bei mir, wenn Sie Interesse haben. Das Thema ist primär geeignet für Master-Studierende der Informatik, die sich tiefergehend mit funktionaler Programmierung auseinandersetzen möchten. -- Dominikus Herzberg
 
 ## Problemstellung
+
+### Compilierung
+
+Der Homomorphismus, der konkatenativen Sprachen zugrunde liegt, kann dafür genutzt werden, um einen Interpreter und einen Compiler in ein und derselben Umgebung abzubilden. Wenn man primitive Funktionen als die "Assemblersprache" eines Compilers betrachtet, 
 
 ## Aufgaben
 
@@ -27,9 +31,16 @@ Es ist naheliegend, auf diese Realisierung zu verzichten und `swap` aus Performa
 
 Damit ließe sich nun eine Funktion kompilieren, die direkt die Vertauschung realisiert und nicht als Funktionskomposition der primitiven Funktionen `dup`, `rot` und `drop` aufgesetzt ist. 
 
-Die zu untersuchende Frage ist, wie ein Wort wie z.B. `dup` (das erste in der Auflösung von `swap`) in partieller Interpretation (d.h. ohne Argumente auf dem Stack) zu einer Auflösung kommt, die ein Top-Element auf dem Stapel unterstellt und damit arbeitet -- ähnlich wie die oben verwendeten benamten Platzhalter wie `#X` und `#Y`.
+Die zu untersuchende Frage ist, wie ein Wort wie z.B. `dup` (das erste in der Auflösung von `swap`) in partieller Interpretation (d.h. ohne Argumente auf dem Stack) zu einer Auflösung kommt, die ein Top-Element auf dem Stapel unterstellt und damit arbeitet -- ähnlich wie die oben verwendeten benamten Platzhalter wie `#X` und `#Y`. Die Platzhalter kann man auch als benamte Referenzen auf Stapelwerte verstehen, die mit ihrer Einführung auch gleichzeitig den Wert vom Datenstapel entfernen. (Die Notation ist in der Dokumentation zu Consize erklärt im Kapitel "Patterns and Rewriting Rules".)
 
-Ansätze könnten sich finden lassen bei sogenannten [_fried quotations_](http://docs.factorcode.org:8080/content/article-fry.html) und dem Wort [`fry`](http://docs.factorcode.org:8080/content/vocab-fry.html). Auch die Definition von `swap` als [Macro](http://docs.factorcode.org:8080/content/article-macros.html) könnte eine Lösung sein.
+Ansätze könnten sich finden lassen bei sogenannten [_fried quotations_](http://docs.factorcode.org:8080/content/article-fry.html) und dem Wort [`fry`](http://docs.factorcode.org:8080/content/vocab-fry.html); diese Ideen sind der kontakenativen Sprache Factor entnommen. Auch die Definition von `swap` als [Macro](http://docs.factorcode.org:8080/content/article-macros.html) könnte eine Lösung sein.
+
+Mit der Lösung für `swap` sollten automatisch auch weitere Vereinfachungen gefunden werden wie z.B.
+
+* `#X dup drop = #X`; die Folge von `dup drop` kann man nicht mit der Identiätsfunktion gleichsetzen, da ein `dup` nur möglich ist, wenn ein Element auf dem Stack liegt.
+* `dup dip drop = call`
+* `#X #Y swap swap = #X #Y`
+* `[ #T @R ] unpush = [ @R ] #T`
 
 ## Deforestation am Beispiel der Fakultätsberechnung
 
@@ -76,9 +87,14 @@ Mit der Sprache [Consize](https://github.com/denkspuren/consize) liegt eine offe
 
 Sie sollten sich ein wenig auskennen mit funktionaler Programmierung, keine Berührungsängst mit dem Lambda-Kalkül haben und auch formale Betrachtungen nicht scheuen. Wenn Sie nach einem Blick in die Consize-Dokumentation Lust an der Annäherung an konkatenative Sprachen haben, dann sind Sie hier richtig.
 
-Die theoretischen Grundlagen sind zwar wichtig, aber Sie werden merken, dass die Arbeit sehr praktisch ist. Denn es geht darum, Ideen und Konzepte in Consize umzusetzen. Und da haben Sie einen einfachen Gradmesser, der Ihnen den Weg weist: Je kürzer die Programme sind, desto wahrscheinlicher ist es, dass Sie des Pudels Kern aufgedeckt und gefunden haben, dass Sie einer guten und Lösung nahe gekommen sind. 
+Die theoretischen Grundlagen sind zwar wichtig, aber Sie werden merken, dass die Arbeit sehr praktisch ist. Denn es geht darum, Ideen und Konzepte in Consize umzusetzen. Und da haben Sie einen einfachen Gradmesser, der Ihnen den Weg weist: Je kürzer die Programme sind, desto wahrscheinlicher ist es, dass Sie des Pudels Kern gefunden haben, dass Sie einer guten und Lösung nahe gekommen sind. 
 
-## Literatur
+## Arbeitsmaterialien
+
+* Implementierung und Dokumentation zu Consize auf GitHub
+* Konkatenative Programmierung mit Funktionen [gist]
 
 Compilation by Partial Evaluation
+http://www.cs.utexas.edu/~wcook/presentations/2011-PartialEval-simple.pdf
 
+http://www.deinprogramm.de/sperber/papers/realistic-compilation-by-pe.pdf
