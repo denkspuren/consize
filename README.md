@@ -26,6 +26,12 @@ Running Consize requires a Java runtime environment and Clojure. Here, I assume 
 >java -cp clojure-1.8.0-slim.jar clojure.main consize.clj "\ prelude.txt run say-hi"
 ~~~
 
+Alternatively, you might also type
+
+~~~
+>java -jar clojure-1.8.0-slim.jar consize.clj "\ prelude-plain.txt run say-hi"
+~~~
+
 You can also call Consize with a plain version of the prelude called `prelude-plain.txt`. This version will be a little bit slower at startup time than `prelude.txt`.
 
 Be patient, wait for a moment -- and Consize shows up with
