@@ -19,3 +19,5 @@ pom.xml.asc
 # /doc
 /doc/Manuscript.Aufgaben.tex
 /doc/Consize.ZMaterial.tex
+
+/.vscode
