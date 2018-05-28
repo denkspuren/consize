@@ -1,0 +1,105 @@
+
+% constant parsers
+( 2 ( ) parse-result-success ) [ 2 parser-success ( ) parser-run ] unit-test
+( 2 ( 1 ) parse-result-success ) [ 2 parser-success ( 1 ) parser-run ] unit-test
+( \ fail-msg ( ) parse-result-failure ) [ \ fail-msg parser-failure ( ) parser-run ] unit-test
+( \ fail-msg ( 1 ) parse-result-failure ) [ \ fail-msg parser-failure ( 1 ) parser-run ] unit-test
+( \ err-msg ( ) parse-result-error ) [ \ err-msg parser-error ( ) parser-run ] unit-test
+( \ err-msg ( 1 ) parse-result-error ) [ \ err-msg parser-error ( 1 ) parser-run ] unit-test
+
+% parsing exact values
+( 2 ( ) parse-result-success ) [ 2 parser-item ( 2 ) parser-run ] unit-test
+( 2 ( 3 ) parse-result-success ) [ 2 parser-item ( 2 3 ) parser-run ] unit-test
+( 2 5 --x-expected-but-y ( 5 ) parse-result-failure ) [ 2 parser-item ( 5 ) parser-run ] unit-test
+( 2 5 --x-expected-but-y ( 5 6 ) parse-result-failure ) [ 2 parser-item ( 5 6 ) parser-run ] unit-test
+( 2 --x-expected-but-empty ( ) parse-result-failure ) [ 2 parser-item ( ) parser-run ] unit-test
+
+% parsing values, that match predicates
+( 2 ( ) parse-result-success ) [ [ 2 >= ] parser-predicate ( 2 ) parser-run ] unit-test
+( 2 ( 3 ) parse-result-success ) [ [ 2 >= ] parser-predicate ( 2 3 ) parser-run ] unit-test
+( 1 [ 2 >= ] --predicate-mismatch ( 1 ) parse-result-failure ) [ [ 2 >= ] parser-predicate ( 1 ) parser-run ] unit-test
+( 1 [ 2 >= ] --predicate-mismatch ( 1 3 )  parse-result-failure ) [ [ 2 >= ] parser-predicate ( 1 3 ) parser-run ] unit-test
+( [ 2 >= ] --predicate-mismatch-empty ( ) parse-result-failure ) [ [ 2 >= ] parser-predicate ( ) parser-run ] unit-test
+
+% mapping* parsers
+( 2000 ( ) parse-result-success ) [ 2 parser-item [ 1000 * ] parser-map ( 2 ) parser-run ] unit-test
+( 2000 ( 2 ) parse-result-success ) [ 2 parser-item [ 1000 * ] parser-map ( 2 2 ) parser-run ] unit-test
+( { \ two 2 } ( ) parse-result-success ) [ 2 parser-item \ two parser-tag ( 2 ) parser-run ] unit-test
+( { \ two 2 } ( 2 ) parse-result-success ) [ 2 parser-item \ two parser-tag ( 2 2 ) parser-run ] unit-test
+( 5 ( ) parse-result-success ) [ 2 parser-item [ 5 ] parser-onsuccess ( 2 ) parser-run ] unit-test
+( 5 ( 2 ) parse-result-success ) [ 2 parser-item [ 5 ] parser-onsuccess ( 2 2 ) parser-run ] unit-test
+
+% flatmapping* parsers
+( 2 ( ) parse-result-success ) [ 2 parser-item [ parser-item ] parser-flatmap ( 2 2 ) parser-run ] unit-test
+( 2 ( 2 ) parse-result-success ) [ 2 parser-item [ parser-item ] parser-flatmap ( 2 2 2 ) parser-run ] unit-test
+( 2 1 --x-expected-but-y ( 1 ) parse-result-failure ) [ 2 parser-item [ parser-item ] parser-flatmap ( 1 ) parser-run ] unit-test
+( 2 1 --x-expected-but-y ( 1 2 ) parse-result-failure ) [ 2 parser-item [ parser-item ] parser-flatmap ( 1 2 ) parser-run ] unit-test
+( 2 1 --x-expected-but-y ( 1 ) parse-result-failure ) [ 2 parser-item [ parser-item ] parser-flatmap ( 2 1 ) parser-run ] unit-test
+( 2 1 --x-expected-but-y ( 1 2 ) parse-result-failure ) [ 2 parser-item [ parser-item ] parser-flatmap ( 2 1 2 ) parser-run ] unit-test
+
+% composing parsers
+( ( 2 3 ) ( ) parse-result-success ) [ 2 parser-item 3 parser-item parser-and ( 2 3 ) parser-run ] unit-test
+( ( 2 3 ) ( 5 ) parse-result-success ) [ 2 parser-item 3 parser-item parser-and ( 2 3 5 ) parser-run ] unit-test
+( 2 7 --x-expected-but-y ( 7 ) parse-result-failure ) [ 2 parser-item 3 parser-item parser-and ( 7 ) parser-run ] unit-test
+( 3 7 --x-expected-but-y ( 7 ) parse-result-failure ) [ 2 parser-item 3 parser-item parser-and ( 2 7 ) parser-run ] unit-test
+
+( 5 ( ) parse-result-success ) [ 2 parser-item 3 parser-item [ + ] parser-append-map ( 2 3 ) parser-run ] unit-test
+( 5 ( 2 ) parse-result-success ) [ 2 parser-item 3 parser-item [ + ] parser-append-map ( 2 3 2 ) parser-run ] unit-test
+( 2 1 --x-expected-but-y ( 1 ) parse-result-failure ) [ 2 parser-item 3 parser-item [ + ] parser-append-map ( 1 ) parser-run ] unit-test
+( 2 1 --x-expected-but-y ( 1 2 ) parse-result-failure ) [ 2 parser-item 3 parser-item [ + ] parser-append-map ( 1 2 ) parser-run ] unit-test
+( 3 1 --x-expected-but-y ( 1 ) parse-result-failure ) [ 2 parser-item 3 parser-item [ + ] parser-append-map ( 2 1 ) parser-run ] unit-test
+( 3 1 --x-expected-but-y ( 1 2 ) parse-result-failure ) [ 2 parser-item 3 parser-item [ + ] parser-append-map ( 2 1 2 ) parser-run ] unit-test
+
+( 2 ( ) parse-result-success ) [ 2 parser-item 3 parser-item parser-append-left ( 2 3 ) parser-run ] unit-test
+( 2 ( 2 ) parse-result-success ) [ 2 parser-item 3 parser-item parser-append-left ( 2 3 2 ) parser-run ] unit-test
+( 3 ( ) parse-result-success ) [ 2 parser-item 3 parser-item parser-append-right ( 2 3 ) parser-run ] unit-test
+( 3 ( 2 ) parse-result-success ) [ 2 parser-item 3 parser-item parser-append-right ( 2 3 2 ) parser-run ] unit-test
+( { \ two 2 \ three 3 } ( ) parse-result-success ) [ 2 parser-item \ two parser-tag 3 parser-item \ three parser-tag parser-append-merge ( 2 3 ) parser-run ] unit-test
+( { \ two 2 \ three 3 } ( 2 ) parse-result-success ) [ 2 parser-item \ two parser-tag 3 parser-item \ three parser-tag parser-append-merge ( 2 3 2 ) parser-run ] unit-test
+
+% disjunction of parsers
+( 2 ( ) parse-result-success ) [ 2 parser-item 3 parser-item parser-or ( 2 ) parser-run ] unit-test
+( 2 ( 5 ) parse-result-success ) [ 2 parser-item 3 parser-item parser-or ( 2 5 ) parser-run ] unit-test
+( 3 ( ) parse-result-success ) [ 2 parser-item 3 parser-item parser-or ( 3 ) parser-run ] unit-test
+( 3 ( 5 ) parse-result-success ) [ 2 parser-item 3 parser-item parser-or ( 3 5 ) parser-run ] unit-test
+( 3 5 --x-expected-but-y ( 5 ) parse-result-failure ) [ 2 parser-item 3 parser-item parser-or ( 5 ) parser-run ] unit-test
+
+( 5 ( ) parse-result-success ) [ 1 9 [a,b] [ parser-item ] map parser-choice ( 5 ) parser-run ] unit-test
+( 5 ( 5 ) parse-result-success ) [ 1 9 [a,b] [ parser-item ] map parser-choice ( 5 5 ) parser-run ] unit-test
+( 9 55 --x-expected-but-y ( 55 ) parse-result-failure ) [ 1 9 [a,b] [ parser-item ] map parser-choice ( 55 ) parser-run ] unit-test
+( --empty-choice ( ) parse-result-error ) [ ( ) parser-choice ( ) parser-run ] unit-test
+
+% parsing repeated values
+( ( 5 ) ( ) parse-result-success ) [ 5 parser-item parser-rep1 ( 5 ) parser-run ] unit-test
+( ( 5 ) ( 6 ) parse-result-success ) [ 5 parser-item parser-rep1 ( 5 6 ) parser-run ] unit-test
+( ( 5 5 5 ) ( ) parse-result-success ) [ 5 parser-item parser-rep1 ( 5 5 5 ) parser-run ] unit-test
+( ( 5 5 5 ) ( 6 ) parse-result-success ) [ 5 parser-item parser-rep1 ( 5 5 5 6 ) parser-run ] unit-test
+
+( 3 --x-expected-but-empty ( ) parse-result-failure ) [ 3 parser-item parser-rep1 ( ) parser-run ] unit-test
+( 3 1 --x-expected-but-y ( 1 ) parse-result-failure ) [ 3 parser-item parser-rep1 ( 1 ) parser-run ] unit-test
+
+( ( ) ( ) parse-result-success ) [ 5 parser-item parser-rep ( ) parser-run ] unit-test
+( ( ) ( 6 ) parse-result-success ) [ 5 parser-item parser-rep ( 6 ) parser-run ] unit-test
+( ( 5 ) ( ) parse-result-success ) [ 5 parser-item parser-rep ( 5 ) parser-run ] unit-test
+( ( 5 ) ( 6 ) parse-result-success ) [ 5 parser-item parser-rep ( 5 6 ) parser-run ] unit-test
+( ( 5 5 5 ) ( ) parse-result-success ) [ 5 parser-item parser-rep ( 5 5 5 ) parser-run ] unit-test
+( ( 5 5 5 ) ( 6 ) parse-result-success ) [ 5 parser-item parser-rep ( 5 5 5 6 ) parser-run ] unit-test
+
+( ( 2 ) ( ) parse-result-success ) [ 2 parser-item \ , parser-item parser-rep1sep ( 2 ) parser-run ] unit-test
+( ( 2 ) ( 7 ) parse-result-success ) [ 2 parser-item \ , parser-item parser-rep1sep ( 2 7 ) parser-run ] unit-test
+( ( 2 ) ( \ , ) parse-result-success ) [ 2 parser-item \ , parser-item parser-rep1sep ( 2 \ , ) parser-run ] unit-test
+( ( 2 2 ) ( ) parse-result-success ) [ 2 parser-item \ , parser-item parser-rep1sep ( 2 \ , 2 ) parser-run ] unit-test
+( ( 2 2 ) ( \ , ) parse-result-success ) [ 2 parser-item \ , parser-item parser-rep1sep ( 2 \ , 2 \ , ) parser-run ] unit-test
+
+( ( 2 ) ( ) parse-result-success ) [ 2 parser-item \ , parser-item parser-repsep ( 2 ) parser-run ] unit-test
+( ( 2 ) ( 7 ) parse-result-success ) [ 2 parser-item \ , parser-item parser-repsep ( 2 7 ) parser-run ] unit-test
+( ( 2 ) ( \ , ) parse-result-success ) [ 2 parser-item \ , parser-item parser-repsep ( 2 \ , ) parser-run ] unit-test
+( ( 2 2 ) ( ) parse-result-success ) [ 2 parser-item \ , parser-item parser-repsep ( 2 \ , 2 ) parser-run ] unit-test
+( ( 2 2 ) ( \ , ) parse-result-success ) [ 2 parser-item \ , parser-item parser-repsep ( 2 \ , 2 \ , ) parser-run ] unit-test
+( ( ) ( ) parse-result-success ) [ 2 parser-item \ , parser-item parser-repsep ( ) parser-run ] unit-test
+( ( ) ( 7 ) parse-result-success ) [ 2 parser-item \ , parser-item parser-repsep ( 7 ) parser-run ] unit-test
+
+( ( ) ( ) parse-result-success ) [ 2 parser-item parser-opt ( ) parser-run ] unit-test
+( ( 2 ) ( ) parse-result-success ) [ 2 parser-item parser-opt ( 2 ) parser-run ] unit-test
+( ( 2 ) ( 7 ) parse-result-success ) [ 2 parser-item parser-opt ( 2 7 ) parser-run ] unit-test
+
