@@ -13,23 +13,25 @@ Note, that words prefixed by -- are meant to be internal/private.
 >> 
 ```
 
-## Content
+<!-- TOC depthFrom:2 -->
 
-- Conventions
-- Auxiliary definitions
-- Parse Results
-  - Encoding
-  - Words
-- Parsers
-  - Encoding
-  - Constant parsers, Using parsers
-  - Parsers, that parse single elements
-  - Parser Combinators: Parsers that depend on other parser's input
-  - Parser Combinators, that transform parse-results
-  - Parser Combinators, for sequential parser composition
-  - Parser Combinators, for alternative parser composition
-  - Parser Combinators, for optional parsing
-  - Parser Combinators, for repeated parsing
+- [Conventions](#conventions)
+- [Auxiliary definitions](#auxiliary-definitions)
+- [Parse Results](#parse-results)
+    - [Encoding](#encoding)
+    - [Words](#words)
+- [Parsers](#parsers)
+    - [Encoding](#encoding-1)
+    - [Constant parsers, Using parsers](#constant-parsers-using-parsers)
+    - [Parsers, that parse single elements](#parsers-that-parse-single-elements)
+    - [Parser Combinators: Parsers that depend on other parser's input](#parser-combinators-parsers-that-depend-on-other-parsers-input)
+    - [Parser Combinators, that transform parse-results](#parser-combinators-that-transform-parse-results)
+    - [Parser Combinators, for sequential parser composition](#parser-combinators-for-sequential-parser-composition)
+    - [Parser Combinators, for alternative parser composition](#parser-combinators-for-alternative-parser-composition)
+    - [Parser Combinators, for optional parsing](#parser-combinators-for-optional-parsing)
+    - [Parser Combinators, for repeated parsing](#parser-combinators-for-repeated-parsing)
+
+<!-- /TOC -->
 
 ## Conventions
 
