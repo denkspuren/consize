@@ -30,6 +30,7 @@ Note, that words prefixed by -- are meant to be internal/private.
     - [Parser Combinators, for alternative parser composition](#parser-combinators-for-alternative-parser-composition)
     - [Parser Combinators, for optional parsing](#parser-combinators-for-optional-parsing)
     - [Parser Combinators, for repeated parsing](#parser-combinators-for-repeated-parsing)
+    - [Parser Combinators, for lazy composition](#parser-combinators-for-lazy-composition)
 
 <!-- /TOC -->
 
@@ -79,7 +80,7 @@ They are modeled using maps, that have a certain structure. It is presented belo
 - `input`: The field `input` contains a list with the remaining input, that was not consumed by the parser.
 - `message` or `value`: Depending on the value of field `status`, a parse-result either has the field `message` or `value`. Non-successful (failed or erroneous) parse-results have an error message, whereas successful parse-results contain the value, that was returned by the parser.
 
-The differentiation that is made between erroneous and failed parse-results is a result of backtracking. See [`parser-or`](TODO).
+The differentiation that is made between erroneous and failed parse-results is a result of backtracking. See [`parser-or`](#parser-combinators-for-alternative-parser-composition).
 
 ### Words
 
@@ -261,7 +262,7 @@ This newly created parser will be run on the remaining input returned by `parser
 >>   ] 2curry parser-quotation ;
 >> 
 ```
-The word `parser-map` returns a parser, that runs the underlying parser `parser`. On success, `quot` is used to transform the `value`-field of the parser-result.
+The word `parser-map` returns a parser, that runs the underlying parser `parser`. On success, `quot` is used to transform the `value`-field of the parse-result.
 
 ```consize
 >> : parser-tag ( parser tag -- parser' ) swap [ { } assoc ] rot push \ \ push parser-map ;
@@ -314,6 +315,14 @@ If both parsers succeed, a successful parse-result is returned, having a list of
 >> 
 ```
 `parser-append-right` returns a parser, that parses the input by sequentially appling `a` and then `b` (using the `parser-append-map` combinator) and finally discarding the value parsed by `a` only returning `b`'s value.
+
+```consize
+>> : parser-between ( parser before after -- parser' )
+>>   swapd [ parser-append-right ] dip parser-append-left ;
+>> 
+```
+`parser-between` is a combination of `parser-append-left` and `parser-append-right`.
+This word creates a parser, that sequentially tries to parse `before`, `parser` and `after`, discarding the parse-results from `before` and `after` and returning `parser`'s result.
 
 ```consize
 >> : parser-append-merge ( a b -- parser ) [ merge ] parser-append-map ;
@@ -442,4 +451,30 @@ The values of the separator-parser are not collected.
 Between each parse of `parser` `sep` is used to parse seperator elements.
 The values of the separator-parser are not collected.
 This parser might produce an empty list, if nothing could be parsed.
+
+```consize
+>> : parser-chainl1-with-first ( first rest quotparser -- parser' )
+>>   swap parser-and parser-rep parser-and
+>>   [ unstack swap
+>>     [ unstack swap call ] reduce
+>>   ] parser-map ;
+>> 
+```
+`parser-chainl1-with-input` constructs a parser, that (similar like `parser-rep1-with-first`) works like the word `parser-chainl1`, but it lets you specify the parser used for the first element.
+
+```consize
+>> : parser-chainl1 ( parser quotparser -- parser' ) dupd parser-chainl1-with-first ;
+>>
+>> 
+```
+`parser-chainl1` creates a parser that, roughly, generalises the `parser-rep1sep` generator so that `quotparser`, which parses the separator, produces a left-associative function that combines the elements it separates.
+Note, that the documentation of this word is taken from [Scala's Parser Combinators](https://github.com/scala/scala-parser-combinators/) library.
+
+%% Parser Combinators, for lazy composition
+
+```consize
+>> : parser-lazy ( quot -- parser ) [ call swap parser-run ] curry parser-quotation ;
+```
+The word `parser-lazy` creates a parser, that when run, evaluates the quotation `quot` and runs the produced parser on the input.
+Using this word, it is possible to lazify another parser, which is necessary for recursively defined parsers.
 

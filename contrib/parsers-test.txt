@@ -56,6 +56,8 @@
 ( 3 ( 2 ) parse-result-success ) [ 2 parser-item 3 parser-item parser-append-right ( 2 3 2 ) parser-run ] unit-test
 ( { \ two 2 \ three 3 } ( ) parse-result-success ) [ 2 parser-item \ two parser-tag 3 parser-item \ three parser-tag parser-append-merge ( 2 3 ) parser-run ] unit-test
 ( { \ two 2 \ three 3 } ( 2 ) parse-result-success ) [ 2 parser-item \ two parser-tag 3 parser-item \ three parser-tag parser-append-merge ( 2 3 2 ) parser-run ] unit-test
+( 42 ( ) parse-result-success ) [ 42 \ ( \ ) [ parser-item ] tri@ parser-between ( \ ( 42 \ ) ) parser-run ] unit-test
+( 42 ( 3 ) parse-result-success ) [ 42 \ ( \ ) [ parser-item ] tri@ parser-between ( \ ( 42 \ ) \ 3 ) parser-run ] unit-test
 
 % disjunction of parsers
 ( 2 ( ) parse-result-success ) [ 2 parser-item 3 parser-item parser-or ( 2 ) parser-run ] unit-test
@@ -102,4 +104,27 @@
 ( ( ) ( ) parse-result-success ) [ 2 parser-item parser-opt ( ) parser-run ] unit-test
 ( ( 2 ) ( ) parse-result-success ) [ 2 parser-item parser-opt ( 2 ) parser-run ] unit-test
 ( ( 2 ) ( 7 ) parse-result-success ) [ 2 parser-item parser-opt ( 2 7 ) parser-run ] unit-test
+
+( 2 ( ) parse-result-success ) [ 2 parser-item \ + parser-item [ [ + ] ] parser-onsuccess parser-chainl1 ( 2 ) parser-run ] unit-test
+( 4 ( ) parse-result-success ) [ 2 parser-item \ + parser-item [ [ + ] ] parser-onsuccess parser-chainl1 \ 2+2 unword parser-run ] unit-test
+( 8 ( ) parse-result-success ) [ 2 parser-item \ + parser-item [ [ + ] ] parser-onsuccess parser-chainl1 \ 2+2+2+2 unword parser-run ] unit-test
+
+% lazy parsers
+
+: --parser-lazy-parser-test-exp ( -- parser ) --parser-lazy-parser-test-value \ + parser-item [ [ + ] ] parser-onsuccess parser-chainl1 ;
+: --parser-lazy-parser-test-value ( -- parser ) 1 parser-item [ --parser-lazy-parser-test-exp ] parser-lazy \ ( \ ) [ parser-item ] bi@ parser-between parser-or ;
+
+( 1 ( ) parse-result-success ) [ --parser-lazy-parser-test-exp ( \ 1 ) parser-run ] unit-test
+( 2 ( ) parse-result-success ) [ --parser-lazy-parser-test-exp \ 1+1 unword parser-run ] unit-test
+( 2 ( ) parse-result-success ) [ --parser-lazy-parser-test-exp \ (1)+1 unword parser-run ] unit-test
+( 2 ( ) parse-result-success ) [ --parser-lazy-parser-test-exp \ 1+(1) unword parser-run ] unit-test
+( 2 ( ) parse-result-success ) [ --parser-lazy-parser-test-exp \ (1)+(1) unword parser-run ] unit-test
+( 4 ( ) parse-result-success ) [ --parser-lazy-parser-test-exp \ (1+1)+(1+1) unword parser-run ] unit-test
+
+( 1 ( 3 ) parse-result-success ) [ --parser-lazy-parser-test-exp ( \ 1 \ 3 ) parser-run ] unit-test
+( 2 ( 3 ) parse-result-success ) [ --parser-lazy-parser-test-exp \ 1+13 unword parser-run ] unit-test
+( 2 ( 3 ) parse-result-success ) [ --parser-lazy-parser-test-exp \ (1)+13 unword parser-run ] unit-test
+( 2 ( 3 ) parse-result-success ) [ --parser-lazy-parser-test-exp \ 1+(1)3 unword parser-run ] unit-test
+( 2 ( 3 ) parse-result-success ) [ --parser-lazy-parser-test-exp \ (1)+(1)3 unword parser-run ] unit-test
+( 4 ( 3 ) parse-result-success ) [ --parser-lazy-parser-test-exp \ (1+1)+(1+1)3 unword parser-run ] unit-test
 
