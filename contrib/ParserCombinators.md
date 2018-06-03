@@ -123,21 +123,24 @@ A word that implements common behavior for all constructors.
 
 ### Encoding
 
-A parser in this library conceptionally (and currently also in reality) is a function, that takes a list as its input and returns a parse-result.
+A parser conceptionally is a function, that takes a list as its input and returns a parse-result.
+Currently a parser in this library is encoded as a quotation, that implements described behavior.
+
 Parsers created using this library are value-parsers.
 That is, that they can't just be used to parse strings, but also to accept and recognize patterns on arbitrary lists of values.
 
 ### Constant parsers, Using parsers
 
 ```consize
->> : parser-quotation ( quot -- parser ) get-dict func ;
+>> : parser-quotation ( quot -- parser ) ;
 >> 
 >> 
 ```
 The simplest possible parser (`parser-quotation`) is constructed from a quotation that implements the described behavior (accepting a list of values and returning a parse-result).
+Always use this constructor word to create a parser from a quotation, since the parsers' representation might change.
 
 ```consize
->> : parser-run ( parser input -- parse-result ) --stack swap apply unstack ;
+>> : parser-run ( parser input -- parse-result ) swap call ;
 >> 
 >> 
 ```
