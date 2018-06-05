@@ -31,6 +31,7 @@ Note, that words prefixed by -- are meant to be internal/private.
     - [Parser Combinators, for optional parsing](#parser-combinators-for-optional-parsing)
     - [Parser Combinators, for repeated parsing](#parser-combinators-for-repeated-parsing)
     - [Parser Combinators, for lazy composition](#parser-combinators-for-lazy-composition)
+    - [Parser Combinators, for guarding parsers](#parser-combinators-for-guarding-parsers)
 
 <!-- /TOC -->
 
@@ -470,11 +471,44 @@ This parser might produce an empty list, if nothing could be parsed.
 `parser-chainl1` creates a parser that, roughly, generalises the `parser-rep1sep` generator so that `quotparser`, which parses the separator, produces a left-associative function that combines the elements it separates.
 Note, that the documentation of this word is taken from [Scala's Parser Combinators](https://github.com/scala/scala-parser-combinators/) library.
 
-%% Parser Combinators, for lazy composition
+## Parser Combinators, for lazy composition
 
 ```consize
 >> : parser-lazy ( quot -- parser ) [ call swap parser-run ] curry parser-quotation ;
+>> 
+>> 
 ```
 The word `parser-lazy` creates a parser, that when run, evaluates the quotation `quot` and runs the produced parser on the input.
 Using this word, it is possible to lazify another parser, which is necessary for recursively defined parsers.
+
+## Parser Combinators, for guarding parsers
+
+```consize
+>> : --expected-failure-but ( -- w )
+>>   ( \ expected <space> \ failure, <space> \ but <space> \ got <space> \ a <space> \ success ) word ;
+>> 
+>> : parser-not ( parser -- parser' )
+>>   [ over parser-run \ status swap nil get \ success equal?
+>>     [ --expected-failure-but swap parse-result-failure ]
+>>     [ nil swap parse-result-success ]
+>>     if
+>>   ] curry parser-quotation ;
+>> 
+```
+`parser-not` constructs a parser, whose failures and errors become successes and its success becomes failures.
+The constructed parser never consumes any input.
+On success, this parser always returns the value `nil`.
+Also see [Scala's Parser Combinators](https://github.com/scala/scala-parser-combinators/) library.
+
+```consize
+>> : parser-guard ( parser -- parser' )
+>>   [ over parser-run dup \ status swap nil get \ success equal?
+>>     [ \ value swap nil get swap parse-result-success ]
+>>     [ swap drop ]
+>>     if
+>>   ] curry parser-quotation ;
+>> 
+```
+`parser-guard` constructs a parser, that will fail or succeed just like the one given as parameter but it will not consume any input.
+Also see [Scala's Parser Combinators](https://github.com/scala/scala-parser-combinators/) library.
 
