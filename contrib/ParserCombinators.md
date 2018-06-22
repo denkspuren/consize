@@ -387,6 +387,29 @@ And then, depending on `parser`s result behaves as follows:
 ### Parser Combinators, for repeated parsing
 
 ```consize
+>> : --expected-to-consume ( -- w )
+>>   ( \ the <space> \ parser <space> \ is <space> \ expected <space> \ to <space>
+>>     \ consume <space> \ input, <space> \ but <space> \ it <space> \ didn't! ) word ;
+>> 
+>> : parser-no-epsilon ( parser -- parser' )
+>>   [ dupd swap parser-run
+>>     dup \ status swap --getn \ success equal?
+>>     [ dup \ input swap --getn
+>>       [ swap dup ] dip equal?
+>>       [ [ drop --expected-to-consume ] dip
+>>         parse-result-failure
+>>       ]
+>>       [ drop ]
+>>       if
+>>     ]
+>>     [ swap drop ]
+>>     if
+>>   ] curry parser-quotation ;
+>> 
+```
+The word `parser-no-epsilon` wraps the parser `parser` producing `parser'`, that only succeeds, if the underlying parser consumes input. If `parser` doesn't consume input `parser'` will fail with the message provided by `--expected-to-consume`.
+
+```consize
 >> : --parser-rep1-with-first-rec ( parser in0 acc -- parse-result )
 >>   -rot 2dup parser-run
 >>   dup \ status swap --getn dup \ success equal?
@@ -407,7 +430,8 @@ And then, depending on `parser`s result behaves as follows:
 
 ```consize
 >> : parser-rep1-with-first ( first rest -- parser )
->>   [ -rot swap parser-run dup \ status swap --getn \ success equal?
+>>   [ [ parser-no-epsilon ] bi@
+>>     -rot swap parser-run dup \ status swap --getn \ success equal?
 >>     [ dup \ input swap --getn swap \ value swap --getn --stack --parser-rep1-with-first-rec ]
 >>     [ swap drop ]
 >>     if
