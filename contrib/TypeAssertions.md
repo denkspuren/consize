@@ -24,7 +24,7 @@
     - [Hilfsdefinitionen](#hilfsdefinitionen)
         - [Operationen für Wörter](#operationen-für-wörter)
         - [Listenoperationen](#listenoperationen)
-        - [Mengen- und Wörterbuchoperationen](#mengen-und-wörterbuchoperationen)
+        - [Mengen- und Wörterbuchoperationen](#mengen--und-wörterbuchoperationen)
         - [Operationen zur Typenkonvertierung](#operationen-zur-typenkonvertierung)
         - [Diverse Operationen](#diverse-operationen)
         - [Wörtliche Version von scan4](#wörtliche-version-von-scan4)
@@ -40,14 +40,12 @@
     - [Einige Typen und Typkonstruktoren](#einige-typen-und-typkonstruktoren)
     - [Materialisierung von Prädikaten von Typen](#materialisierung-von-prädikaten-von-typen)
     - [Typenkombinatoren und weitere Typen](#typenkombinatoren-und-weitere-typen)
-    - [Durchsetzen von Vor- und Nachbedingungen](#durchsetzen-von-vor-und-nachbedingungen)
-    - [Ändern des Wortdefinitionsprozesses](#ändern-des-wortdefinitionsprozesses)
+    - [Durchsetzen von Vor- und Nachbedingungen](#durchsetzen-von-vor--und-nachbedingungen)
+    - [Ändern des Wortdefinitionsprozesses](#Ändern-des-wortdefinitionsprozesses)
 - [Aussicht](#aussicht)
-    - [Überladen von Wortdefinitionen](#überladen-von-wortdefinitionen)
+    - [Überladen von Wortdefinitionen](#Überladen-von-wortdefinitionen)
     - [Optimierungen](#optimierungen)
     - [Weiterentwicklungen](#weiterentwicklungen)
-
-- @TODO: Links, Refs in TOC
 
 ## Hintergrund
 
@@ -338,9 +336,9 @@ Zur Erinnerung: Die Typenprädikate sollen dazu verwendet werden, Aufrufe der W�
 
 Hierfür muss eine Beschreibungssprache für Typangaben in Stapeleffekten definiert werden (vgl. [Grammatik der Beschreibungssprache für Typen](#grammatik-der-beschreibungssprache-für-typen)).
 Ein im Kapitel [Parser für die Typensprache](#parser-für-die-typensprache) definierter Parser wird dazu verwendet die Stapeleffekte zu erkennen.
-Für jeden Parameter des Wortes wird ein Prädikat generiert (vgl. [Materialisierung von Prädikaten von Typen](#materialisierung-von-prädikaten-von-typen)), mit dem es dann möglich wird die durch die Typangaben eingeführten Vor- und Nachbedingungen zu etablieren (vgl. [Durchsetzen von Vor- und Nachbedingungen](#durchsetzen-von-vor-und-nachbedingungen)).
+Für jeden Parameter des Wortes wird ein Prädikat generiert (vgl. [Materialisierung von Prädikaten von Typen](#materialisierung-von-prädikaten-von-typen)), mit dem es dann möglich wird die durch die Typangaben eingeführten Vor- und Nachbedingungen zu etablieren (vgl. [Durchsetzen von Vor- und Nachbedingungen](#durchsetzen-von-vor--und-nachbedingungen)).
 Als letztes muss der Prozess der Wortdefinition so angepasst werden, dass ein Parsen und Generieren der Prädikate durchgeführt wird.
-Das geschieht im Kapitel [Ändern des Wortdefinitionsprozesses](#ändern-des-wortdefinitionsprozesses).
+Das geschieht im Kapitel [Ändern des Wortdefinitionsprozesses](#Ändern-des-wortdefinitionsprozesses).
 
 ## Realisierung
 
