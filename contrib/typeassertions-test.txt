@@ -1,0 +1,104 @@
+
+% ============================== tests for parsers ===============================
+
+% simple types, type applications
+
+( \ Int NameTpt ( ) parse-result-success ) [ --parser-type ( \ Int ) --chars parser-run ] unit-test
+( \ Int NameTpt ( ) parse-result-success ) [ --parser-type ( <space> \ Int ) --chars parser-run ] unit-test
+
+( \ Stk ( \ Int NameTpt ) CtorTpt ( ) parse-result-success ) [ --parser-type ( \ Stk<Int> ) --chars parser-run ] unit-test
+( \ Map ( \ Int NameTpt \ Wrd NameTpt ) CtorTpt ( ) parse-result-success ) [ --parser-type ( \ Map<Int, <space> \ Wrd> ) --chars parser-run ] unit-test
+
+% union and intersection types
+
+( \ Int NameTpt dup UnionTpt ( ) parse-result-success ) [ --parser-type ( \ Int <space> \ | <space> \ Int ) --chars parser-run ] unit-test
+( \ Int NameTpt dup InterTpt ( ) parse-result-success ) [ --parser-type ( \ Int <space> \ & <space> \ Int ) --chars parser-run ] unit-test
+
+% heterogenous list types
+
+( ( \ Int NameTpt \ Wrd NameTpt ) ListExTpt ( ) parse-result-success ) [ --parser-type ( \ [Int <space> \ Wrd] ) --chars parser-run ] unit-test
+( ( \ Int NameTpt \ Wrd NameTpt ) ListFuzzyTpt ( ) parse-result-success ) [ --parser-type ( \ [Int <space> \ Wrd...] ) --chars parser-run ] unit-test
+
+( \ Int \ Wrd \ HNil [ NameTpt ] tri@ ListConsTpt ListConsTpt ( ) parse-result-success ) [ --parser-type \ Int::Wrd::HNil unword parser-run ] unit-test
+( \ Int \ Wrd \ HNil [ NameTpt ] tri@ ListConsTpt ListConsTpt ( 55 ) parse-result-success ) [ --parser-type \ Int::Wrd::HNil unword ( 55 ) concat parser-run ] unit-test
+
+% structural types
+
+( { \ n \ Int NameTpt \ s \ Wrd NameTpt } StructExTpt ( ) parse-result-success ) [ --parser-type ( \ {n:Int <space> \ s:Wrd} ) --chars parser-run ] unit-test
+( { \ n \ Int NameTpt \ s \ Wrd NameTpt } StructFuzzyTpt ( ) parse-result-success ) [ --parser-type ( \ {n:Int <space> \ s:Wrd \ ...} ) --chars parser-run ] unit-test
+
+% predicative types
+
+( [ drop true ] PredTpt ( ) parse-result-success ) [ --parser-type ( \ [[ \ drop \ true \ ]] ) --char-list parser-run ] unit-test
+( [ drop true ] PredTpt ( 3 ) parse-result-success ) [ --parser-type ( \ [[ \ drop \ true \ ]]3 ) --char-list parser-run ] unit-test
+
+% integration tests
+
+%% { xs: Int .. } | [ Stk<Wrd> ]
+: ----misc-0-chars ( -- seq )
+  ( \ { <space> \ xs: <space> \ Int <space> \ .. <space> \ } <space> \ | <space> \ [ <space> \ Stk<Wrd> <space> \ ] ) --chars ;
+
+: ----misc-0-expected ( -- v ) ----misc-0-expected-lhs ----misc-0-expected-rhs UnionTpt ( ) parse-result-success ; 
+: ----misc-0-expected-lhs ( -- v ) { \ xs \ Int NameTpt } StructFuzzyTpt ;
+: ----misc-0-expected-rhs ( -- v ) \ Stk ( \ Wrd NameTpt ) CtorTpt ( ) cons ListExTpt ;
+
+( ----misc-0-expected ) [ --parser-type ----misc-0-chars parser-run ] unit-test
+
+%% { xs: [[ drop true ]] }
+
+: ----misc-1-chars ( -- seq )
+  ( \ { <space> \ xs: <space> \ [[ <space> \ drop <space> \ true <space> \ ]] <space> \ } ) --chars ;
+: ----misc-1-expected ( -- v )
+  { \ xs [ drop true ] PredTpt } StructExTpt ( ) parse-result-success ;
+
+( ----misc-1-expected ) [ --parser-type ----misc-1-chars parser-run ] unit-test
+
+%% {xs: [ [[drop true]] ..]}
+
+: ----misc-2-chars ( -- seq )
+  ( \ {xs: \ [ \ [[ \ drop \ true \ ]] \ ..]} ) --char-list ;
+: ----misc-2-expected ( -- v )
+  { \ xs ( [ drop true ] PredTpt ) ListFuzzyTpt } StructExTpt ( ) parse-result-success ;
+
+( ----misc-2-expected ) [ --parser-type ----misc-2-chars parser-run ] unit-test
+
+%% [ [[ drop true ]] .. ]
+
+: ----misc-3-chars ( -- seq )
+  ( \ [ \ [[ \ drop \ true \ ]] \ .. \ ] ) --char-list ;
+: ----misc-3-expected ( -- v )
+  ( [ drop true ] PredTpt ) ListFuzzyTpt ( ) parse-result-success ;
+
+( ----misc-3-expected ) [ --parser-type ----misc-3-chars parser-run ] unit-test
+
+%% Int :: Wrd :: HNil | Any
+
+: ----misc-4-chars ( -- seq )
+  ( \ Int <space> \ :: <space> \ Wrd <space> \ :: <space> \ HNil <space> \ | <space> \ Any ) --chars ;
+: ----misc-4-expected ( -- v )
+  \ Int \ Wrd \ HNil [ NameTpt ] tri@ ListConsTpt ListConsTpt \ Any NameTpt UnionTpt ( ) parse-result-success ;
+
+( ----misc-4-expected ) [ --parser-type ----misc-4-chars parser-run ] unit-test
+
+% ============================= tests for predicates =============================
+
+( true ) [ ( 1 2 ) ( [ 1 == ] [ 2 == ] ) false --verify-listed-hlist-tpe ] unit-test
+( true ) [ ( 1 2 ) ( [ 1 == ] [ 2 == ] ) true --verify-listed-hlist-tpe ] unit-test
+( false ) [ ( 1 ) ( [ 1 == ] [ 2 == ] ) false --verify-listed-hlist-tpe ] unit-test
+( false ) [ ( 1 ) ( [ 1 == ] [ 2 == ] ) true --verify-listed-hlist-tpe ] unit-test
+( true ) [ ( 1 2 ) ( [ 1 == ] ) false --verify-listed-hlist-tpe ] unit-test
+( false ) [ ( 1 2 ) ( [ 1 == ] ) true --verify-listed-hlist-tpe ] unit-test
+
+( true ) [ { \ x \ hello } { \ x \ Wrd NameTpt } StructExTpt --type-predicate call ] unit-test
+( true ) [ { \ x \ hello \ y \ world } { \ x \ Wrd NameTpt } StructFuzzyTpt --type-predicate call ] unit-test
+( true ) [ ( \ test ) \ Wrd \ HNil [ NameTpt ] bi@ ListConsTpt --type-predicate call ] unit-test
+( false ) [ ( \ foo \ bar ) \ Wrd \ HNil [ NameTpt ] bi@ ListConsTpt --type-predicate call ] unit-test
+( false ) [ ( \ test ) \ Wrd \ Wrd \ HNil [ NameTpt ] tri@ ListConsTpt ListConsTpt --type-predicate call ] unit-test
+
+( true ) [ ( 1 2 ) ( \ Wrd \ Wrd ) [ NameTpt ] map ListFuzzyTpt --type-predicate call ] unit-test
+( true ) [ ( 1 2 ) ( \ Wrd \ Wrd ) [ NameTpt ] map ListExTpt --type-predicate call ] unit-test
+( false ) [ ( 1 ) ( \ Wrd \ Wrd ) [ NameTpt ] map ListFuzzyTpt --type-predicate call ] unit-test
+( false ) [ ( 1 ) ( \ Wrd \ Wrd ) [ NameTpt ] map ListExTpt --type-predicate call ] unit-test
+( true ) [ ( 1 2 ) ( \ Wrd ) [ NameTpt ] map ListFuzzyTpt --type-predicate call ] unit-test
+( false ) [ ( 1 2 ) ( \ Wrd ) [ NameTpt ] map ListExTpt --type-predicate call ] unit-test
+
