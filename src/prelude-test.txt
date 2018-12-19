@@ -56,7 +56,7 @@
 
 % Clojure 1.5.1: { 1 2 3 4 } values => [ 2 4 ] % ordered
 % Clojure 1.8.0: { 1 2 3 4 } values => [ 4 2 ] % unordered
-% My mistake: test case shouldn'r rely on order of elements
+% My mistake: test case shouldn't rely on order of elements
 % Resorted to implicitly testing the result, since a `sort`
 % word is not available.
 ( (     ) ) [ {         } values ] unit-test
