@@ -19,7 +19,7 @@ https://www.thm.de/mni/dominikus-herzberg
 
 ## Run Consize
 
-Running Consize requires a Java runtime environment and Clojure. For installation instructions, see ["How to get Consize running?"](Installation.md). Here, I assume that you have installed Clojure 1.10.1 or higher on your system.
+Running Consize requires a Java runtime environment and Clojure. For installation instructions, see ["How to get Consize running"](Installation.md). Here, I assume that you have installed Clojure 1.10.1 or higher on your system.
 
 ~~~
 > clj consize.clj "\ prelude-plain.txt run say-hi"
