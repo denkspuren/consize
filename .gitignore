@@ -21,3 +21,4 @@ pom.xml.asc
 /doc/Consize.ZMaterial.tex
 
 /.vscode
+src/consize.bat

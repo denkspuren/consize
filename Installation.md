@@ -1,4 +1,4 @@
-## How to get Consize running?
+## How to get Consize running
 
 Consize is implemented in Clojure. Since Clojure depends on the Java Virtual Machine, the JVM, the first two installation steps are:
 
