@@ -17,28 +17,45 @@ Enjoy,
 Dominikus Herzberg, [@denkspuren](https://twitter.com/denkspuren)
 https://www.thm.de/mni/dominikus-herzberg
 
-## Run Consize
+## Installation
 
-Running Consize requires a Java runtime environment and Clojure. For installation instructions, see ["How to get Consize running"](Installation.md). Here, I assume that you have installed Clojure 1.10.1 or higher on your system.
+Consize is implemented in Clojure. Since Clojure depends on the Java Virtual Machine, the JVM, the first two installation steps are:
 
-~~~
-> clj consize.clj "\ prelude-plain.txt run say-hi"
-~~~
+1. Install the JVM on your computer. Visit [java.com](http://www.java.com), download the installer and execute it.
+2. Go to [clojure.org](http://clojure.org) and install Clojure. Follow the instructions for your operating system, see ["Getting started"](https://clojure.org/guides/getting_started).
+
+Check, if Clojure can be executed on your computer. Open a [command shell](http://en.wikipedia.org/wiki/Command_shell) (on Windows, the `powershell` is used) and try, if Clojure starts up. Be patient on a slow computer.
+
+    PS C:\Users\Dominikus> clj
+    Clojure 1.10.1
+    user=>
+
+If Clojure is running on your computer, that's great. Proceed with the installation of Consize. To quit Clojure press the [Control key](http://en.wikipedia.org/wiki/Control_key) `Ctrl` (or `Strg` on a German keyboard) and `C`. If Clojure does not work on your computer, consult an expert or get some help on the Web.
+
+For Consize, either clone the [GitHub repository](https://github.com/denkspuren/consize) or download the code as a zip-file and unzip it. Change to `/src` in the `consize` folder. The following files are essential:
+
+* `consize.clj` -- that's the Consize VM implemented in Clojure
+* `bootimage.txt` -- required by Consize to process the prelude
+* `prelude-plain.txt` -- the prelude provides a basic infrastructure for programming in Consize.
+* `prelude.txt` -- a serialized version of the prelude, which is faster to load
+* `prelude-test.txt` -- a suite of test cases checking if everything is working properly
+
+Type the following in your command line:
+ 
+    clj consize.clj "\ prelude-plain.txt run say-hi"
 
 For shorter start-up time, you might also run:
 
-~~~
-> clj consize.clj "\ prelude.txt run say-hi"
-~~~
+    clj consize.clj "\ prelude.txt run say-hi"
 
-`prelude.txt` is a serialized version of `prelude-plain.txt` with all the preprocessing already done and thus faster to load.
+Be careful to correctly reproduce the above line. On a slow computer you might need to wait some few seconds to see Consize displaying:
 
-Be patient, wait for a moment -- and Consize shows up with
+    This is Consize -- A Concatenative Programming Language
+    >
 
-~~~
-This is Consize -- A Concatenative Programming Language
->
-~~~
+Excellent, you are done. You successfully installed Consize!
+
+## Some First Steps in Consize
 
 For example, type in
 
@@ -69,7 +86,19 @@ Run the suite of unit tests to check if everything works as expected.
 \ prelude-test.txt run
 ~~~
 
+To quit Consize type `exit`.
+
+Read the [documentation](/doc/Consize.pdf) to understand how Consize works and how programming in Consize is done.
+
 > If you are interested in doing some research on concatenative programming, see my announcement (in German): [Compiler-Optimierung durch partielle Interpretation umgesetzt für die konkatenative Sprache Consize](research/PartialInterpretation.Topic.md); this might result in a beautiful master thesis ;-) 
+
+For your convenience, you might want to create a [batch file](http://en.wikipedia.org/wiki/Batch_file) on Windows or a [shell script](http://en.wikipedia.org/wiki/Shell_script) on Linux/OS X. On Windows my batch file named `consize.bat` looks like this:
+
+    @echo off
+    powershell clj consize.clj "\ prelude-plain.txt run say-hi"
+    pause
+
+All I have to do is to click on `consize.bat` and Consize is started.
 
 ## How to Extract the Prelude from the Documentation?
 
@@ -140,4 +169,3 @@ By the way, did you notice that we had to use a running version of the prelude a
 > If you have no interest in updating the documentation, skip this section!
 
 To produce the PDF document yourself, install a TeX distribution on your computer such as [MikTeX](https://miktex.org/) for Windows. Start the compilation process with `Consize.tex`. On Windows you might use `TeXworks` for that purpose, which is released with MikTeX.
-
