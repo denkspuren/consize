@@ -27,7 +27,7 @@ Consize is implemented in Clojure. Since Clojure depends on the Java Virtual Mac
 Check, if Clojure can be executed on your computer. Open a [command shell](http://en.wikipedia.org/wiki/Command_shell) (on Windows, the `powershell` is used) and try, if Clojure starts up. Be patient on a slow computer.
 
     PS C:\Users\Dominikus> clj
-    Clojure 1.10.1
+    Clojure 1.10.3
     user=>
 
 If Clojure is running on your computer, that's great. Proceed with the installation of Consize. To quit Clojure press the [Control key](http://en.wikipedia.org/wiki/Control_key) `Ctrl` (or `Strg` on a German keyboard) and `C`. If Clojure does not work on your computer, consult an expert or get some help on the Web.
@@ -42,11 +42,11 @@ For Consize, either clone the [GitHub repository](https://github.com/denkspuren/
 
 Type the following in your command line:
  
-    clj consize.clj "\ prelude-plain.txt run say-hi"
+    clj -M consize.clj "\ prelude-plain.txt run say-hi"
 
 For shorter start-up time, you might also run:
 
-    clj consize.clj "\ prelude.txt run say-hi"
+    clj -M consize.clj "\ prelude.txt run say-hi"
 
 Be careful to correctly reproduce the above line. On a slow computer you might need to wait some few seconds to see Consize displaying:
 
@@ -95,7 +95,7 @@ Read the [documentation](/doc/Consize.pdf) to understand how Consize works and h
 For your convenience, you might want to create a [batch file](http://en.wikipedia.org/wiki/Batch_file) on Windows or a [shell script](http://en.wikipedia.org/wiki/Shell_script) on Linux/OS X. On Windows my batch file named `consize.bat` looks like this:
 
     @echo off
-    powershell clj consize.clj "\ prelude-plain.txt run say-hi"
+    powershell clj -M consize.clj "\ prelude-plain.txt run say-hi"
     pause
 
 All I have to do is to click on `consize.bat` and Consize is started.
@@ -136,13 +136,13 @@ The image file `new.prelude-dump.txt` loads faster than the plain source code fi
 It's a good idea to verify whether something is broken. Run the test suite with each version of the Prelude, `new.prelude-plain.txt` and `new.prelude-dump.txt`. Start each version separately, run the tests, exit for testing the other version.
 
 ~~~
-> clj consize.clj "\ new.prelude-plain.txt run say-hi"
+> clj -M consize.clj "\ new.prelude-plain.txt run say-hi"
 This is Consize -- A Concatenative Programming Language
 > \ prelude-test.txt run
 ~~~
 
 ~~~
-> clj consize.clj "\ new.prelude-dump.txt run say-hi"
+> clj -M consize.clj "\ new.prelude-dump.txt run say-hi"
 This is Consize -- A Concatenative Programming Language
 > \ prelude-test.txt run
 ~~~
