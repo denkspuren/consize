@@ -121,7 +121,7 @@ Run Consize and type the following in the REPL; the word `slurp` reads a file, t
 You will find a file named `new.prelude-plain.txt` in your `/src` directory. You can restart Consize with the new prelude. Leave Consize with entering `exit` and restart Consize on the command line interface:
 
 ~~~
-> clj consize.clj "\ new.prelude-plain.txt run say-hi"
+> clj -M consize.clj "\ new.prelude-plain.txt run say-hi"
 ~~~
 
 To produce an image of the current status of the dictionary, type
