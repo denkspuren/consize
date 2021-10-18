@@ -22,3 +22,6 @@ pom.xml.asc
 
 /.vscode
 src/consize.bat
+
+src/heute
+.DS_store
