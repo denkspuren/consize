@@ -5,6 +5,7 @@ Consize is a [concatenative programming language](https://en.wikipedia.org/wiki/
 I designed Consize for research purposes and for educational purposes. For example, Consize is used in my masters course "Kernel Architectures in Programming Languages" (Kernel-Architekturen in Programmiersprachen) at the Department of Mathematics, Natural Sciences and Informatics, University of Applied Sciences Mittelhessen (Technische Hochschule Mittelhessen), Germany.
 
 Consize comes with comprehensive documentation explaining the concatenative paradigm, the interpreter and the built-in library, the so called _prelude_. The documentation is written in German, since my German students are my primary target audience. Though English is the _lingua franca_ in informatics, it is a barrier to learn new concepts of an uncommon programming paradigm in a foreign language. Nonetheless, I might consider rewriting the documentation in English.
+Until then consider using [google websites translator](https://translate.google.com/?op=websites) with the markdown [docs](https://github.com/denkspuren/consize/blob/master/doc/md/Consize.AIntro.md). 
 
 I feel always thrilled by the fact that the raw interpreter is no more than 150 lines of code written in [Clojure](https://clojure.org). Basically, Consize is written in Consize and bootstrapped from a small image, which has also been produced by and with Consize.
 
