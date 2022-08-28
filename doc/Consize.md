@@ -1859,33 +1859,33 @@ Verständnis vereinbaren wir folgende
 [Substitutionen](http://de.wikipedia.org/wiki/Substitution_(Logik))
 (Ersetzungen):[^5]
 
--   `cs` $=$ `[ itm ] rcs concat`. Der nicht-leere Callstack kann
+-   `cs` = `[ itm ] rcs concat`. Der nicht-leere Callstack kann
     verstanden werden als Konkatenation einer Sequenz mit einem Element
     `itm` und den "restlichen" Elementen `rcs`; `itm` repräsentiert das
     oberste Element auf dem Callstack.
 
--   `res` $=$ `itm dict nil get`. Der mit dem obersten Element des
+-   `res` = `itm dict nil get`. Der mit dem obersten Element des
     Callstacks assoziierte Wert im Wörterbuch sei durch `res` erfaßt;
-    ist kein Eintrag zu `itm` im Wörterbuch zu finden, so ist `res` $=$
+    ist kein Eintrag zu `itm` im Wörterbuch zu finden, so ist `res` =
     `nil`.
 
 Die Veränderungen auf dem Ergebnisstapel seien ebenfalls in Form von
 Substitutionen für `cs'`, `ds'` und `dict'` notiert. Sofern in den
 folgenden Fallunterscheidungen nichts anderes angegeben ist, gilt
-grundsätzlich `cs'` $=$ `rcs`, `ds'` $=$ `ds`, `dict'` $=$ `dict`.
+grundsätzlich `cs'` = `rcs`, `ds'` = `ds`, `dict'` = `dict`.
 
 1.  Ist `itm` ein Wort, dann schlage das Wort im Wörterbuch nach und
     betrachte das Resultat `res`.
 
-    1.  Ist `res` ein Stapel (Quotierung/Programm): `cs'` $=$
+    1.  Ist `res` ein Stapel (Quotierung/Programm): `cs'` =
         `res rcs concat`
 
-    2.  Ist `res` eine Funktion: `ds'` $=$ `ds res apply`
+    2.  Ist `res` eine Funktion: `ds'` = `ds res apply`
 
-    3.  weder/noch: `ds'` $=$ `[ itm ] ds concat`, `cs'` $=$
+    3.  weder/noch: `ds'` = `[ itm ] ds concat`, `cs'` =
         `[ read-word ] rcs concat`
 
-2.  Ist `itm` ein Mapping: `ds'` $=$ `[ itm ] ds concat`, `cs'` $=$
+2.  Ist `itm` ein Mapping: `ds'` = `[ itm ] ds concat`, `cs'` =
     `[ read-mapping ] rcs concat`
 
 3.  Ist `itm` eine Funktion, []{#stepcc:fct label="stepcc:fct"} so wird
@@ -1896,7 +1896,7 @@ grundsätzlich `cs'` $=$ `rcs`, `ds'` $=$ `ds`, `dict'` $=$ `dict`.
     Elemente des Eingangsstapels ohne die führenden drei Elemente des
     Stapeleffekts (`cs`, `ds` und `dict`) erfasst.
 
-4.  Ist `itm` entweder ein Stapel oder `nil`: `ds'` $=$
+4.  Ist `itm` entweder ein Stapel oder `nil`: `ds'` =
     `[ itm ] ds concat`
 :::
 
