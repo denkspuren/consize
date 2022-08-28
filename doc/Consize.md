@@ -2034,7 +2034,7 @@ und Wörterbuch des Interpreters.
 Als Beispiel für `call/cc` und `continue` diene die Implementierung des
 *backslash*-Wortes "`\`". Der Backslash ist Teil der Consize-VM.
 
-`"5C`` ( ds [  wrd & cs ] – [ wrd & ds ] cs )`
+`\ ( ds [  wrd & cs ] – [ wrd & ds ] cs )`
 
 :   legt das dem Wort `\` folgende Element auf dem Callstack direkt auf
     dem Datastack ab. Das Wort `\` wird auch als "Quote" oder "Escape"
