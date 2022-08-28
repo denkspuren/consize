@@ -1041,8 +1041,8 @@ ist immer "sofort" erhältlich, d.h. mit einem `top` erreichbar. Das
 "unterste" Element in einem Stapel kann nur sukzessive über eine Reihe
 von `pop`s und einem abschließenden `top` erreicht werden. Es werden
 genau so viele Wörter benötigt, um an das unterste Element zu kommen,
-wie es Elemente auf dem Stapel gibt. Für den Zugriff auf das $n$-te
-Element auf dem Stapel (von oben gezählt) benötigt man genau $n$ Wörter,
+wie es Elemente auf dem Stapel gibt. Für den Zugriff auf das `n`-te
+Element auf dem Stapel (von oben gezählt) benötigt man genau `n` Wörter,
 um an dieses Element heranzukommen.
 
 Bei einer Liste ist der Zugriff auf das erste und das letzte Element
@@ -1052,7 +1052,7 @@ zugreifbar ist, was in manchen Fällen von Vorteil ist.
 
 Bei einem Array (manchmal auch Vektor genannt) kann man über einen Index
 auf die Elemente zugreifen. Das erste, zweite, dritte Element, allgemein
-das $n$-te Element, ist immer in der gleichen Zeit abrufbar.
+das `n`-te Element, ist immer in der gleichen Zeit abrufbar.
 
 Dies soll Ihnen nur einen Eindruck geben, wie sehr unterschiedliche
 Datenstrukturen unterschiedliche Zugriffszeiten auf die durch sie
@@ -3024,9 +3024,9 @@ Duplizierung und `if*`, `when*` bzw. `unless*` arbeiten wie ihre
     > clear 5 false [ 1 - ] unless*
     4
 
-### $n$-äre Entscheidungen: `case` und `cond`
+### `n`-äre Entscheidungen: `case` und `cond`
 
-Die mit dem Wort `case` umgesetzte $n$-äre Entscheidung verallgemeinert
+Die mit dem Wort `case` umgesetzte `n`-äre Entscheidung verallgemeinert
 das Konzept der binären `if`-Entscheidung. Eine Handlungsalternative
 hängt bei `case` nicht ab von zwei Alternativen (`f` oder nicht `f`),
 sondern von einem Wert aus einer Menge von Werten. Die
@@ -3131,7 +3131,7 @@ zwei Elemente, `3dip` drei und `4dip` vier.
     > clear [ ] 4 5 [ drop ] 2dip
     4 5
 
-Die Definition $n$-facher `dip`-Kombinatoren folgt einem einfachen
+Die Definition `n`-facher `dip`-Kombinatoren folgt einem einfachen
 Schema: Das einleitende `swap` und das beendende `dip` bleiben immer
 gleich; lediglich die Quotierung greift auf die vorhergehende
 `dip`-Definition zurück. In der Rückverfolgung des Bildungsgesetzes kann
@@ -3310,8 +3310,8 @@ Die Kombinatoren `tri*` und `2tri*` arbeiten entsprechend.
     11 12 1
 
 Die Verallgemeinerung der Spread-Kombinatoren `bi*`- und `tri*` bietet
-das Wort `spread`; es erwartet $n$ Elemente und entsprechend $n$
-Quotierungen in einem Stapel. Die $n$-te Quotierung wird auf das $n$-te
+das Wort `spread`; es erwartet `n` Elemente und entsprechend `n`
+Quotierungen in einem Stapel. Die `n`-te Quotierung wird auf das `n`-te
 Element angewendet.
 
 Die Umsetzung des Wortes `spread` geschieht via `SPREAD`, das den
