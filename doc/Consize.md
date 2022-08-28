@@ -1239,9 +1239,6 @@ Elemente auf dem Datastack herzustellen.
 
 :   dupliziert das oberste Element auf dem Stapel.
 
-```{=html}
-<!-- -->
-```
     > clear x y z dup
     x y z z
 
@@ -1249,9 +1246,6 @@ Elemente auf dem Datastack herzustellen.
 
 :   vertauscht die obersten Elemente auf dem Stapel.
 
-```{=html}
-<!-- -->
-```
     > clear x y z swap
     x z y
 
@@ -1259,9 +1253,6 @@ Elemente auf dem Datastack herzustellen.
 
 :   entfernt das oberste Element auf dem Stapel.
 
-```{=html}
-<!-- -->
-```
     > clear x y z drop
     x y
 
@@ -1270,9 +1261,6 @@ Elemente auf dem Datastack herzustellen.
 :   rotiert die obersten drei Elemente auf dem Stapel, wobei das
     drittoberste Element nach ganz oben gebracht wird.
 
-```{=html}
-<!-- -->
-```
     > clear x y z rot
     y z x
 
@@ -1302,9 +1290,6 @@ herumgekommen".
 :   ermittelt den Datentypen des obersten Elements auf dem Stack. Der
     Typ ist entweder das Wort `wrd`, `stk`, `map`, `fct` oder `nil`.
 
-```{=html}
-<!-- -->
-```
     > clear hi type
     wrd
     > [ 1 2 3 ] type
@@ -1326,9 +1311,6 @@ Identität (*identity*) ausführlich zur Sprache kommen.
     entweder `t` (für *true*, wahr) oder `f` (für *false*, falsch)
     zurück.
 
-```{=html}
-<!-- -->
-```
     > clear [ 1 2 3 ] [ 1 2 3 ] equal?
     t
 
@@ -1371,9 +1353,6 @@ eines Stapels ein Programm, dann sprechen wir von einer "Quotierung"
 
 :   legt auf dem Ergebnisstapel einen leeren Stapel ab.
 
-```{=html}
-<!-- -->
-```
     > clear emptystack
     [ ]
 
@@ -1382,9 +1361,6 @@ eines Stapels ein Programm, dann sprechen wir von einer "Quotierung"
 :   erzeugt einen neuen Stapel, der das Ergebnis des Vorgangs ist, das
     Element `itm` auf dem Stapel `stk` abzulegen.
 
-```{=html}
-<!-- -->
-```
     > clear [ 1 2 3 ] 4 push
     [ 4 1 2 3 ]
 
@@ -1394,9 +1370,6 @@ eines Stapels ein Programm, dann sprechen wir von einer "Quotierung"
     Ergebnisstapel ab. Bei einem leeren Stapel oder `nil` liefert `top`
     als Ergebnis `nil`.
 
-```{=html}
-<!-- -->
-```
     > clear [ 4 1 2 3 ] top
     4
     > [ ] top
@@ -1409,9 +1382,6 @@ eines Stapels ein Programm, dann sprechen wir von einer "Quotierung"
 :   legt den um das oberste Element reduzierten Stapel auf dem
     Ergebnisstapel ab.
 
-```{=html}
-<!-- -->
-```
     > clear [ 1 2 3 ] pop
     [ 2 3 ]
     > [ ] pop
@@ -1432,9 +1402,6 @@ als Datenwert verzichten.
 
 :   kehrt die Reihenfolge der Element in einem Stapel um.
 
-```{=html}
-<!-- -->
-```
     > clear [ 1 2 3 4 5 ] reverse
     [ 5 4 3 2 1 ]
 
@@ -1445,9 +1412,6 @@ als Datenwert verzichten.
     Lesart von links nach rechts beibehalten. Ein leerer Stapel
     konkateniert lediglich seinen "leeren" Inhalt.
 
-```{=html}
-<!-- -->
-```
     > clear [ 1 2 3 ] [ 4 5 ] concat
     [ 1 2 3 4 5 ]
     > [ ] concat
@@ -1474,9 +1438,6 @@ sind ein vielseitig verwendbarer Datentyp.
     Stapel muss eine gerade Anzahl an Elementen haben. Ein leerer Stapel
     liefert ein leeres Mapping.
 
-```{=html}
-<!-- -->
-```
     > clear [ mon 1 tue 2 wed 3 thu 4 fri 5 ] mapping
     { thu 4 tue 2 mon 1 wed 3 fri 5 }
     > clear [ ] mapping
@@ -1489,9 +1450,6 @@ sind ein vielseitig verwendbarer Datentyp.
     Schlüssel- und Zielwertpaare ist unbestimmt. Ein leeres Mapping
     führt zu einem leeren Stapel.
 
-```{=html}
-<!-- -->
-```
     > clear { mon 1 tue 2 wed 3 thu 4 fri 5 } unmap
     [ thu 4 tue 2 mon 1 wed 3 fri 5 ]
     > clear { } unmap
@@ -1504,9 +1462,6 @@ sind ein vielseitig verwendbarer Datentyp.
     Existiert ein Schlüsselwert in `map` bereits, wird der Zielwert
     "überschrieben".
 
-```{=html}
-<!-- -->
-```
     > clear 3 :radius { :type circle } assoc
     { :radius 3 :type circle }
 
@@ -1517,9 +1472,6 @@ sind ein vielseitig verwendbarer Datentyp.
     die über den Schlüsselwert `key` identifiziert ist. Existiert `key`
     in `map` nicht, bleibt das Mapping unverändert.
 
-```{=html}
-<!-- -->
-```
     > clear c { a b c d } dissoc
     { a b }
     > clear c { a b } dissoc
@@ -1531,9 +1483,6 @@ sind ein vielseitig verwendbarer Datentyp.
     assoziierten Zielwert `val` zurück. Existiert die Assoziation nicht,
     liefert `get` stattdessen den `default`-Wert zurück.
 
-```{=html}
-<!-- -->
-```
     > clear thu { mon 1 tue 2 wed 3 thu 4 fri 5 } _|_ get
     4
     > clear sat { mon 1 tue 2 wed 3 thu 4 fri 5 } _|_ get
@@ -1545,9 +1494,6 @@ sind ein vielseitig verwendbarer Datentyp.
     (Stapel) zurück. Die Reihenfolge der Schlüsselwerte in `seq` kann
     beliebig sein.
 
-```{=html}
-<!-- -->
-```
     > clear { mon 1 tue 2 wed 3 thu 4 fri 5 } keys
     [ thu tue mon wed fri ]
 
@@ -1557,9 +1503,6 @@ sind ein vielseitig verwendbarer Datentyp.
     `map3` zusammen. Bei gleichen Schlüsselwerten in `map1` und `map2`
     werden die Assoziationen aus `map2` in `map3` übernommen.
 
-```{=html}
-<!-- -->
-```
     > clear { a b c d } { c x y z } merge
     { a b c x y z }
 
@@ -1587,9 +1530,6 @@ reference="sec:VM.Konsole"}).
 :   zerlegt ein Wort in seine Einzelzeichen in Form einer Folge von
     Wörtern. Jedes Wort in der Folge entspricht einem Einzelzeichen.
 
-```{=html}
-<!-- -->
-```
     > clear \ push unword
     [ p u s h ]
 
@@ -1599,9 +1539,6 @@ reference="sec:VM.Konsole"}).
     zu einem neuen Gesamtwort zusammen. Die Folge muss mindestens ein
     Wort enthalten.
 
-```{=html}
-<!-- -->
-```
     > clear [ it's me ! ] word
     it'sme!
 
@@ -1639,9 +1576,6 @@ reference="sec:VM.Konsole"}).
     vorrangige Nutzen von `char` besteht in der Erzeugung von
     Sonderzeichen über die Unicode-Kodierung.
 
-```{=html}
-<!-- -->
-```
     > clear \u0040 char
     @
 
@@ -1659,9 +1593,6 @@ sondern wandern zunächst in einen Zwischenspeicher, einen
     kann die Ausgabe möglicherweise nicht direkt, sondern zu einem
     späteren Zeitpunkt erfolgen. Die sofortige Ausgabe erzwingt `flush`.
 
-```{=html}
-<!-- -->
-```
     > clear \ Hello print \newline char print
     Hello
 
@@ -1671,9 +1602,6 @@ sondern wandern zunächst in einen Zwischenspeicher, einen
     ist, zur Ausgabe in der Konsole. Das Wort "*flush*" heißt soviel wie
     "ausspülen".
 
-```{=html}
-<!-- -->
-```
     > clear \ Hi print \newline char print flush
     Hi
 
@@ -1802,9 +1730,6 @@ hinzufügen, damit `uncomment` den Kommentar entfernen kann.
     [POSIX](http://de.wikipedia.org/wiki/POSIX)-Standard für [reguläre
     Ausdrücke](http://de.wikipedia.org/wiki/Regul%C3%A4rer_Ausdruck).
 
-```{=html}
-<!-- -->
-```
     > read-line tokenize
     This line % has a comment
     [ This line % has a comment ]
@@ -1877,9 +1802,6 @@ Funktion auf den Stapel `[ 1 2 3 ]` angewendet.
     der Anwendung der per `func` erzeugten Funktion wird lediglich der
     Datastack als "normaler" Stapel (wie in `apply`) zurück gegeben.
 
-```{=html}
-<!-- -->
-```
     > clear [ 1 2 3 ] [ rot ] get-dict func
     [ 1 2 3 ] <fct>
     > apply
@@ -2098,9 +2020,6 @@ und Wörterbuch des Interpreters.
     durch `quot` repräsentierte Programm kann nun die auf dem Datastack
     abgelegte Continuation beliebig manipulieren.
 
-```{=html}
-<!-- -->
-```
 
 `continue ( [ cs ds & r ] quot – ds cs )`
 
@@ -2196,9 +2115,6 @@ vertreten, Zahlen sind Wörter.
 :   liefert mit `z` die Summe `x`$+$`y` zurück; `+` realisiert die
     [Addition](http://de.wikipedia.org/wiki/Addition).
 
-```{=html}
-<!-- -->
-```
     > 2 3 +
     5
 
@@ -2207,9 +2123,6 @@ vertreten, Zahlen sind Wörter.
 :   liefert mit `z` die Differenz `x`$-$`y` zurück; `-` realisiert die
     [Subtraktion](http://de.wikipedia.org/wiki/Subtraktion).
 
-```{=html}
-<!-- -->
-```
     > 2 3 -
     -1
 
@@ -2218,9 +2131,6 @@ vertreten, Zahlen sind Wörter.
 :   liefert mit `z` das Produkt `x`$\cdot$`y` zurück; `*` realisiert die
     [Multiplikation](http://de.wikipedia.org/wiki/Multiplikation).
 
-```{=html}
-<!-- -->
-```
     > 2 3 *
     6
 
@@ -2231,9 +2141,6 @@ vertreten, Zahlen sind Wörter.
     [Division](http://de.wikipedia.org/wiki/Division_(Mathematik)). Der
     Divisor `y` muss von `0` verschieden sein.
 
-```{=html}
-<!-- -->
-```
     > 7 3 div
     2
 
@@ -2244,9 +2151,6 @@ vertreten, Zahlen sind Wörter.
     "[Modulo](http://de.wikipedia.org/wiki/Modulo#Modulo)" genannt. Die
     Zahl `y` muss von `0` verschieden sein.
 
-```{=html}
-<!-- -->
-```
     > 7 3 mod
     1
 
@@ -2261,9 +2165,6 @@ veranschaulichen kann.
 :   liefert als Ergebnis des Vergleichs `x`$<$`y` entweder `t` (für
     wahr, *true*) oder `f` (für falsch, *false*) zurück.
 
-```{=html}
-<!-- -->
-```
     > 7 3 <
     f
 
@@ -2272,9 +2173,6 @@ veranschaulichen kann.
 :   liefert als Ergebnis des Vergleichs `x`$>$`y` entweder `t` oder `f`
     zurück.
 
-```{=html}
-<!-- -->
-```
     > 7 3 >
     t
 
@@ -2283,9 +2181,6 @@ veranschaulichen kann.
 :   testet, ob das Wort `x` eine Ganzzahl (*integer*) repräsentiert, und
     liefert als Ergebnis entweder `t` oder `f` zurück.
 
-```{=html}
-<!-- -->
-```
     > -7 integer?
     t
     > x integer?
@@ -2326,9 +2221,6 @@ ein Programm wie z.B. die Prelude aufzurufen und zu starten.
 
         : load ( source -- [ & itms ] ) slurp uncomment tokenize ;
 
-```{=html}
-<!-- -->
-```
 
 `call ( [ quot & ds ] cs – ds quot cs concat )`
 
