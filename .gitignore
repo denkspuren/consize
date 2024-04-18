@@ -25,3 +25,6 @@ src/consize.bat
 
 src/heute
 .DS_store
+
+*_files
+*.html
