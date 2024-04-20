@@ -10,21 +10,11 @@
 % \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage[ngerman]{babel}
-% \usepackage{LawTeXdefs}
-%  http://www.cawcr.gov.au/bmrc/climdyn/staff/lih/pubs/tips/ttchars.pdf
-% \usepackage{newcent} % newcent, (bookman), (garamond)
-
 
 \usepackage{syntax} % for EBNF diagrams
 % \shortverb{\|} % use |...| instead of \verb|...|
 \setlength{\grammarparsep}{5pt}
 
-%%\usepackage[german]{minitoc}
-%%\setcounter{minitocdepth}{4}
-%\usepackage{listings}
-%\lstset{language={Lisp},
-%        basicstyle={\ttfamily},
-%        frame={lines}}
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage[colorlinks,linkcolor=black,urlcolor=blue]{hyperref}
@@ -61,39 +51,22 @@ Consize.Prelude,
 Consize.Mathe,
 Consize.Patterns
 }
-% \includeonly{Consize.Prelude}
-% \includeonly{Consize.Math}
-% \includeonly{Consize.ZMaterial}
+
 
 \begin{document}
 
 % \title{\bf Programmieren mit Consize}
 \title{\bf Konkatenative Programmierung mit Consize}
 \author{Dominikus Herzberg\thanks{%
-Copyright \copyright\ 2017, Dominikus Herzberg\medskip\newline Dieses Werk bzw.\ dieser Inhalt steht unter der Creative-Commons-Lizenz CC~BY-NC-SA 4.0: \href{https://creativecommons.org/licenses/by-nc-sa/4.0/}{Namensnennung -- keine kommerzielle Nutzung -- Weitergabe unter gleichen Bedingungen}.}%
+Copyright \copyright\ Dominikus Herzberg,\today\medskip\newline Dieses Werk bzw.\ dieser Inhalt steht unter der Creative-Commons-Lizenz CC~BY-NC-SA 4.0: \href{https://creativecommons.org/licenses/by-nc-sa/4.0/}{Namensnennung -- keine kommerzielle Nutzung -- Weitergabe unter gleichen Bedingungen}.}%
 \\Technische Hochschule Mittelhessen}
+\date{}
 \maketitle
 
-Viele Leser und Leserinnen haben mir geholfen, kleinere und größere Mängel im Text zu beseitigen. Mein Dank geht an:
-% \footnote{Die Zahl hinter den Namen gibt die Anzahl gefundener "`Fehler"' an.}
-Davide Bove, % (2),
-Nicolas Braun, % (3),
-Marco Brinkmeier, % (1),
-Hasan Cakir, % (1),
-Benjamin Chi, % (2),
-Carsten Fasold, % (2),
-Lars D. Feicho, % (1),
-Dominik Föhl, % (1),
-Benjamin Hahn, % (1),
-Sahin Kablan, % (3),
-Ghislain Lowa, % (4),
-Kevin Müßig, % (1),
-Christos Nakos, % (3), 
-Felix Radzanowski. % (2).
+Viele Leser und Leserinnen, meist meine Studierenden, haben dabei geholfen, kleinere und größere Mängel im Text zu beseitigen. Vielen herzlichen Dank dafür!
 
 \newpage
 
-%%\dominitoc
 \tableofcontents
 % right now Consize.FunctionalProgramming.tex is not part of the docu
 
