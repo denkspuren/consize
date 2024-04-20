@@ -92,7 +92,7 @@
 ;; [ @Q ] | call => | @Q 
 ;; [ @Q ] | quote #W => #W [ @Q ] | call
 "call"     (list (fn [cs ds & r] (conj r (rest ds) (concat (first ds) cs)))),
-"quote"    (list (fn [cs ds & r] (conj r (conj (rest ds) (if (empty? cs) () (conj () (first cs))) (first ds)) (conj (rest cs) "call")))),
+;; "quote"    (list (fn [cs ds & r] (conj r (conj (rest ds) (if (empty? cs) () (conj () (first cs))) (first ds)) (conj (rest cs) "call")))),
 "call/cc"  (list (fn [cs ds & r] (conj r (conj () (rest ds) cs) (first ds)))),
 "continue" (list (fn [cs ds & r] (conj r (second ds) (first ds)))),
 "get-dict" (list (fn [cs ds dict & r] (conj r dict (conj ds dict) cs))),
@@ -142,7 +142,8 @@
     "<" (pred <), ">" (pred >), "==" (pred ==), "<=" (pred <=), ">=" (pred >=),
 
 ;; Escaping words with '\'
-"\\"   '(("top") "quote"),
+;; "\\"   '(("top") "quote"),
+"\\"   '(("dup" "top" "rot" "swap" "push" "swap" "pop" "continue") "call/cc"),
 "load" '("slurp" "uncomment" "tokenize"),
 "run"  '("load" "call"),
 "start" '("slurp" "uncomment" "tokenize" "get-dict" "func" "emptystack" "swap" "apply"),
