@@ -508,6 +508,7 @@ Die Bedeutung der per \verb|compose| erzeugten Funktion ist indirekt definiert: 
 \end{verbatim}
 
 \section{Der Interpreter: \texttt{stepcc}}
+\label{Sec:stepcc}
 % \texttt{call}, \texttt{\char "5C}}
 
 Die Definition des Interpreters kommt mit drei Konzepten aus: der Konkatenation, der Funktionsanwendung und dem Nachschlagen eines Wortes im Wörterbuch. Die zentrale Stellung der Konkatenation ist der Grund für die Charakterisierung von Consize als konkatenative Sprache. Eher nebensächlich ist, ob es bei der Konkatenation um Stapel, Arrays, Vektoren, Ströme, generell um Folgen irgendwelcher Art geht. Da Consize stapelbasiert ist, kann die Konkatenation in manchen Fällen durch ein \verb|push| eines Elements auf den Stapel ersetzt werden. Aber das ist eher ein Detail der Implementierung, weniger ein konzeptuelles.
@@ -570,8 +571,8 @@ In dieser formalen Darstellung stellt sich die Spezifikation des Verhaltens von 
 Befindet sich auf dem Callstack ein Wort und findet sich zu diesem Wort im Wör\-ter\-buch eine Quotierung, dann ersetzt der Inhalt der Quotierung das Wort auf dem Callstack. Die Ersetzung geschieht durch Konkatenation der Quotierung mit dem Rest des Callstacks.
 
 \begin{verbatim}
-> clear { \ -rot [ rot rot ] } [ z y x ] [ -rot swap ] stepcc
-{ -rot [ rot rot ] } [ z y x ] [ rot rot swap ]
+> clear [ -rot [ rot rot ] ] mapping [ z y x ] [ -rot swap ]
+{ -rot [ rot rot ] } [ z y x ] [ -rot swap ]
 \end{verbatim}
 
 Findet sich im Wörterbuch stattdessen eine Funktion, dann wird die Funktion auf den Datastack angewendet. Mit \verb|get-dict| und \verb|get| schlagen wir die zu \verb|rot| hinterlegte Funktion im Wörterbuch nach.
@@ -610,13 +611,13 @@ Ist das oberste Element auf dem Callstack weder ein Wort noch ein Mapping, sonde
 [ 1 2 3 ] [ ] { }
 \end{verbatim}
 
-Ist das oberste Elemente auf dem Callstack weder ein Wort noch ein Mapping noch eine Funktion, dann muss es sich um einen Stapel oder \verb|nil| handeln; mehr als diese fünf Datentypen gibt es nicht. Ein Stapel bzw. \verb|nil| wandert vom Callstack auf den Datastack.
+Ist das oberste Elemente auf dem Callstack weder ein Wort noch ein Mapping noch eine Funktion, dann muss es sich um einen Stapel oder \verb|nil| handeln; mehr als diese fünf Datentypen gibt es nicht. Ein Stapel bzw. \verb|nil| wandert vom Callstack auf den Datastack.\footnote{Ich verwende die runden Klammern, damit \texttt{nil} als Datenwert \textit{nil} und nicht als Wort \texttt{nil} in dem Stapel liegt.}
 
 \begin{verbatim}
-> clear { } [ z y x ] [ [ 1 2 3 ] nil ] stepcc
-{ } [ [ 1 2 3 ] z y x ] [ swap ]
-> clear { } [ z y x ] [ ] nil push stepcc
-{ } [ nil z y x ] [ ]
+> clear { } [ z y x ] ( [ 1 2 3 ] nil ) stepcc
+{ } [ [ 1 2 3 ] z y x ] [ nil ]
+> stepcc
+{ } [ nil [ 1 2 3 ] z y x ] [ ]
 \end{verbatim}
 
 %\attention Die Bedeutung von \verb|stepcc| ist, dass es gemeinsam mit \verb|func| den "`Antriebsmotor"' von Consize definiert. Eine mit \verb|func| erzeugte und mit \verb|apply| auf einen Stapel angewendete Funktion ist in ihrer Ausführung zu verstehen als fortwährende Anwendung von \verb|stepcc| auf die via \verb|func| und \verb|apply| gegebene vollständige Continuation -- und zwar solange, bis der Callstack der vollständigen Continuation abgearbeitet, sprich leer ist. Das Ergebnis der Abarbeitung ist der Datastack.
