@@ -15,6 +15,10 @@ pom.xml.asc
 *.out
 *.log
 *.gz
+*.aux
+*.fls
+*.toc
+*.fdb_latexmk
 
 # /doc
 /doc/Manuscript.Aufgaben.tex
