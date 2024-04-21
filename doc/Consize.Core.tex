@@ -571,8 +571,8 @@ In dieser formalen Darstellung stellt sich die Spezifikation des Verhaltens von 
 Befindet sich auf dem Callstack ein Wort und findet sich zu diesem Wort im Wör\-ter\-buch eine Quotierung, dann ersetzt der Inhalt der Quotierung das Wort auf dem Callstack. Die Ersetzung geschieht durch Konkatenation der Quotierung mit dem Rest des Callstacks.
 
 \begin{verbatim}
-> clear [ -rot [ rot rot ] ] mapping [ z y x ] [ -rot swap ]
-{ -rot [ rot rot ] } [ z y x ] [ -rot swap ]
+> clear { \ -rot [ rot rot ] } [ z y x ] [ -rot swap ] stepcc
+{ -rot [ rot rot ] } [ z y x ] [ rot rot swap ]
 \end{verbatim}
 
 Findet sich im Wörterbuch stattdessen eine Funktion, dann wird die Funktion auf den Datastack angewendet. Mit \verb|get-dict| und \verb|get| schlagen wir die zu \verb|rot| hinterlegte Funktion im Wörterbuch nach.
