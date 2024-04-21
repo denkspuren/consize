@@ -13,6 +13,34 @@
 
 ( ( ) ) [ ( ) [ ] get-dict func apply ] unit-test % refactoring bug
 
+% -- testing literate programming --
+%
+% Input for `undocument` is:
+% line1
+% >> line2
+% %>> line3
+% line4
+%
+% expected is:
+% line2
+% line3
+
+( ( line2 \newline char line3 \newline char ) word ) [ ( line1 \newline char >> \space char line2 \newline char \u0025 char >> \space char line3 \newline char line4 ) word undocument ] unit-test
+
+% Input for `uncomment` is:
+% line1
+% %line2
+% line3%-
+% line4
+%
+% expected is:
+% line1
+% 
+% line3
+% line4
+
+( ( line1 \newline char \newline char line3 \newline char line4 ) word ) [ ( line1 \newline char \u0025 char line2 \newline char line3 \u0025 char \- \newline char line4 ) word uncomment ] unit-test
+
 % Consize Prelude
 
 ( [ ] ) [ \ read-word lookup ] unit-test

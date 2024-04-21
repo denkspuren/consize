@@ -74,12 +74,15 @@
 
 ;; Words supporting parsing
 "uncomment" (fn [w & r] {:pre [(string? w)]}
-  (conj r (reduce str (interpose "\r\n" (split w #"\s*%.*[(\r\n)\r\n]"))))),
+  ;;(conj r (reduce str (interpose "\r\n" (split w #"\s*%.*[(\r\n)\r\n]"))))),
+  (conj r (clojure.string/replace w #"(?m)(^%[^\r\n]*$)|(%[^\r\n]*)" ""))),
+  ;;(conj r (reduce str (map second (re-seq #"(?m)(^.*)(%?>>\s+(.*?((\r\n?)|\n))" w))))),
 "tokenize" (fn [w & r] {:pre [(string? w)]}
 	(let [s (seq (split (trim w) #"\s+"))] (conj r (if (= s '("")) () s)))),
 "undocument" (fn [w & r] {:pre [(string? w)]}
-	(conj r (reduce str (interpose "\r\n"
-    (map second (re-seq #"(?m)^%?>> (.*?)(\r\n?|\n)" w)))))),
+;;	(conj r (reduce str (interpose "\r\n"
+;;    (map second (re-seq #"(?m)^%?>> (.*?)(\r\n?|\n)" w)))))),
+	(conj r (reduce str (map second (re-seq #"(?m)^%?>>\s+(.*?((\r\n?)|\n))" w))))),
 
 ;; OS (http://docs.oracle.com/javase/1.4.2/docs/api/java/lang/System.html)
 "current-time-millis" (fn [& r] (conj r (str (System/currentTimeMillis)))),
