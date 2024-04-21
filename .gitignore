@@ -1,6 +1,7 @@
 pom.xml
 pom.xml.asc
-*jar
+*.jar
+!/src/clojure-1.5.1.jar
 /lib/
 /classes/
 /target/
