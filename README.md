@@ -25,10 +25,10 @@ Consize is implemented in Clojure. Since Clojure depends on the Java Virtual Mac
 1. Install the JVM on your computer. Visit [java.com](http://www.java.com), download the installer and execute it.
 2. Go to [clojure.org](http://clojure.org) and install Clojure. Follow the instructions for your operating system, see ["Getting started"](https://clojure.org/guides/getting_started).
 
-Check, if Clojure can be executed on your computer. Open a [command shell](http://en.wikipedia.org/wiki/Command_shell) (on Windows, the `powershell` is used) and try, if Clojure starts up. Be patient on a slow computer.
+Check, if Clojure can be executed on your computer. Open a [command shell](http://en.wikipedia.org/wiki/Command_shell) (on Windows, the `powershell` is used) and try, if Clojure starts up. Be patient on a slow computer. (Please don't use Clojure 1.11, there is a bug that impacts Consize, see @16.)
 
     % clj
-    Clojure 1.11.2
+    Clojure 1.10.3
     user=>
     
 If Clojure is running on your computer, that's great. Proceed with the installation of Consize. To quit Clojure press the [Control key](http://en.wikipedia.org/wiki/Control_key) `Ctrl` (or `Strg` on a German keyboard) and `C`. If Clojure does not work on your computer, consult an expert or get some help on the Web.
