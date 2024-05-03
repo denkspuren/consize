@@ -13,7 +13,7 @@
           ]
     \ map [ swapd push swap
             \ read-mapping push ]        % dict [ itm @ds ] [ read-mapping @rcs ]
-    \ fct [ get-ds unpush apply set-ds ] % XXX set-ds unklar!
+    \ fct [ get-ds unpush apply set-ds ] % 
     :else [ swapd push swap ]            % dict [ itm @ds ] rcs
   } cond ;
 
