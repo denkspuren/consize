@@ -11,7 +11,7 @@ I feel always thrilled by the fact that the raw interpreter is no more than 150 
 
 Regarding conciseness: Consize has numerous words for functional programming, most words being composed of one, two or three lines of code; Consize comes with a unit test framework implemented in eight lines of code; you can set breakpoints and step through the code for debugging purposes implemented in three lines of code; serialization and producing image dumps comes also in some few lines. Do you have an interest in meta-programming? Not only has Consize a meta-protocol to handle unknown words, but _continuations_ which allow you to manipulate the future of computations -- continuations are used to implement an _ad hoc_ parser to extend the grammar of Consize.
 
-Whet your appetite? You might head over reading the [documentation](/doc/Consize.pdf) first.
+Whet your appetite? You might head over reading the [documentation](/doc/Consize.pdf) (PDF) first. Or read the automatically translated Markdown-Version of the TeX files [here, provided by Google translate](https://github-com.translate.goog/denkspuren/consize/blob/master/doc/Consize.md?_x_tr_sl=de&_x_tr_tl=en&_x_tr_hl=de&_x_tr_pto=wapp)
 
 Enjoy,
 
