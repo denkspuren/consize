@@ -15,7 +15,7 @@ Whet your appetite? You might head over reading the [documentation](/doc/Consize
 
 Enjoy,
 
-Dominikus Herzberg, [@denkspuren](https://twitter.com/denkspuren)
+Dominikus Herzberg<br>
 https://www.thm.de/mni/dominikus-herzberg
 
 ## Installation
