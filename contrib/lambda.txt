@@ -1,0 +1,60 @@
+% rlwrap clojure -M consize.clj "\ prelude-plain.txt run say-hi"
+% On MacOS run with: \ ../contrib/lambda.txt run
+
+% This is an example of a lambda expression:
+%
+% \ :x [ :x 1 + ] lambda
+% 
+% Convention: Variables are preceeded by a colon `:` by conventions.
+% Ordinary words should not use a colon as their first character.
+
+% The LAMBDA macro sets up the code for the closure to bind a value to a var and execute the quotation
+: LAMBDA [ swap def ] swap concat swap [ ] cons \ \ push swap concat [ [ ] cons ] swap concat ;
+
+( [ [ ] cons \ :x swap def :x 1 + ] ) [ \ :x [ :x 1 + ] LAMBDA ] unit-test
+
+: lambda ( \ var quot-with-vars -- <fct-closure> ) LAMBDA get-dict func ;
+
+( [ 4 ] ) [ [ 3 ] \ :x [ :x 1 + ] lambda apply ] unit-test
+
+: dapply get-ds pop swap apply set-ds ;
+
+( 1 2 4 ) [ 1 2 3 \ :x [ :x 1 + ] lambda dapply ] unit-test
+( 2 1 ) [ 1 2 \ :y [ \ :x [ :y :x ] lambda ] lambda dapply dapply ] unit-test
+
+% And this is the concatenative way to "bind" values: use `curry`
+
+( 1 2 4 ) [ 1 2 3 [ 1 + ] curry call ] unit-test
+( 2 1 ) [ 1 2 [ swap ] curry curry call ] unit-test
+
+: let lambda dapply ;
+
+( 1 2 4 ) [ 1 2 3 \ :x [ :x 1 + ] let ] unit-test
+( 2 1 ) [ 1 2 \ :y [ \ :x [ :y :x ] let ] let ] unit-test
+
+% Inner bindings supersede outer bindings (see :y)
+( 1 2 ) [ 1 2 3 \ :y [ \ :x [ \ :y [ :y :x ] let ] let ] let ] unit-test
+
+% The closure can be copied and applied in various binding contexts
+( 13 23 ) [ 10 20 [ 3 \ :n [ \ :x [ :n :x + ] lambda ] let dapply ] bi@ ] unit-test
+( 13 23 ) [ 10 20 3 \ :n [ \ :x [ :n :x + ] lambda ] let dup [ dapply ] dip swap [ dapply ] dip ] unit-test
+
+% The concatenative way to do this:
+( 13 23 ) [ 10 20 [ 3 [ + ] curry call ] bi@ ] unit-test 
+( 13 23 ) [ 10 20 3 [ + ] curry dup [ call ] dip swap [ call ] dip ] unit-test 
+
+abort
+
+% I noticed a problem with lambdas in Consize: The ad hoc parser works interpretatively on the top level.
+% Parentheses (e.g. `( :x :y )`) delimit a sequence that is interpreted and the results are collected in a
+% stack:
+%
+%       > ( 1 2 + 4 )
+%       [ 3 4 ]
+% 
+% Variables to be bound at runtime are not resolved while parsing the top level program.
+%
+%       > 1 2 3 \ :y [ \ :x [ ( :y :x ) ] lambda ] lambda dapply dapply
+%       1 [ :y :x ]
+%
+% This makes life with lambdas a bit harder.

@@ -84,6 +84,9 @@ abort
 : inc-by-n ( n -- quot ) [ :n ] [ [ :x ] [ [ :n :x ] sum ] lambda1 ] let1 ;
 
 abort 
+
+% PROBLEM: CLOSURE CAN'T MOVE AROUND ON THE STACK!
+
 % 71 [ :x ] [ ( :x :y :z ) sum ] lambda1 call
 
 1 2 3 [ :y ] [ [ :x ] [ :x :y + ] let1 ] let1
