@@ -1,3 +1,4 @@
+% rlwrap clojure -M consize.clj "\ prelude-plain.txt run say-hi"
 % run with: \ ../contrib/lambda.txt run
 
 : get-val ( key seq -- val )
@@ -39,11 +40,50 @@
 : read-word dup variable? [ LOAD ] when ;
 
 ( 3 ) [ :x ] unit-test
-( 4 5 :e_is-invalid-key ) [ :y :z :e ] unit-test
+( 4 5 \ :e_is-invalid-key ) [ :y :z :e ] unit-test
+( 12 ) [ ( :x :y :z ) sum ] unit-test
 
 : GET_ENV ( -- [ $K #V @KV ] ) \ __ENV__ get-dict [ ] get ;
 
+( [ :x 3 :y 4 :z 5 ] ) [ GET_ENV ] unit-test
+
+% Introduction of __ENV__ in top level dict was helpful for testing purposes,
+% it's time to remove it
+
+\ __ENV__ get-dict dissoc set-dict
+
 % [ :x ] [ 1 :x + ] lambda1
 % [ GET_ENV cons \ :x push \ __ENV__ get-dict assoc [ 1 :x + ] ] % -- Vorbereitung des Dictionaries
-% [ GET_ENV cons \ ] rot concat [ push \ __ENV__ get-dict assoc ] swap [ ] cons concat % -- dict' quot 
-% [ swap func [ ] swap apply unstack ]
+% [ GET_ENV cons \ :x push \ __ENV__ get-dict assoc [ 1 :x + ] swap func [ ] swap apply unstack ]
+% [ GET_ENV cons ] rot \ \ push concat [ push \ __ENV__ get-dict assoc ] concat swap [ ] cons concat % -- dict' quot 
+% [ swap func [ ] swap apply unstack ] concat
+
+% : lambda1 ( [ var ] [ quot-with-vars ] -- [ closure ] ) 
+%   [ GET_ENV cons ] rot \ \ push concat [ push \ __ENV__ get-dict assoc ] concat swap [ ] cons concat
+%   [ swap func [ ] swap apply unstack ] concat ;
+
+% ( [ GET_ENV cons \ :x push \ __ENV__ get-dict assoc [ :x 1 + ] swap func [ ] swap apply unstack ] )
+% [ [ :x ] [ :x 1 + ] lambda1 ] unit-test
+
+: LAMBDA1 ( [ var ] [ quot-with-vars ] -- [ closure ] ) 
+  [ GET_ENV cons ] rot \ \ push concat [ push \ __ENV__ get-dict assoc ] concat swap [ ] cons concat
+  [ swap func get-ds pop swap apply set-ds ] concat ;
+
+% TEST CASE shows that LAMBDA1 is a macro that constructs the code representing a closure
+( [ GET_ENV cons \ :x push \ __ENV__ get-dict assoc [ :x 1 + ] swap func get-ds pop swap apply set-ds ] )
+[ [ :x ] [ :x 1 + ] LAMBDA1 ] unit-test
+
+( 78 ) [ 77 [ :x ] [ :x 1 + ] lambda1 call ] unit-test
+
+( 1 5 ) [ 1 2 3 [ :y ] [ [ :x ] [ :x :y + ] lambda1 call ] lambda1 call ] unit-test 
+
+: let1 ( val [ var ] [ quot-with-vars ] -- result ) lambda1 call ;
+
+abort
+
+: inc-by-n ( n -- quot ) [ :n ] [ [ :x ] [ [ :n :x ] sum ] lambda1 ] let1 ;
+
+abort 
+% 71 [ :x ] [ ( :x :y :z ) sum ] lambda1 call
+
+1 2 3 [ :y ] [ [ :x ] [ :x :y + ] let1 ] let1
