@@ -45,6 +45,22 @@
 
 abort
 
+% Examples
+% > Note: I'm aware that `dup`, `rot`, `dip` etc. act more carefully using `\` to prevent execution
+
+% Duplication `dup`
+> clear x \ :v [ :v :v ] let
+x x
+
+% Rotation `rot`
+> clear x y z \ :3 [ \ :2 [ \ :1 [ :2 :3 :1 ] let ] let ] let
+
+% Dipping `dip`
+> clear 3 10 2 [ + ] swap \ :val [ call :val ] let
+13 2
+
+% I perceive lambdas mostly as a means to rearrange programs; it's similar to macros. 
+
 % I noticed a problem with lambdas in Consize: The ad hoc parser works interpretatively on the top level.
 % Parentheses (e.g. `( :x :y )`) delimit a sequence that is interpreted and the results are collected in a
 % stack:
