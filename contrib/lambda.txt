@@ -5,7 +5,7 @@
 %
 % \ :x [ :x 1 + ] lambda
 % 
-% Convention: Variables are preceeded by a colon `:` by conventions.
+% Attention: Variables are preceeded by a colon `:` by convention.
 % Ordinary words should not use a colon as their first character.
 
 % The LAMBDA macro sets up the code for the closure to bind a value to a var and execute the quotation
