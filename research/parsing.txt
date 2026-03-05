@@ -1,0 +1,23 @@
+% rlwrap clojure -M consize.clj "\ prelude-plain.txt run say-hi"
+% \ ../contrib/lambda.txt run
+% \ ../research/parsing.txt run
+%
+% | 1 2 + 3 4 | ´ 
+
+% The backtick `´` starts to scan on the datastack for the second
+% appearance of the word being on top of the datastack.
+% Die Idee ist, die runden Klammern nachzubilden, die bei `lambda``
+% nicht zu haben sind, da dort ggfs. vorzeitig evaluiert wird.
+
+: ´ % ( <char> @D <char> -- [ @D ] | fcall )
+  [ ] [ swap rot over over equal? ] [ rot cons ] until 2drop fcall ;
+
+% The test case requires embeding the sequence in a stack and unstacking
+% otherwise the sequence would be interpreted without hesitation.
+[ ( 2 3 + 4 5 + ) ] [ [ | 2 3 + 4 5 + | ] unstack ´ ] unit-test
+[ ( ) ] [ | | ´ ] unit-test
+
+
+% Example with let
+% > 2 3 \ :x [ \ :y [ | :x :y | ´ sum ] let ] let
+% 5
